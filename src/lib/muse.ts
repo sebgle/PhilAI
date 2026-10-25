@@ -39,8 +39,9 @@ export async function museText(system: string, user: string, opts: { temperature
     res = await attempt();
     if (res.status === 429 || res.status >= 500) { await new Promise((r) => setTimeout(r, 1500)); res = await attempt(); }
   } catch (e) {
-    if ((e as Error).name !== "TimeoutError" && (e as Error).name !== "AbortError") throw e;
-    console.warn(`[muse] timeout after ${timeoutMs}ms, retrying once`);
+    // Timeout, abort, or a network-level "fetch failed": retry once.
+    console.warn(`[muse] ${(e as Error).name}: ${(e as Error).message.slice(0, 80)}, retrying once`);
+    await new Promise((r) => setTimeout(r, 1000));
     res = await attempt();
   }
   if (!res.ok) throw new Error(`muse ${res.status}: ${await res.text()}`);
