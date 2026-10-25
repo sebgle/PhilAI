@@ -49,9 +49,17 @@ export default async function EntryPage({
         links,
       }
     : null;
-  const initialFeedback = Object.fromEntries(
-    (rows ?? []).map((r) => [(r.passage as unknown as { id: string }).id, r.feedback]),
-  );
+  // "Saved" comes from the library (the source of truth, and the only record in
+  // mock mode); "not for me" comes from matches.feedback.
+  const { data: saved } = await supabase
+    .from("library_items")
+    .select("passage_id")
+    .eq("kind", "passage");
+  const initialFeedback: Record<string, "saved" | "not_for_me" | null> = {};
+  for (const r of rows ?? []) {
+    if (r.feedback === "not_for_me") initialFeedback[(r.passage as unknown as { id: string }).id] = "not_for_me";
+  }
+  for (const s of saved ?? []) initialFeedback[s.passage_id] = "saved";
 
   return (
     <article className="flex flex-col gap-4">
