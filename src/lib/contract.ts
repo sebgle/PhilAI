@@ -45,7 +45,7 @@ export type MatchResponse = {
   themes: ThemeSlug[];
   risk_flag: boolean; // true: show 988 card, lock sharing, links may be empty
   fallback: boolean; // true: whole-entry match, no highlights
-  links: MatchLink[]; // 0-3, never the same author twice
+  links: MatchLink[]; // 0-3 primary cards; passages are unique, authors may repeat
 };
 
 // POST /scrub  { text }  ->  ScrubResponse

@@ -1,10 +1,12 @@
 // T7/T12 harness: run the matching pipeline on a text without the web app.
-// Usage: npx tsx --env-file=.env.local scripts/test-match.mts [file-or-text] [--mode=line|line+summary]
+// Usage: npx tsx --env-file=.env.local scripts/test-match.mts [file-or-text] [--legacy] [--mode=line|line+summary]
 import { readFileSync, existsSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import { embed } from "../src/lib/embed.ts";
 import { findSpan } from "../src/lib/exact-match.ts";
 import { analyzeEntry, verifyLines, scoreCandidate, pickPerLine, phraseAndReason, lineQuery, RISK_EXCLUDED_THEMES, withRetry, type Candidate } from "../src/lib/match-core.ts";
+
+import { shortlist, reviewPassages, assignInsights } from "../src/lib/insight-match.ts";
 
 const args = process.argv.slice(2);
 const mode = (args.find((a) => a.startsWith("--mode="))?.split("=")[1] ?? "line+summary") as "line" | "line+summary";
@@ -19,7 +21,7 @@ console.log(`analysis ${tA - t0}ms  emotions=${analysis.emotions} themes=${analy
 const lines = verifyLines(text, analysis.key_lines);
 for (const l of analysis.key_lines) console.log(`  ${findSpan(text, l.text) ? "OK  " : "DROP"} [${l.theme}] ${l.text}`);
 const fallback = lines.length === 0;
-const queries = fallback ? [analysis.summary] : lines.map((l) => lineQuery(l.text, analysis.summary, mode));
+const queries = fallback ? [analysis.summary] : lines.map((l) => lineQuery(l.text, args.includes("--legacy") ? analysis.summary : l.interpretation ?? analysis.summary, mode));
 const vectors = await embed(queries);
 const excluded = analysis.risk_flag ? RISK_EXCLUDED_THEMES : new Set<string>();
 const retrieved: Candidate[][] = await Promise.all(vectors.map((v) => withRetry(async () => {
@@ -29,6 +31,17 @@ const retrieved: Candidate[][] = await Promise.all(vectors.map((v) => withRetry(
 })));
 const tR = Date.now();
 console.log(`retrieve ${tR - tA}ms (${retrieved.map((r) => r.length).join(",")} candidates)`);
+if (!args.includes("--legacy")) {
+  const taste = new Set<string>();
+  const pools = retrieved.map((cs, i) => shortlist(cs, excluded, (c) => scoreCandidate(c, analysis.emotions, fallback ? analysis.themes : [lines[i].theme], taste)));
+  const reviewed = await Promise.all(pools.map((candidates, i) => reviewPassages({ line: fallback ? null : lines[i].text,
+    interpretation: fallback ? analysis.summary : lines[i].interpretation ?? analysis.summary, context: text, candidates, excluded, deadline: Date.now() + 45_000 })));
+  const assigned = assignInsights(reviewed);
+  console.log(JSON.stringify({ pipeline: "insight", elapsedMs: Date.now() - t0,
+    results: assigned.map((ps, i) => ({ line: fallback ? null : lines[i].text, interpretation: fallback ? analysis.summary : lines[i].interpretation,
+      passages: ps.map((p) => ({ id: p.cand.id, author: p.cand.author, text: p.cand.text, score: p.score, reason: p.reason })) })) }, null, 2));
+  process.exit(0);
+}
 if (fallback) {
   console.log("FALLBACK: no line verified");
   for (const c of retrieved[0].slice(0, 3)) console.log(`  ${c.author}: ${c.text.slice(0, 150)}`);

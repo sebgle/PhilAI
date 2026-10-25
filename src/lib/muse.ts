@@ -32,7 +32,7 @@ function target(entry: string) {
   return { provider: "muse", url: MUSE_URL, key: sparkKey(), model: entry };
 }
 
-export async function museText(system: string, user: string, opts: { temperature?: number; json?: boolean; timeoutMs?: number } = {}) {
+export async function museText(system: string, user: string, opts: { temperature?: number; json?: boolean; timeoutMs?: number; deadline?: number } = {}) {
   const body: Record<string, unknown> = {
     model: MODEL_CHAIN[0],
     messages: [
@@ -49,7 +49,7 @@ export async function museText(system: string, user: string, opts: { temperature
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${t.key}` },
       body: JSON.stringify(b),
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: AbortSignal.timeout(Math.max(1, Math.min(timeoutMs, (opts.deadline ?? Infinity) - Date.now()))),
     });
   // Muse intermittently answers 404 model_not_found, and occasionally stalls or
   // 429s. The 404s come in bursts that hit every model id at once (seen from
@@ -67,12 +67,13 @@ export async function museText(system: string, user: string, opts: { temperature
     return res;
   };
   const MAX = 12;
-  const RETRY_BUDGET_MS = 35_000;
+  const RETRY_BUDGET_MS = Math.min(35_000, (opts.deadline ?? Infinity) - Date.now());
   const started = Date.now();
   let modelIdx = 0;
   let res: Response | null = null;
   let lastErr = "";
   for (let i = 0; i < MAX; i++) {
+    if (Date.now() - started >= RETRY_BUDGET_MS) break;
     const model = MODEL_CHAIN[modelIdx % MODEL_CHAIN.length];
     let backoff = 600 * (i + 1);
     try {
@@ -122,9 +123,9 @@ function extractJson(raw: string): unknown {
 }
 
 // Call Muse, parse JSON, validate. One repair round on schema failure.
-export async function museJson<T>(args: { system: string; user: string; schema: z.ZodType<T>; temperature?: number }): Promise<T> {
+export async function museJson<T>(args: { system: string; user: string; schema: z.ZodType<T>; temperature?: number; deadline?: number }): Promise<T> {
   const sys = `${args.system}\n\nRespond with a single JSON object only. Use exactly the field names and enum values specified; never invent alternatives.`;
-  const raw = await museText(sys, args.user, { temperature: args.temperature });
+  const raw = await museText(sys, args.user, { temperature: args.temperature, deadline: args.deadline });
   let parsed: unknown;
   try {
     parsed = extractJson(raw);
@@ -137,7 +138,7 @@ export async function museJson<T>(args: { system: string; user: string; schema: 
   const repaired = await museText(
     sys,
     `Your previous JSON failed validation.\n\nPrevious output:\n${raw}\n\nErrors:\n${issues}\n\nReturn the corrected JSON object only, keeping all content the same except the invalid fields.`,
-    { temperature: 0 },
+    { temperature: 0, deadline: args.deadline },
   );
   return args.schema.parse(extractJson(repaired));
 }

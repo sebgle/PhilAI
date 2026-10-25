@@ -1,0 +1,68 @@
+[
+  {
+    "id": "hidden-feelings",
+    "error": "TimeoutError (muse-spark-1.2): The operation was aborted due to timeout",
+    "totalMs": 73597
+  },
+  {
+    "id": "grief-relief",
+    "text": "I miss Dad every day. I am also relieved that the hospital visits are over, and admitting that makes me feel cruel.",
+    "expected_focus": "Grief and relief coexist without canceling love",
+    "themes": [
+      "grief",
+      "family"
+    ],
+    "risk_flag": false,
+    "analysisMs": 15803,
+    "legacyMs": 12196,
+    "insightMs": 37274,
+    "legacy": [
+      {
+        "line": "I miss Dad every day. I am also relieved that the hospital visits are over,",
+        "id": "p_58585_3f64f179",
+        "author": "Kahlil Gibran",
+        "text": "Long were the days of pain I have spent within its walls, and long were the nights of aloneness; and who can depart from his pain and his aloneness without regret?",
+        "phrase_start": 101,
+        "phrase_end": 163,
+        "reason": "You carry both love that misses him and quiet relief that the hard hospital days ended."
+      },
+      {
+        "line": "admitting that makes me feel cruel.",
+        "id": "p_2680_5a125046",
+        "author": "Marcus Aurelius",
+        "text": "Thus I ever lost my children without solace, and got them amidst fresh grief.....'",
+        "phrase_start": 5,
+        "phrase_end": 43,
+        "reason": "You know how telling the painful truth can leave you feeling guilty and strangely heartless toward yourself."
+      }
+    ],
+    "insight": [
+      {
+        "line": "I miss Dad every day. I am also relieved that the hospital visits are over,",
+        "interpretation": "Ongoing missing for father mixed with relief that the hospital period is finished.",
+        "passages": []
+      },
+      {
+        "line": "admitting that makes me feel cruel.",
+        "interpretation": "Self-judgment for feeling relieved, seeing that relief as cruel.",
+        "passages": []
+      }
+    ],
+    "totalMs": 65273
+  },
+  {
+    "id": "comparison",
+    "error": "TimeoutError (muse-spark-1.2): The operation was aborted due to timeout",
+    "totalMs": 59855
+  },
+  {
+    "id": "contentment",
+    "error": "TimeoutError (muse-spark-1.2): The operation was aborted due to timeout",
+    "totalMs": 64425
+  },
+  {
+    "id": "contentment",
+    "error": "TimeoutError (muse-spark-1.2): The operation was aborted due to timeout",
+    "totalMs": 52396
+  }
+]
