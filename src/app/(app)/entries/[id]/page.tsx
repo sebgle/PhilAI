@@ -5,6 +5,7 @@ import { LocalDate } from "@/components/LocalDate";
 import type { MatchLink, MatchResponse } from "@/lib/contract";
 import type { MockVariant } from "@/lib/matching";
 import { Matches } from "./Matches";
+import { EntryTitle } from "./EntryTitle";
 
 const VARIANTS: MockVariant[] = ["match", "fallback", "risk"];
 
@@ -24,10 +25,16 @@ export default async function EntryPage({
   // RLS limits both queries to the signed-in user's own rows.
   const { data: entry } = await supabase
     .from("entries")
-    .select("id, text, prompt, created_at, emotions, themes, summary, risk_flag")
+    .select("id, title, text, prompt, created_at, emotions, themes, summary, risk_flag")
     .eq("id", id)
     .maybeSingle();
   if (!entry) notFound();
+
+  // Its number among the user's entries, for the "Entry #N" fallback title.
+  const { count: entryNumber } = await supabase
+    .from("entries")
+    .select("id", { count: "exact", head: true })
+    .lte("created_at", entry.created_at);
 
   const { data: rows } = await supabase
     .from("matches")
@@ -63,8 +70,11 @@ export default async function EntryPage({
 
   return (
     <article className="flex flex-col gap-4">
-      <div className="text-sm text-muted">
-        <LocalDate iso={entry.created_at} withTime />
+      <div>
+        <EntryTitle entryId={entry.id} initial={entry.title} fallback={`Entry #${entryNumber ?? ""}`} />
+        <div className="mt-1 text-sm text-muted">
+          <LocalDate iso={entry.created_at} withTime />
+        </div>
       </div>
       {entry.prompt && <p className="text-sm italic text-muted">{entry.prompt}</p>}
       <Matches

@@ -7,12 +7,17 @@ import { randomPrompt } from "@/lib/prompts";
 import { WindowPlant } from "@/components/art/WindowPlant";
 import { MicButton } from "./MicButton";
 
-// The Write page from the sketch: "New entry #N", a sheet of paper with a
-// wavy top edge and the prompt on its first line (↻ for another), and the
-// night window beside it.
+const join = (a: string, b: string) => (a.trim() && b ? `${a.trimEnd()} ${b}` : a.trim() ? a : b);
+
+// The Write page from the sketch: an editable title ("New entry #N" until you
+// name it), a sheet of paper with a wavy top edge and the prompt on its first
+// line (↻ for another), and the night window beside it.
 export function WriteForm({ entryNumber }: { entryNumber: number }) {
   const router = useRouter();
+  const [title, setTitle] = useState("");
   const [text, setText] = useState("");
+  // Live words while recording; shown after the typed text, read-only.
+  const [live, setLive] = useState<string | null>(null);
   // Picked after mount so server and client render the same markup.
   const [prompt, setPrompt] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -25,7 +30,7 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
     setError(null);
     const { data, error } = await createClient()
       .from("entries")
-      .insert({ text: text.trim(), prompt })
+      .insert({ text: text.trim(), prompt, title: title.trim() || null })
       .select("id")
       .single();
     if (error) {
@@ -38,7 +43,14 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
   return (
     <div className="grid items-start gap-12 md:grid-cols-[minmax(0,1fr)_17rem] lg:grid-cols-[minmax(0,1fr)_20rem]">
       <section className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">New entry #{entryNumber}</h1>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          maxLength={120}
+          placeholder={`New entry #${entryNumber}`}
+          aria-label="Entry title"
+          className="w-full rounded-md bg-transparent px-1 -mx-1 text-3xl font-bold tracking-tight placeholder:text-foreground hover:bg-hover focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
+        />
 
         <div className="relative border-x border-b border-rule bg-paper pt-3 shadow-[0_1px_2px_rgb(15_15_15/0.04)]">
           <WavyEdge />
@@ -72,8 +84,9 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
             )}
           </div>
           <textarea
-            value={text}
+            value={live !== null ? join(text, live) : text}
             onChange={(e) => setText(e.target.value)}
+            readOnly={live !== null}
             placeholder="Write what you need to get off your chest…"
             aria-label="Journal entry"
             className="block min-h-[52vh] w-full resize-y bg-transparent px-6 py-4 text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
@@ -84,12 +97,12 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
           <button
             type="button"
             onClick={save}
-            disabled={saving || !text.trim()}
+            disabled={saving || !text.trim() || live !== null}
             className="rounded-md bg-[#2383e2] px-4 py-2 text-sm font-medium text-white hover:bg-[#0077d4] disabled:opacity-40"
           >
             {saving ? "Saving…" : "Save entry"}
           </button>
-          <MicButton onTranscript={(t) => setText((prev) => (prev.trim() ? `${prev.trimEnd()} ${t}` : t))} />
+          <MicButton onLive={setLive} onTranscript={(t) => setText((prev) => join(prev, t))} />
           <span className="text-sm text-muted">Private. Only you can see your entries.</span>
           {error && <span className="text-sm text-red-600">{error}</span>}
         </div>

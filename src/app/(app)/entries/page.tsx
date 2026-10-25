@@ -12,7 +12,7 @@ export default async function PastEntries() {
   const supabase = await createClient();
   const { data: entries, error } = await supabase
     .from("entries")
-    .select("id, text, prompt, themes, created_at")
+    .select("id, title, text, prompt, themes, created_at")
     .order("created_at", { ascending: false });
 
   return (
@@ -42,7 +42,7 @@ export default async function PastEntries() {
                   className="block rounded-md border border-rule bg-card px-5 py-4 transition-colors hover:bg-hover"
                 >
                   <div className="flex items-baseline justify-between gap-3 text-sm text-muted">
-                    <span className="font-medium text-foreground">Entry #{entries.length - i}</span>
+                    <span className="font-medium text-foreground">{e.title || `Entry #${entries.length - i}`}</span>
                     <LocalDate iso={e.created_at} />
                   </div>
                   {e.prompt && <p className="mt-1 text-sm italic text-muted">{e.prompt}</p>}
