@@ -91,6 +91,8 @@ Sync 1 notes (2026-10-24, late): `NEXT_PUBLIC_MATCH_MODE=live` is set in Vercel.
 
 **Muse outages (2026-10-25 ~01:00):** all three Spark ids returned 404 model_not_found for 30+ min at once, so prod match/moderate/scrub failed for the whole window. `muse-wonder-1.0` (Standard mode, reasoning model) kept answering, so it is now the last model in the fallback chain with `reasoning_effort: "minimal"` (~4-20 s a call depending on load; default effort is ~20 s+). Demo entry through Wonder: 3/3 lines and phrases verified. Route limits raised: match 90 s, moderate and scrub 60 s. If Spark is down during the demo, nothing needs to change; if you want Wonder first, set `MUSE_MODEL=muse-wonder-1.0` in Vercel and redeploy.
 
+**Threaded replies + likes (2026-10-25 ~02:00, Teammate):** `supabase/migrations/20261025030000_threaded_replies_likes.sql` adds `replies.parent_id` and a server-only `likes` table. Apply it in the SQL editor BEFORE merging the code: the forum page selects `parent_id`. Replies to replies nest (indent capped at 3 levels; children of a hidden reply surface at the top level). `POST /api/likes { post_id | reply_id }` toggles and returns `{ liked, count }`; hearts sit in the post meta line and on each reply. The bell now also shows replies under your replies. Seed script likes every seeded post from the other demo account and the first reply from the poster.
+
 **Risk flag (tuned):** passive ideation ("would anyone notice if I stopped showing up") is now flagged; skipping class/practice is not. Spot-check with `scripts/test-risk.mts`.
 
 ## Sync 2: demo

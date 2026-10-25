@@ -1,5 +1,6 @@
-// S6: POST /api/replies { post_id, text }
-// One level of replies. A user keeps one alias per thread: reused if they've
+// S6: POST /api/replies { post_id, text, parent_id? }
+// Replies answer the post, or another visible reply in the same thread when
+// parent_id is set. A user keeps one alias per thread: reused if they've
 // posted in it before, otherwise a new one that's unique within the thread.
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
@@ -17,7 +18,11 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const postId = body?.post_id;
   const text = typeof body?.text === "string" ? body.text.trim() : "";
+  const parentId = body?.parent_id == null ? null : body.parent_id;
   if (typeof postId !== "string") return NextResponse.json({ error: "post_id is required." }, { status: 400 });
+  if (parentId !== null && typeof parentId !== "string") {
+    return NextResponse.json({ error: "parent_id must be a reply id." }, { status: 400 });
+  }
   if (!text || text.length > MAX_REPLY) {
     return NextResponse.json({ error: `Replies are 1–${MAX_REPLY} characters.` }, { status: 400 });
   }
@@ -25,6 +30,12 @@ export async function POST(req: Request) {
   const admin = createAdminClient();
   const { data: post } = await admin.from("posts").select("status").eq("id", postId).maybeSingle();
   if (!post || post.status !== "visible") return NextResponse.json({ error: "Post not found." }, { status: 404 });
+  if (parentId) {
+    const { data: parent } = await admin.from("replies").select("post_id, status").eq("id", parentId).maybeSingle();
+    if (!parent || parent.status !== "visible" || parent.post_id !== postId) {
+      return NextResponse.json({ error: "That reply is no longer here." }, { status: 404 });
+    }
+  }
 
   const mod = await moderateText(text);
   if (mod.status === "flagged") {
@@ -36,8 +47,8 @@ export async function POST(req: Request) {
 
   const { data: reply, error } = await admin
     .from("replies")
-    .insert({ post_id: postId, user_id: user.id, alias, text })
-    .select("id, post_id, alias, text, created_at")
+    .insert({ post_id: postId, parent_id: parentId, user_id: user.id, alias, text })
+    .select("id, post_id, parent_id, alias, text, created_at")
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
