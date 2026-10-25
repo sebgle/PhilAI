@@ -16,17 +16,17 @@ export function ReportButton({ postId, replyId }: { postId?: string; replyId?: s
     setState(res.ok ? "done" : "error");
   }
 
-  const cls = "text-xs underline opacity-50 hover:opacity-100";
-  if (state === "done") return <span className="text-xs opacity-60">Reported. Thank you.</span>;
+  const cls = "text-xs underline opacity-50 hover:text-foreground";
+  if (state === "done") return <span className="text-xs text-muted">Reported. Thank you.</span>;
   if (state === "error") return <span className="text-xs text-red-600">Couldn&apos;t report. Try again later.</span>;
   if (state === "confirm" || state === "sending") {
     return (
       <span className="flex items-center gap-2 text-xs">
-        <span className="opacity-70">Report this?</span>
+        <span className="text-muted">Report this?</span>
         <button type="button" onClick={send} disabled={state === "sending"} className="underline text-red-600">
           Yes, report
         </button>
-        <button type="button" onClick={() => setState("idle")} className="underline opacity-60">
+        <button type="button" onClick={() => setState("idle")} className="underline text-muted">
           Cancel
         </button>
       </span>

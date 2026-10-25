@@ -34,7 +34,7 @@ export default function Login() {
     <main className="min-h-screen flex items-center justify-center p-8">
       <form onSubmit={submit} className="w-full max-w-sm flex flex-col gap-3">
         <h1 className="font-serif text-3xl italic">PhilAI</h1>
-        <p className="text-sm opacity-70">
+        <p className="text-sm text-muted">
           Your email is only used to log in. Nobody else ever sees it: other people
           only see a random name.
         </p>
@@ -72,7 +72,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={busy || (mode === "signup" && !adult)}
-          className="rounded px-3 py-2 bg-foreground text-background disabled:opacity-50"
+          className="rounded px-3 py-2 bg-[#2383e2] text-white disabled:opacity-50"
         >
           {mode === "signup" ? "Create account" : "Log in"}
         </button>
@@ -80,11 +80,11 @@ export default function Login() {
         <button
           type="button"
           onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-          className="text-sm underline opacity-70"
+          className="text-sm underline text-muted"
         >
           {mode === "signup" ? "Already have an account? Log in" : "New here? Create an account"}
         </button>
-        <p className="text-xs opacity-60">
+        <p className="text-xs text-muted">
           A reflection and community space, not therapy or emergency help.
         </p>
       </form>

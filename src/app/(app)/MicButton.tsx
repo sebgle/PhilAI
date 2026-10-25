@@ -79,18 +79,18 @@ export function MicButton({ onTranscript }: { onTranscript: (text: string) => vo
         className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 disabled:opacity-50 ${
           state === "recording"
             ? "border-red-500 text-red-600 dark:text-red-400"
-            : "border-foreground/20 hover:bg-foreground/5"
+            : "border-rule hover:bg-hover"
         }`}
       >
         <span
           aria-hidden
-          className={`h-2.5 w-2.5 rounded-full ${state === "recording" ? "animate-pulse bg-red-500" : "bg-foreground/40"}`}
+          className={`h-2.5 w-2.5 rounded-full ${state === "recording" ? "animate-pulse bg-red-500" : "bg-hover"}`}
         />
         {state === "idle" && "Speak instead"}
         {state === "recording" && `Stop · ${clock} left`}
         {state === "transcribing" && "Transcribing…"}
       </button>
-      {state === "recording" && <span className="opacity-60">Listening. Audio is transcribed, then discarded.</span>}
+      {state === "recording" && <span className="text-muted">Listening. Audio is transcribed, then discarded.</span>}
       {error && <span className="text-red-600">{error}</span>}
     </div>
   );

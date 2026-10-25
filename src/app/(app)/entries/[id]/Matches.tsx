@@ -125,7 +125,7 @@ export function Matches({
         {locked && <SafetyCard />}
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
         {match.links.length > 0 && (
-          <p className="text-sm opacity-70">
+          <p className="text-sm text-muted">
             We couldn&apos;t pin this one to specific lines, but these passages share its feeling.
           </p>
         )}
@@ -143,7 +143,7 @@ export function Matches({
       <EntryText text={text} links={match.links} selected={selected} onSelect={setSelected} />
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
       {selected === null ? (
-        <p className="text-sm opacity-60">
+        <p className="text-sm text-muted">
           {match.links.length
             ? "Tap a highlighted line to see the passage it found."
             : "No passages found for this entry yet."}
@@ -252,11 +252,11 @@ function PassageCard({
       </blockquote>
       <p className="mt-3 text-sm">
         <span className="font-medium">{passage.author}</span>
-        <span className="opacity-70">
+        <span className="text-muted">
           , <cite>{passage.work}</cite>
           {passage.year ? ` (${passage.year})` : ""}
         </span>
-        <span className="ml-2 rounded-full bg-foreground/5 px-2 py-0.5 text-xs">
+        <span className="ml-2 rounded-full bg-hover px-2 py-0.5 text-xs">
           {themeName.get(link.theme) ?? link.theme}
         </span>
       </p>
@@ -267,7 +267,7 @@ function PassageCard({
           type="button"
           onClick={() => onFeedback("saved")}
           aria-pressed={feedback === "saved"}
-          className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5 aria-pressed:bg-foreground aria-pressed:text-background"
+          className="rounded border border-rule px-3 py-1 hover:bg-hover aria-pressed:bg-[#2383e2] aria-pressed:text-white"
         >
           {feedback === "saved" ? "Saved" : "Save"}
         </button>
@@ -275,13 +275,13 @@ function PassageCard({
           type="button"
           onClick={() => onFeedback("not_for_me")}
           aria-pressed={feedback === "not_for_me"}
-          className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5 aria-pressed:bg-foreground/10"
+          className="rounded border border-rule px-3 py-1 hover:bg-hover aria-pressed:bg-hover"
         >
           Not for me
         </button>
         <Link
           href={`/authors/${encodeURIComponent(passage.author)}`}
-          className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5"
+          className="rounded border border-rule px-3 py-1 hover:bg-hover"
         >
           More by {passage.author}
         </Link>
@@ -290,14 +290,14 @@ function PassageCard({
             type="button"
             onClick={() => setSharing(!sharing)}
             aria-expanded={sharing}
-            className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5"
+            className="rounded border border-rule px-3 py-1 hover:bg-hover"
           >
             Share this line
           </button>
         )}
       </div>
       {feedback === "not_for_me" && (
-        <p className="mt-2 text-xs opacity-70">Got it. This helps us find better matches.</p>
+        <p className="mt-2 text-xs text-muted">Got it. This helps us find better matches.</p>
       )}
       {sharing && <SharePanel entryId={entryId} link={link} onClose={() => setSharing(false)} />}
     </section>

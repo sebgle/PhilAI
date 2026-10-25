@@ -63,10 +63,10 @@ export default async function EntryPage({
 
   return (
     <article className="flex flex-col gap-4">
-      <div className="text-sm opacity-60">
+      <div className="text-sm text-muted">
         <LocalDate iso={entry.created_at} withTime />
       </div>
-      {entry.prompt && <p className="text-sm italic opacity-70">{entry.prompt}</p>}
+      {entry.prompt && <p className="text-sm italic text-muted">{entry.prompt}</p>}
       <Matches
         entryId={entry.id}
         text={entry.text}

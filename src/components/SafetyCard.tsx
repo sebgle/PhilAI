@@ -18,7 +18,7 @@ export function SafetyCard() {
           </a>
         </li>
       </ul>
-      <p className="mt-3 text-xs opacity-70">
+      <p className="mt-3 text-xs text-muted">
         This entry stays private, and sharing is turned off for it. PhilAI is a reflection
         space, not therapy or emergency help.
       </p>

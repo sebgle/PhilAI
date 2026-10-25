@@ -107,41 +107,41 @@ export function SharePanel({
 
   if (posted) {
     return (
-      <div className="mt-4 rounded border border-foreground/15 p-4 text-sm">
+      <div className="mt-4 rounded border border-rule p-4 text-sm">
         <p>
           Shared to <span className="font-medium">{forumName}</span>. Nobody can see who you are, and
           nothing else from your entry left your journal.
         </p>
         <div className="mt-2 flex gap-4">
           <Link href={`/forums/${link.theme}`} className="underline">See it in {forumName}</Link>
-          <button type="button" onClick={onClose} className="opacity-60 hover:opacity-100">Close</button>
+          <button type="button" onClick={onClose} className="text-muted hover:text-foreground">Close</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mt-4 flex flex-col gap-4 rounded border border-foreground/15 p-4">
+    <div className="mt-4 flex flex-col gap-4 rounded border border-rule p-4">
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="font-medium">Share this line</h3>
-        <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-xs">Posting to {forumName}</span>
+        <span className="rounded-full bg-hover px-2 py-0.5 text-xs">Posting to {forumName}</span>
       </div>
 
       <label className="flex flex-col gap-1 text-sm">
-        <span className="opacity-70">You can trim or edit it first.</span>
+        <span className="text-muted">You can trim or edit it first.</span>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={2}
           aria-label="Line to share"
-          className="w-full rounded border border-foreground/15 bg-transparent p-2"
+          className="w-full rounded border border-rule bg-transparent p-2"
         />
         <span className={`self-end text-xs ${tooLong ? "text-red-600" : "opacity-50"}`}>
           {text.length}/{MAX_LINE}
         </span>
       </label>
 
-      {scrubbing && <p className="text-sm opacity-60">Checking for anything that could identify you…</p>}
+      {scrubbing && <p className="text-sm text-muted">Checking for anything that could identify you…</p>}
       {warnings.length > 0 && (
         <ul className="flex flex-col gap-2 rounded bg-amber-50 p-3 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
           {warnings.map((s) => (
@@ -153,7 +153,7 @@ export function SharePanel({
               <button
                 type="button"
                 onClick={() => setKept(new Set(kept).add(s.value))}
-                className="underline opacity-70"
+                className="underline text-muted"
               >
                 It&apos;s fine
               </button>
@@ -164,7 +164,7 @@ export function SharePanel({
 
       <div>
         <p className="mb-2 text-xs uppercase tracking-wide opacity-50">What others will see</p>
-        <div className="rounded border border-dashed border-foreground/20">
+        <div className="rounded border border-dashed border-rule">
           <Marginalia
             passage={link.passage}
             phraseStart={link.phrase_start}
@@ -181,11 +181,11 @@ export function SharePanel({
           type="button"
           onClick={post}
           disabled={!canPost}
-          className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-40"
+          className="rounded bg-[#2383e2] px-4 py-2 text-white disabled:opacity-40"
         >
           {posting ? "Posting…" : `Post to ${forumName}`}
         </button>
-        <button type="button" onClick={onClose} className="opacity-60 hover:opacity-100">Cancel</button>
+        <button type="button" onClick={onClose} className="text-muted hover:text-foreground">Cancel</button>
       </div>
     </div>
   );

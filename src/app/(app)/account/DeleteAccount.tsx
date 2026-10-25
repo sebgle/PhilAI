@@ -29,7 +29,7 @@ export function DeleteAccount() {
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           autoComplete="off"
-          className="mt-1 block w-full max-w-xs rounded border border-foreground/15 bg-transparent px-3 py-2"
+          className="mt-1 block w-full max-w-xs rounded border border-rule bg-transparent px-3 py-2"
         />
       </label>
       <button
