@@ -15,7 +15,8 @@ import { createClient } from "@supabase/supabase-js";
 import { MATCH_VERSION } from "../src/lib/match-version.ts";
 
 const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!, { auth: { persistSession: false } });
-const DEMO_EMAIL = process.env.DEMO_EMAIL ?? "sebastianle1259@gmail.com";
+const DEMO_EMAIL = process.env.DEMO_EMAIL ?? "";
+if (!DEMO_EMAIL) throw new Error("Set DEMO_EMAIL to the demo account's email.");
 const DAY = 24 * 3600_000;
 
 // A key line must appear in the entry's text exactly; `phrase` must appear in

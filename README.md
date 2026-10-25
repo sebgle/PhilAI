@@ -1,127 +1,133 @@
+<div align="center">
+
 # PhilAI
 
-An anonymous journal that links the lines you write to passages in public-domain literature, and lets you talk about them with strangers in theme forums.
+**A journal that answers you with books.**
 
-This README records the **Step 0 contract**: the decisions both build tracks depend on. To change any of it, update the files listed below in the same commit and tell the other person.
+Write about your day. PhilAI finds the lines that matter and links each one to a passage from public-domain literature: Dickinson, Marcus Aurelius, Brontë, Pascal. Then, if you want, you can talk about it with strangers who felt the same thing, anonymously.
 
-## Run locally
+[**Try it live → philai.vercel.app**](https://philai.vercel.app)
+
+Built with **Meta Muse Spark** and **Muse voice transcription** · Next.js · Supabase · pgvector
+
+<img src="public/landing/matches.png" alt="A journal entry with two lines highlighted, and a matched Emily Dickinson passage below" width="900">
+
+</div>
+
+## Why
+
+Journaling apps either say nothing back, or reply with a chatbot's generic encouragement. But almost anything you could feel at 2am has already been written down, often beautifully, by someone a hundred years ago. PhilAI points you to the passage that was written for the line you just wrote. It doesn't summarize or advise. It hands you a book.
+
+Reading something that names your feeling makes you want to talk about it, so every theme also has a forum where you can share a passage and the line it answered, with no names attached.
+
+## What it does
+
+<table>
+<tr>
+<td width="50%"><img src="public/landing/explore.png" alt="The Explore feed"></td>
+<td width="50%"><img src="public/landing/thread.png" alt="A forum thread with anonymous replies"></td>
+</tr>
+<tr>
+<td><b>Explore:</b> passages, authors and community posts to browse</td>
+<td><b>Community:</b> one forum per theme, with a fresh alias in every thread</td>
+</tr>
+</table>
+
+- **Write or speak.** Type an entry, or dictate it. Audio goes to Muse transcription and is thrown away.
+- **Line-level matches.** PhilAI picks up to three key lines in your entry and highlights each one, along with the exact phrase in the passage that echoes it. A one-line note explains the connection.
+- **"Also close."** Each match comes with runner-ups from other authors, each taking a different angle on the line.
+- **It can say "no match."** If nothing in the library really fits, PhilAI shows nothing instead of a weak passage.
+- **It learns your taste.** "Spoke to me", "Not for me" and saves shift which authors you see in later matches.
+- **Saved library and author pages.** Keep passages, and browse everything the library holds by one author.
+- **Anonymous forums.** 16 theme rooms (grief, belonging, ambition, regret…). Threaded replies, likes, and notifications.
+- **Safe sharing.** Before you post, PhilAI catches names, schools, places, emails and phone numbers so you can take them out. Posts are moderated, and three reports hide anything until it's reviewed.
+- **Crisis care.** If an entry suggests self-harm or passive ideation, the page shows the 988 Suicide & Crisis Lifeline and locks sharing for that entry.
+
+## How matching works
+
+```mermaid
+flowchart LR
+  E[Journal entry] --> A["Muse Spark: analysis<br/>key lines, emotions, themes,<br/>what each line is really about"]
+  A --> R["Retrieval<br/>MiniLM embeddings + pgvector<br/>30 candidates per line"]
+  R --> S["Rerank<br/>themes, emotions,<br/>your feedback"]
+  S --> C["Muse Spark: compare<br/>reads the actual passages,<br/>scores fit and insight 0–3"]
+  C -->|both ≥ 2| M["Match + echoing phrase<br/>+ why-this note"]
+  C -->|too weak| N[No match]
+```
+
+1. **Analyze.** One Muse Spark call reads the entry and returns its key lines (quoted exactly), emotions from GoEmotions' 28 labels, themes, and a short reading of what each line means. A risk check runs here too.
+2. **Retrieve.** Each line, plus that reading, is embedded with `all-MiniLM-L6-v2`. The model runs in-process through transformers.js, so embedding needs no API call. pgvector returns the 30 closest passages.
+3. **Shortlist.** Theme and emotion overlap and your own feedback narrow the 30 down to 10.
+4. **Compare.** One Muse Spark call per line reads the shortlisted passages and scores *fit* (is this about the same thing?) and *insight* (does it show the writer something new?). A passage has to score at least 2 on both to be shown.
+5. **Verify.** Every highlighted line and phrase is checked against the original text character by character before it's stored, so a highlight can't show text the model made up.
+
+More detail: [docs/insight-matching.md](docs/insight-matching.md) and [docs/richer-matching.md](docs/richer-matching.md).
+
+## How we use Meta Muse
+
+| Muse model | Used for |
+|---|---|
+| `muse-spark-1.3` (falls back to 1.2, 1.1) | Entry analysis, passage comparison and explanations, tagging the library, scrubbing personal details, moderation |
+| `muse-voice-transcribe-1.0` | Voice journaling |
+
+All calls use **Standard mode**: per Meta's docs, *"your content is not used to train Meta models."* PhilAI stores no audio. If every Spark id is down, a single call can fall back to OpenAI, but only when `OPENAI_API_KEY` is set.
+
+## The library
+
+56 public-domain works by 44 authors (published 1930 or earlier, from Project Gutenberg), listed in [data/sources.json](data/sources.json). The pipeline in [scripts/library/](scripts/library/) downloads the texts and cuts them into 1–4 sentence passages. Muse Spark then tags each passage with emotions, themes, a plain-English summary and a quality score. Passages rated 4 or higher are embedded and loaded. A curated set of passages also has editorial notes on the situations and tensions they speak to.
+
+## Privacy
+
+- **Anonymous to other users.** Your email is used only for login and is never returned by any API. Other people see a random handle, and a new alias in every forum thread.
+- **Posts aren't linked to entries.** Sharing copies the passage and the line you chose. Nothing points back to your journal.
+- **Row-level security everywhere.** Entries, matches and your saved passages can only be read by you. `user_id` is withheld from forum rows at the column level.
+- **Delete means delete.** Deleting your account cascades to everything you've written.
+
+## Tech stack
+
+| | |
+|---|---|
+| App | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS 4 |
+| Data | Supabase: Postgres, pgvector, Auth, row-level security |
+| AI | Meta Muse Spark (text), Muse voice transcription, `all-MiniLM-L6-v2` via transformers.js (embeddings) |
+| Hosting | Vercel |
+
+## Run it locally
+
+You'll need Node 20+, a Supabase project, and Muse API keys.
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in Supabase + Muse keys
-npm run dev
+cp .env.example .env.local      # add Supabase and Muse keys
 ```
 
-Login is email + password. In the Supabase dashboard, under **Authentication > Sign In / Providers > Email**, turn **off** "Confirm email". Supabase's built-in mailer won't deliver to arbitrary addresses without custom SMTP. After signing up, the home page shows your random handle.
+1. Apply the migrations in [supabase/migrations/](supabase/migrations/) in order, using the Supabase SQL editor or `supabase db push`.
+2. Build the passage library (see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#library-and-matching-teammate-track)), or leave `NEXT_PUBLIC_MATCH_MODE=mock` to try the UI with sample matches.
+3. `npm run dev` and open http://localhost:3000.
 
-## Workflow
-
-- One short branch per task in [docs/TASKS.md](docs/TASKS.md), named `seb/<task>-<slug>` or `<teammate>/<task>-<slug>`, e.g. `seb/s2-write-screen`, `<teammate>/t4-tagging`.
-- Open a PR into `main`. Vercel posts a preview URL on each PR. Merge once it builds and works on the preview.
-- Keep `main` deployable. Pull `main` before starting each new task.
-- Contract changes (`src/lib/contract.ts`, `shared/mock_*`) go in their own PR, and the other person approves it.
-
-## Deploy
-
-Production is Vercel, built from `main`. Every PR gets a preview deploy.
-
-1. On vercel.com, choose **Add New → Project** and import `sebgle/PhilAI`. The defaults are fine: framework Next.js, root `./`.
-2. Add the environment variables from `.env.example` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, and the Muse keys once you have them) for Production and Preview.
-3. Deploy. In Supabase, go to **Authentication → URL Configuration** and set **Site URL** to the production URL. Add `https://*.vercel.app/**` under Redirect URLs so preview deploys work.
-
-## Decisions (Step 0)
-
-| Decision | Choice |
-|---|---|
-| Frontend | Next.js 15 (App Router), TypeScript, Tailwind |
-| Backend | Supabase: Postgres, pgvector, Auth (email + password), RLS |
-| Anonymity | Anonymous **to other users**, not to the server. The email is used only for login and is never shown or returned by any API. Other users see only a handle or alias |
-| Text AI | **Muse Spark** for entry analysis, passage tagging, passage comparison and explanations, scrub and moderate; OpenAI only as the last resort when every Spark id is down |
-| Voice | **Muse voice transcription**. Audio is transcribed, then discarded |
-| Forums | One per theme, 16 themes (below). Authors are a tag plus an author page |
-| Identity | Random handle per account (owner-only). **Fresh alias per thread** in forums |
-| Emotions | GoEmotions: 27 categories + neutral ([shared/emotions.json](shared/emotions.json)) |
-| Embeddings | all-MiniLM-L6-v2 via transformers.js, the same for passages and entries. Columns are `vector(384)` |
-| Moderation | 3 reports hide a post or reply until it's reviewed |
-| Age | 18+ (checkbox on sign-up) |
-| Muse call budget | Per entry: 1 analysis call, then 1 call per line that returns the echoing phrase *and* the reason. The line calls run in parallel, so at most 4 calls |
-| Scrub | Regex pre-pass for emails and phone numbers, then Muse Spark for names, places and schools |
-
-### Themes
-
-belonging, loneliness, grief, love, longing, home, family, identity, freedom, ambition, fear, hope, change, mortality, meaning, regret
-
-Source of truth: [shared/themes.json](shared/themes.json). The slugs are the forum ids and the theme tags everywhere else. They're mirrored in the migration's `forums` seed.
-
-## Contract files
-
-| File | What it is |
-|---|---|
-| [src/lib/contract.ts](src/lib/contract.ts) | TypeScript types for `/match`, `/scrub`, `/moderate` |
-| [shared/mock_match.json](shared/mock_match.json) | Normal result: 3 lines, 3 authors, phrase highlights |
-| [shared/mock_match_fallback.json](shared/mock_match_fallback.json) | Whole-entry fallback: no highlights |
-| [shared/mock_match_risk.json](shared/mock_match_risk.json) | `risk_flag: true`: 988 card, sharing locked |
-| [shared/mock_entry.txt](shared/mock_entry.txt) | The entry text the mock offsets point into |
-| [shared/mock_scrub.json](shared/mock_scrub.json), [shared/mock_moderate.json](shared/mock_moderate.json), [shared/mock_transcribe.json](shared/mock_transcribe.json) | Scrub, moderate and transcribe examples |
-| [scripts/build-mocks.mjs](scripts/build-mocks.mjs) | Regenerates the mock_match files. Offsets come from an exact-match check, so they always line up |
-
-**Mock mode.** Until Sync 1, `NEXT_PUBLIC_MATCH_MODE=mock` (the default) makes the entry page use the mocks, with lines re-anchored in your actual entry text. If you write [shared/mock_entry.txt](shared/mock_entry.txt) as an entry, you get all three highlights. Other text falls back. Add `?mock=fallback` or `?mock=risk` to an entry URL to see those states. Set `NEXT_PUBLIC_MATCH_MODE=live` (locally and in Vercel) to switch to `/api/match`.
-
-**Mock passages in the database.** The 3 mock passages are seeded into `passages` with ids starting `p_mock_`, so Save and the library work before the real library is loaded. They have no embedding, so the similarity search must skip rows where `embedding is null`. Before the demo, remove them with `delete from passages where id like 'p_mock_%';`. Saved copies in users' libraries are deleted along with them.
-
-Offsets are character indexes, end exclusive, first occurrence. `entry_text.slice(line_start, line_end) === line_text` always holds.
-
-### Endpoints (teammate owns these)
-
-- `POST /match { entry_id }` returns `MatchResponse`. It also writes one `matches` row per link and fills `entries.summary`, `emotions`, `themes` and `risk_flag`. The entry page reads those saved rows on later visits. An entry whose `summary` is still null counts as not yet matched, and gets matched on first view.
-- `POST /scrub { text }` returns `{ text, spans: [{ start, end, type, value }] }`
-- `POST /moderate { text }` returns `{ status: "ok" | "flagged", reason }`
-- `POST /transcribe` (multipart, field `audio`) returns `{ text }`. Audio is never stored
-
-## Muse data use (T11)
-
-PhilAI calls Meta's Model API in **Standard mode** (`muse-spark-1.3`, falling back to `muse-spark-1.2` and `muse-spark-1.1` when Muse answers 404 for a model id, plus `muse-voice-transcribe-1.0`; never the `-contributor` ids). If every Spark id is failing and `OPENAI_API_KEY` is set, that one call goes to OpenAI (`gpt-4.1-mini` by default) so the reader still gets their passages; OpenAI's API does not train on API requests by default. Meta's model docs state: "In Standard mode, your content is not used to train Meta models." Meta does not publish how long it retains Standard-mode request data, so the pitch says exactly that: entries and audio are sent to Meta for analysis, are not used for training, and we store no audio ourselves. Source: dev.meta.ai/docs/models.
-
-## Library and matching (teammate track)
+Offline tests for the matcher (no credentials needed):
 
 ```bash
-npx tsx --env-file=.env.local scripts/smoke-muse.mts        # T1: one Spark JSON call
-npx tsx scripts/library/download.mts                        # T2: Gutenberg texts -> data/raw/ (gitignored)
-npx tsx scripts/library/cut.mts                             # T3: candidate passages -> data/candidates.jsonl
-npx tsx scripts/library/select.mts                          # T3: ~30 per work by theme anchors -> data/passages.jsonl
-npx tsx --env-file=.env.local scripts/library/tag.mts       # T4: emotions/themes/summary/quality -> data/passages.tagged.jsonl
-npx tsx --env-file=.env.local scripts/library/load.mts      # T5: embed summaries, upsert into passages (quality >= 4)
-npx tsx --env-file=.env.local scripts/test-match.mts        # T7: run the pipeline on shared/mock_entry.txt
+npm run test:matching
 ```
 
-Apply `supabase/migrations/20261024001000_match_passages.sql` in the SQL editor before running load or match: it adds the `match_passages` RPC that `/api/match` calls.
+## Repository map
 
-Embeddings run in-process with transformers.js (`src/lib/embed.ts`, all-MiniLM-L6-v2, quantized). The model is vendored in `models/Xenova/all-MiniLM-L6-v2` and read from disk, so nothing is downloaded or cached at runtime; `next.config.ts` adds `models/` and the Linux onnxruntime binaries to the `/api/match` bundle because the native binding path is built at runtime and the file tracer misses it. If the model or dtype ever changes, re-run `scripts/library/load.mts` so passages and entries share one embedding space. Passages are embedded by their plain-English summary; entry lines are embedded as line + line-specific interpretation (`lineQuery` in `src/lib/match-core.ts`). Every quoted line and phrase passes `findSpan` in `src/lib/exact-match.ts` before it is returned.
+```
+src/app/            Pages (Write, Entries, Explore, Saved, Community) and API routes
+src/lib/            Matching pipeline, Muse client, embeddings, moderation, Supabase clients
+supabase/           Database schema and RPCs, as migrations
+scripts/library/    Build the passage library from Project Gutenberg
+scripts/            Evaluation, smoke tests and seed data
+data/               Source list and the tagged passage library
+shared/             Shared vocabularies (themes, emotions) and API mocks
+docs/               Development notes, matching design, evaluation results
+```
 
-Voice: `/api/transcribe` forwards mono 16-bit PCM WAV (16 or 24 kHz) to Muse. Record in the browser with `WavRecorder` from `src/lib/wav-recorder.ts`; MediaRecorder's webm/opus only works locally where ffmpeg is installed.
+## Team
 
-## Data model
+Built in a weekend by **Sebastian Le** ([sebgle](https://github.com/sebgle)), who built the app and community, and **Emir Durakovic** ([emirdur](https://github.com/emirdur)), who built the passage library, matching and Muse integration.
 
-Migration: [supabase/migrations/20261024000000_init.sql](supabase/migrations/20261024000000_init.sql)
+## License
 
-| Table | Client access |
-|---|---|
-| `users` (id, handle) | Owner reads own. Handle is set by a trigger on sign-up |
-| `entries` | Owner: full CRUD |
-| `passages` | Everyone reads. Loaded by the library build with the service role |
-| `matches` | Owner reads, and can update only `feedback`. Written by the matcher |
-| `library_items` | Owner: read, insert, delete |
-| `forums` | Everyone reads. Seeded with the 16 themes |
-| `posts`, `replies` | Everyone reads **visible rows, without `user_id`** (column grants). Writes are server-only |
-| `thread_aliases` | Server only. One alias per (thread, user) |
-| `reports` | Server only |
-
-Querying `posts`/`replies` from the client means listing columns explicitly. `select('*')` fails because `user_id` isn't granted. Posts store no link to their source entry. Deleting the auth user cascades to everything they own.
-
-### Insight-based matching
-
-The current matcher compares actual candidate passages for specific fit and useful perspective before selecting cards. It can return no match when the connection is weak. Apply `supabase/migrations/20261025060000_insight_matches.sql` before deploying this version. See [implementation, checks, and evaluation limits](docs/insight-matching.md). Run `npm run test:matching` for the offline matching and storage tests.
-
-### Matching version 3
-
-The next matcher searches situations, tensions, and perspectives across semantic retrieval and 24 curated passage annotations. It adds distinct alternate purposes and private quality feedback separate from bookmarks. Apply `supabase/migrations/20261025070000_richer_passage_matching.sql` before deploying version 3. See [preview steps, controlled evaluation, and limits](docs/richer-matching.md). Run `npm run evaluate:retrieval` for the offline retrieval benchmark.
+[MIT](LICENSE). The literary passages are in the public domain.
