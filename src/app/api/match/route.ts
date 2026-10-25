@@ -16,7 +16,18 @@ export const maxDuration = 60;
 
 const RETRIEVE = 30;
 
+// Unhandled throws used to surface as a bare 500 with nothing in the response;
+// log the real error for Vercel's function logs and return a readable one.
 export async function POST(req: Request) {
+  try {
+    return await match(req);
+  } catch (e) {
+    console.error("[match] failed:", e);
+    return NextResponse.json({ error: "Matching failed. Try again in a moment." }, { status: 500 });
+  }
+}
+
+async function match(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

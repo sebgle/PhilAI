@@ -1,6 +1,10 @@
 // all-MiniLM-L6-v2 via transformers.js, 384-d, normalized. Same model for passages and entries.
 // Loaded once per process; first call downloads ~23 MB to the HF cache.
-import { pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
+import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
+
+// The default cache lives inside node_modules, which is read-only on Vercel;
+// /tmp is the only writable path there (kept warm between invocations).
+if (process.env.VERCEL) env.cacheDir = "/tmp/transformers-cache";
 
 export const EMBED_MODEL = "Xenova/all-MiniLM-L6-v2";
 export const EMBED_DIM = 384;
