@@ -351,7 +351,7 @@ function PassageCard({
 
   return (
     <section
-      className={`letter rounded-lg border border-rule bg-card/70 p-6 transition-opacity ${feedback === "not_for_me" ? "opacity-50" : ""}`}
+      className={`letter rounded-lg border border-rule bg-card p-6 transition-opacity ${feedback === "not_for_me" ? "opacity-50" : ""}`}
     >
       <blockquote className="font-serif text-lg leading-[1.7]">
         {hasPhrase ? (

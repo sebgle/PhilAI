@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { addLibraryItem, removeLibraryItem } from "./actions";
 import { PageTitle } from "@/components/PageTitle";
-import { Backdrop } from "@/components/Backdrop";
 
 const TABS = [
   { id: "passages", label: "Passages" },
@@ -44,7 +43,6 @@ export default async function LibraryPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Backdrop variant="saved" />
       <PageTitle title="Saved" />
       <nav className="flex gap-1 border-b border-rule text-sm">
         {TABS.map((t) => (
@@ -99,7 +97,7 @@ function Passages({ items }: { items: Item[] }) {
         const hasPhrase =
           m?.phrase_start != null && m.phrase_end != null && m.phrase_start < m.phrase_end && m.phrase_end <= p.text.length;
         return (
-          <li key={item.id} className="rounded-lg border border-rule bg-card/70 p-5">
+          <li key={item.id} className="rounded-lg border border-rule bg-card p-5">
             <blockquote className="font-serif text-lg leading-relaxed">
               {hasPhrase ? (
                 <>
