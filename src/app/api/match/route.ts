@@ -1,7 +1,8 @@
-// T7: POST /api/match { entry_id } -> MatchResponse
+// T7: POST /api/match { entry_id, force? } -> MatchResponse
 // Reads the entry as the signed-in user (RLS), runs analysis -> verify ->
 // embed -> retrieve -> re-rank -> phrase+reason, writes results back with
-// the admin client, and returns the contract shape.
+// the admin client, and returns the contract shape. An entry that already has
+// results is served from the database (no model calls) unless force is true.
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { embed } from "@/lib/embed";
@@ -48,11 +49,27 @@ async function match(req: Request) {
   const entryId = typeof body?.entry_id === "string" ? body.entry_id : null;
   if (!entryId) return NextResponse.json({ error: "entry_id required" }, { status: 400 });
 
-  const { data: entry, error } = await supabase.from("entries").select("id, text").eq("id", entryId).single();
+  const { data: entry, error } = await supabase.from("entries")
+    .select("id, text, emotions, themes, summary, risk_flag").eq("id", entryId).single();
   if (error || !entry) return NextResponse.json({ error: "entry not found" }, { status: 404 });
   const text: string = entry.text;
 
   const admin = createAdminClient();
+
+  // Already matched: hand back what is stored. A page retry, a second tab or a
+  // double submit must not spend 20 s and five model calls on the same entry.
+  if (body?.force !== true && (entry.summary !== null || entry.risk_flag)) {
+    const { data: rows } = await admin.from("matches")
+      .select("line_text, line_start, line_end, theme, phrase_start, phrase_end, score, reason, passage:passages(id, author, work, year, text)")
+      .eq("entry_id", entryId)
+      .order("line_start", { ascending: true, nullsFirst: false });
+    const links = (rows ?? []) as unknown as MatchLink[];
+    const stored: MatchResponse = {
+      entry_id: entryId, emotions: entry.emotions, themes: entry.themes, risk_flag: entry.risk_flag,
+      fallback: links.length > 0 && links[0].line_text === null, links,
+    };
+    return NextResponse.json(stored, { headers: { "x-philai-match": "stored" } });
+  }
 
   // Taste signal: authors the user saved or favorited.
   const tastePromise = admin.from("library_items").select("ref, passage_id, passages(author)").eq("user_id", user.id)
@@ -126,6 +143,12 @@ async function match(req: Request) {
     }));
   }
 
+  const res: MatchResponse = { entry_id: entryId, emotions: analysis.emotions, themes: analysis.themes, risk_flag: analysis.risk_flag, fallback, links };
+
+  // A Muse-down result is shown but not stored, so the next visit runs the
+  // real analysis instead of keeping three unexplained passages forever.
+  if (museDown) return NextResponse.json(res, { headers: { "x-philai-match": "degraded" } });
+
   // Persist: analysis on the entry, one matches row per link (replacing any previous run).
   const entryVec = fallback ? vectors[0] : (await embed([analysis.summary]))[0];
   await admin.from("entries").update({
@@ -141,6 +164,5 @@ async function match(req: Request) {
     if (insErr) console.error("[match] insert matches:", insErr.message);
   }
 
-  const res: MatchResponse = { entry_id: entryId, emotions: analysis.emotions, themes: analysis.themes, risk_flag: analysis.risk_flag, fallback, links };
-  return NextResponse.json(res);
+  return NextResponse.json(res, { headers: { "x-philai-match": "fresh" } });
 }
