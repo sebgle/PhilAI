@@ -29,8 +29,10 @@ export function EntryTitle({ entryId, initial, fallback }: { entryId: string; in
     router.refresh();
   }
 
+  // Same size, weight and top gap as the h1 on the room and author pages, so
+  // the breadcrumb sits the same distance above every title.
   return (
-    <div>
+    <div className="mt-1">
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -46,7 +48,7 @@ export function EntryTitle({ entryId, initial, fallback }: { entryId: string; in
         placeholder={fallback}
         aria-label="Entry title"
         title="Click to rename"
-        className="-mx-1 w-full rounded-md bg-transparent px-1 text-3xl font-bold tracking-tight placeholder:text-foreground hover:bg-hover focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
+        className="-mx-1 block w-full rounded-md bg-transparent px-1 py-0 text-[2rem] font-semibold leading-tight tracking-tight placeholder:text-foreground hover:bg-hover focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
       />
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
