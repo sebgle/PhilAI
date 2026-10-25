@@ -17,27 +17,25 @@ export default async function ForumsPage() {
         title="Community"
         subtitle="Pick the room closest to how you feel. You get a new name in every thread, so no one knows it's you."
       />
-      {/* Two ruled columns, no boxes: each room is a row with a hairline above,
-          the way the Entries list reads. The icon sits at the right edge. */}
-      <ul className="grid sm:grid-cols-2 sm:gap-x-10">
+      <ul className="grid gap-3 sm:grid-cols-2">
         {THEMES.map((t) => {
           const n = counts.get(t.slug) ?? 0;
           return (
-            <li key={t.slug} className="border-t border-rule">
+            <li key={t.slug}>
               <Link
                 href={`/forums/${t.slug}`}
-                className="-mx-3 flex items-center justify-between gap-6 rounded-lg px-3 py-4 transition-colors hover:bg-hover"
+                className="block h-full rounded-lg border border-rule bg-card p-4 transition-colors hover:bg-hover"
               >
-                <div className="min-w-0">
-                  <p className="font-medium">
-                    {t.name}
-                    <span className="ml-2 text-xs font-normal text-muted">
+                <div className="flex h-full items-center justify-between gap-6">
+                  <div>
+                    <span className="font-medium">{t.name}</span>
+                    <span className="ml-2 text-xs text-muted">
                       {n} post{n === 1 ? "" : "s"}
                     </span>
-                  </p>
-                  <p className="mt-0.5 text-sm text-muted">{t.description}</p>
+                    <p className="mt-1 text-sm text-muted">{t.description}</p>
+                  </div>
+                  <ThemeIcon slug={t.slug} className="size-6 text-terracotta" />
                 </div>
-                <ThemeIcon slug={t.slug} className="size-5 shrink-0 text-terracotta/80" />
               </Link>
             </li>
           );
