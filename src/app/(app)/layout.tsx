@@ -20,7 +20,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Link href="/entries" className="opacity-70 hover:opacity-100">Past entries</Link>
           <Link href="/library" className="opacity-70 hover:opacity-100">Library</Link>
           <Link href="/forums" className="opacity-70 hover:opacity-100">Forums</Link>
-          <span className="ml-auto opacity-60">{data?.handle}</span>
+          <Link href="/account" title="Your account" className="ml-auto opacity-60 hover:opacity-100">
+            {data?.handle}
+          </Link>
           <form action={signOut}>
             <button type="submit" className="underline opacity-60 hover:opacity-100">Log out</button>
           </form>
