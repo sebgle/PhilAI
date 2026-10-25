@@ -3,6 +3,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import { embed } from "../src/lib/embed.ts";
+import { findSpan } from "../src/lib/exact-match.ts";
 import { analyzeEntry, verifyLines, scoreCandidate, pickPerLine, phraseAndReason, lineQuery, RISK_EXCLUDED_THEMES, type Candidate } from "../src/lib/match-core.ts";
 
 const args = process.argv.slice(2);
@@ -16,7 +17,7 @@ const analysis = await analyzeEntry(text);
 const tA = Date.now();
 console.log(`analysis ${tA - t0}ms  emotions=${analysis.emotions} themes=${analysis.themes} risk=${analysis.risk_flag}\n  summary: ${analysis.summary}`);
 const lines = verifyLines(text, analysis.key_lines);
-for (const l of analysis.key_lines) console.log(`  ${lines.some((v) => v.text === text.slice(v.start, v.end) && text.slice(v.start, v.end).includes(l.text.replace(/[’']/g, "").slice(0, 10))) ? "OK  " : "DROP"} [${l.theme}] ${l.text}`);
+for (const l of analysis.key_lines) console.log(`  ${findSpan(text, l.text) ? "OK  " : "DROP"} [${l.theme}] ${l.text}`);
 const fallback = lines.length === 0;
 const queries = fallback ? [analysis.summary] : lines.map((l) => lineQuery(l.text, analysis.summary, mode));
 const vectors = await embed(queries);
