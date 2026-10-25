@@ -10,16 +10,16 @@ const PER_WORK = Number(process.env.PER_WORK ?? 30);
 type Cand = { src: number; author: string; work: string; year: number; para: number; text: string; vec?: number[]; best?: number; bestTheme?: string };
 
 const ANCHORS: Record<string, string[]> = {
-  belonging: ["I don't fit in anywhere and everyone else already has their people.", "I finally feel like I am among my own kind, accepted as I am."],
+  belonging: ["I don't fit in anywhere and everyone else already has their people.", "I finally feel like I am among my own kind, accepted as I am.", "I smile and act fine around people so nobody notices I feel like an outsider."],
   loneliness: ["I am surrounded by people and still completely alone.", "Nobody really knows me, and the silence at night is heavy."],
   grief: ["Someone I loved is gone and the world keeps going without them.", "I keep reaching for a person who isn't there anymore."],
   love: ["I love this person so much it frightens me.", "Being loved by them makes me feel whole and seen."],
   longing: ["I ache for something I can't name and can't reach.", "I want so badly to be somewhere else, with someone else, as someone else."],
   home: ["I miss the place I grew up, even though I chose to leave it.", "Home is a feeling I keep looking for in new rooms."],
   family: ["My parents shaped me in ways I am only now understanding.", "The people I was born to are the ones I can't escape or stop loving."],
-  identity: ["I keep performing a version of myself that isn't really me.", "I don't know who I am when nobody is watching."],
+  identity: ["I keep performing a version of myself that isn't really me.", "I don't know who I am when nobody is watching.", "I compare myself to everyone and always come up short."],
   freedom: ["I want to be free of every expectation and just live.", "Independence is lonely and costly, but I would not trade it."],
-  ambition: ["I push myself relentlessly and still feel I am not enough.", "I wonder what all this striving for success is actually for."],
+  ambition: ["I push myself relentlessly and still feel I am not enough.", "I wonder what all this striving for success is actually for.", "Everyone around me is getting ahead and announcing their wins while I keep failing.", "I was rejected again and I am starting to doubt I am as good as I thought."],
   fear: ["Anxiety keeps me awake, dreading what might happen.", "I am afraid of failing, of being seen, of the future."],
   hope: ["Despite everything, I believe things can still get better.", "A small light keeps me going through the dark days."],
   change: ["Everything in my life is shifting and I am becoming someone new.", "Growing up means leaving behind the person I used to be."],

@@ -127,3 +127,17 @@ export const RISK_EXCLUDED_THEMES = new Set(["mortality"]);
 export function lineQuery(line: string, summary: string, mode: "line+summary" | "line" = "line+summary") {
   return mode === "line" ? line : `${line} ${summary}`;
 }
+
+// Retry a flaky network call (Supabase RPC over bad Wi-Fi, Muse hiccups).
+export async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 800): Promise<T> {
+  let last: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      last = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, delayMs * (i + 1)));
+    }
+  }
+  throw last;
+}

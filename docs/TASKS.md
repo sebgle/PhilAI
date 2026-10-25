@@ -80,7 +80,7 @@ Teammate notes (2026-10-24, late): all four routes are live locally and tested w
 
 ## Phase 2: tune and harden
 
-- [ ] **T12. Tuning.** Run 10 test entries. Compare embedding the raw line vs the line plus summary. Adjust the weights using "not for me" results, and aim for under ~5 s until the first highlight appears.
+- [x] **T12. Tuning.** Run 10 test entries. Compare embedding the raw line vs the line plus summary. Adjust the weights using "not for me" results, and aim for under ~5 s until the first highlight appears.
 - [ ] **T13. Spare capacity.** If ahead, take S8 (author pages) and the seed data in S12.
 - [ ] **S12. Polish.** Warm paper tones in light mode, ink tones in dark mode, serif type for passages. Lines light up one at a time, and the passage card slides in like a letter. Empty states everywhere. Seed 2 demo accounts and a few posts (`is_seeded = true`).
 - [ ] **S13. Spare capacity.** If ahead, help Teammate hand-check passage tags.
