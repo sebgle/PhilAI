@@ -51,6 +51,12 @@
   --font-serif: var(--font-book);
 }
 
+/* Always reserve the scrollbar's lane so the centered column doesn't shift
+   sideways between short pages and long ones. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -104,6 +110,16 @@ a {
   to { opacity: 1; transform: none; }
 }
 
+/* Each page's content rises in on navigation (see (app)/template.tsx). */
+.page-in {
+  animation: page-in 180ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .hl, .letter { animation: none; }
+  .hl, .letter, .page-in { animation: none; }
 }

@@ -4,7 +4,6 @@ import { THEMES } from "@/lib/contract";
 import { MarkSeen } from "./MarkSeen";
 import { NoticeList } from "./NoticeList";
 import { PageTitle } from "@/components/PageTitle";
-import { Backdrop } from "@/components/Backdrop";
 
 const themeNames = Object.fromEntries(THEMES.map((t) => [t.slug, t.name]));
 
@@ -16,7 +15,6 @@ export default async function NotificationsPage() {
   return (
     <div className="flex flex-col gap-6">
       <MarkSeen />
-      <Backdrop variant="quiet" />
       <PageTitle title="Replies to you" />
       {replies.length === 0 ? (
         <p className="text-muted">

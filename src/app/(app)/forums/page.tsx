@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { THEMES } from "@/lib/contract";
 import { PageTitle } from "@/components/PageTitle";
-import { Backdrop } from "@/components/Backdrop";
 import { ThemeIcon } from "@/components/ThemeIcon";
 
 export default async function ForumsPage() {
@@ -14,7 +13,6 @@ export default async function ForumsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Backdrop variant="community" />
       <PageTitle
         title="Community"
         subtitle="Pick the room closest to how you feel. You get a new name in every thread, so no one knows it's you."
@@ -26,7 +24,7 @@ export default async function ForumsPage() {
             <li key={t.slug}>
               <Link
                 href={`/forums/${t.slug}`}
-                className="block h-full rounded-lg border border-rule bg-card/70 p-4 transition-colors hover:bg-hover/70"
+                className="block h-full rounded-lg border border-rule bg-card p-4 transition-colors hover:bg-hover"
               >
                 <div className="flex h-full items-center justify-between gap-6">
                   <div>

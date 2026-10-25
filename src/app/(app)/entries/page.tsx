@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LocalDate } from "@/components/LocalDate";
 import { PageTitle } from "@/components/PageTitle";
-import { Backdrop } from "@/components/Backdrop";
 import { THEMES } from "@/lib/contract";
 
 const themeName = new Map(THEMES.map((t) => [t.slug, t.name]));
@@ -17,7 +16,6 @@ export default async function PastEntries() {
 
   return (
     <section className="flex flex-col gap-5">
-        <Backdrop variant="entries" />
         <PageTitle title="Entries" />
 
         {error && <p className="text-red-600">{error.message}</p>}
@@ -37,7 +35,7 @@ export default async function PastEntries() {
               <li key={e.id}>
                 <Link
                   href={`/entries/${e.id}`}
-                  className="block rounded-lg border border-rule bg-card/70 px-5 py-4 transition-colors hover:bg-hover/70"
+                  className="block rounded-lg border border-rule bg-card px-5 py-4 transition-colors hover:bg-hover"
                 >
                   <div className="flex items-baseline justify-between gap-3 text-sm text-muted">
                     <span className="text-[17px] font-medium text-foreground">{e.title || `Entry #${entries.length - i}`}</span>

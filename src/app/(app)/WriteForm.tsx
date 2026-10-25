@@ -81,7 +81,7 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
           type="button"
           onClick={save}
           disabled={saving || !text.trim() || live !== null}
-          className="shrink-0 rounded-full bg-terracotta px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-terracotta-deep disabled:opacity-40"
+          className="shrink-0 rounded-full bg-terracotta px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-terracotta-deep disabled:bg-[color-mix(in_srgb,var(--terracotta)_40%,var(--background))]"
         >
           {saving ? "Saving…" : "Save"}
         </button>

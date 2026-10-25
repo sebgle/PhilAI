@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { DeleteAccount } from "./DeleteAccount";
 import { signOut } from "../../actions";
 import { PageTitle } from "@/components/PageTitle";
-import { Backdrop } from "@/components/Backdrop";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -12,7 +11,6 @@ export default async function AccountPage() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-2">
-        <Backdrop variant="quiet" />
         <PageTitle title="Your account" />
         <p>
           You are <span className="font-medium">{profile?.handle}</span>. Only you see this name. In the

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { unreadReplyCount } from "@/lib/notifications";
 import { TopNav } from "@/components/TopNav";
+import { PageBackdrop } from "@/components/PageBackdrop";
 
 // Shell for every signed-in screen: one reading column. Log out lives on the
 // account page.
@@ -17,6 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen flex-col">
+      <PageBackdrop />
       <TopNav handle={data?.handle ?? ""} unread={unread} />
       {/* The reading column sits a little left of center on wide screens, leaving the right margin to the art. */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-10 sm:px-8">

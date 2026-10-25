@@ -101,10 +101,19 @@ const PIECES: Record<string, [Piece, Piece]> = {
 
 export type BackdropVariant = keyof typeof PIECES;
 
-export function Backdrop({ variant = "write" }: { variant?: BackdropVariant }) {
+export const BACKDROP_VARIANTS = Object.keys(PIECES) as BackdropVariant[];
+
+// `active` lets a caller keep several mounted and cross-fade between them;
+// visibility rides the same transition so a faded-out pair stops painting.
+export function Backdrop({ variant = "write", active = true }: { variant?: BackdropVariant; active?: boolean }) {
   const [a, b] = PIECES[variant];
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 hidden overflow-hidden md:block">
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none fixed inset-0 -z-10 hidden overflow-hidden transition-[opacity,visibility] duration-400 ease-out motion-reduce:transition-none md:block ${
+        active ? "visible opacity-100" : "invisible opacity-0"
+      }`}
+    >
       <Art piece={a} id={`${variant}-a`} seed={5} />
       <Art piece={b} id={`${variant}-b`} seed={11} />
     </div>

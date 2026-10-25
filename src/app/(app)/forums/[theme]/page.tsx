@@ -5,7 +5,6 @@ import { THEMES } from "@/lib/contract";
 import { LocalDate } from "@/components/LocalDate";
 import { Marginalia } from "@/components/Marginalia";
 import { LikeButton } from "@/components/LikeButton";
-import { Backdrop } from "@/components/Backdrop";
 import { ThemeIcon } from "@/components/ThemeIcon";
 import { likesFor, type LikeInfo } from "@/lib/likes";
 import { ReplyForm } from "./ReplyForm";
@@ -68,7 +67,6 @@ export default async function ThemeForumPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Backdrop variant="community" />
       <div className="min-w-0">
         <nav aria-label="Breadcrumb" className="text-sm text-muted">
           <Link href="/forums" className="underline-offset-4 hover:text-foreground hover:underline">Community</Link>
@@ -141,7 +139,7 @@ function PostCard({ post, replies, likes }: { post: Post; replies: Reply[]; like
   const roots = children.get(null) ?? [];
   const postLikes = likes.posts.get(post.id) ?? NO_LIKES;
   return (
-    <article className="rounded-lg border border-rule bg-card/70">
+    <article className="rounded-lg border border-rule bg-card">
       <Marginalia
         passage={post.passage}
         phraseStart={post.phrase_start}
