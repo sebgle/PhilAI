@@ -24,12 +24,12 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
 
 - [x] **T1. Muse smoke test.** Make one Muse Spark call that returns JSON, and one Muse transcription call, from a script using the keys in `.env.local`. Note latency and rate limits.
 - [x] **T2. Pick sources.** Choose 20–40 works published in 1930 or earlier from Project Gutenberg, favoring readable prose and poetry. List them in `data/sources.json` (author, work, year, Gutenberg id).
-- [ ] **T3. Cut passages.** Hand-pick 300–1,000 passages of 1–4 sentences, with Gutenberg headers and license text stripped. Save as `data/passages.jsonl` with `{ id, author, work, year, text }`. Ids must be stable (e.g. `p_0412`). Also check the 3 mock passages in `scripts/build-mocks.mjs` against the Gutenberg text; they were quoted from memory.
-- [ ] **T4. Tag passages.** Write `scripts/library/tag`: one Muse Spark call per passage returns `{ emotions, themes, summary }`. Reject any label not in `shared/emotions.json` or `shared/themes.json`. Spot-check 30 by hand.
-- [ ] **T5. Embed and load.** Embed each passage's summary and upsert it into `passages` with the secret key. Add a migration with an RPC like `match_passages(query_embedding vector(384), match_count int)` that returns passages by cosine similarity.
+- [x] **T3. Cut passages.** Hand-pick 300–1,000 passages of 1–4 sentences, with Gutenberg headers and license text stripped. Save as `data/passages.jsonl` with `{ id, author, work, year, text }`. Ids must be stable (e.g. `p_0412`). Also check the 3 mock passages in `scripts/build-mocks.mjs` against the Gutenberg text; they were quoted from memory.
+- [x] **T4. Tag passages.** Write `scripts/library/tag`: one Muse Spark call per passage returns `{ emotions, themes, summary }`. Reject any label not in `shared/emotions.json` or `shared/themes.json`. Spot-check 30 by hand.
+- [x] **T5. Embed and load.** Embed each passage's summary and upsert it into `passages` with the secret key. Add a migration with an RPC like `match_passages(query_embedding vector(384), match_count int)` that returns passages by cosine similarity.
   *Done when:* a few hundred tagged passages are queryable.
 - [x] **T6. Exact-match helper.** In `src/lib/exact-match.ts`, write `findSpan(haystack, needle) → { start, end } | null`: first occurrence, end exclusive. Add an optional retry that normalizes curly quotes and whitespace. Use it for both lines and phrases.
-- [ ] **T7. `/api/match`.** `POST { entry_id }`. The route reads the entry as the signed-in user, then:
+- [x] **T7. `/api/match`.** `POST { entry_id }`. The route reads the entry as the signed-in user, then:
   1. Makes the Muse analysis call: emotions, themes, summary, risk flag, and 2–3 key lines copied word for word, each with its own theme.
   2. Verifies each line with `findSpan` and drops the ones that fail.
   3. Embeds each line together with the entry summary, and retrieves the ~30 nearest passages.
@@ -40,9 +40,9 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
   8. Writes the analysis back to `entries`, inserts one `matches` row per link, and returns a `MatchResponse`.
 
   *Done when:* saving `shared/mock_entry.txt` as an entry returns 2–3 verified links.
-- [ ] **T8. `/api/scrub`.** `POST { text }`. A regex pass for emails and phone numbers, then Muse for names, places and schools. Returns a `ScrubResponse` with verified spans.
-- [ ] **T9. `/api/moderate`.** `POST { text }`. Returns a `ModerateResponse`.
-- [ ] **T10. `/api/transcribe`.** Takes audio, calls Muse transcription and returns `{ text }`. Never write the audio to disk or storage.
+- [x] **T8. `/api/scrub`.** `POST { text }`. A regex pass for emails and phone numbers, then Muse for names, places and schools. Returns a `ScrubResponse` with verified spans.
+- [x] **T9. `/api/moderate`.** `POST { text }`. Returns a `ModerateResponse`.
+- [x] **T10. `/api/transcribe`.** Takes audio, calls Muse transcription and returns `{ text }`. Never write the audio to disk or storage.
 - [x] **T11. Data retention.** Find out how long Meta keeps the data the app sends to Muse Spark and Muse transcription. Write one accurate sentence for the pitch and add it to the README.
 
 ### Sebastian: app and community
@@ -51,7 +51,7 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
   *Done when:* Teammate can sign up on the deployed URL and see a handle.
 - [ ] **S2. Write screen.** A large text area and a prompt chip (rotating set in `src/lib/prompts.ts`, tap for a new one). Save inserts into `entries` with the browser client. Add a past entries page listing entries newest first, with date and themes.
   *Done when:* an entry survives a page refresh.
-- [ ] **S3. Mic.** Hold-to-talk with `MediaRecorder` that posts to `/api/transcribe` and puts the transcript in the text box for editing. Build it against a stub that returns `shared/mock_transcribe.json` until T10 lands.
+- [ ] **S3. Mic.** Hold-to-talk that posts to `/api/transcribe` (use `WavRecorder` from `src/lib/wav-recorder.ts`, not `MediaRecorder`: Muse only accepts 16 kHz mono WAV and Vercel has no ffmpeg) and puts the transcript in the text box for editing. Build it against a stub that returns `shared/mock_transcribe.json` until T10 lands.
 - [ ] **S4. Matches screen.** Built on `shared/mock_match.json`:
   - Colored highlights on the entry from `line_start`/`line_end`.
   - Tapping a highlight opens its passage card, with the phrase highlighted in the same color from `phrase_start`/`phrase_end`, plus the reason.
@@ -72,6 +72,8 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
 ---
 
 ## Sync 1: swap mocks for real endpoints
+
+Teammate notes (2026-10-24, late): all four routes are live locally and tested with a signed-in cookie (`scripts/dev-session.mts` prints one for curl). Library: 856 passages loaded from 56 works (quality >= 3). `/api/match` takes ~25 s today, 14 s of it the Muse analysis call; `/api/scrub` ~9 s; `/api/moderate` ~2 s; `/api/transcribe` ~2 s. Unauthenticated API calls get a 307 to /login from the middleware rather than a 401. Risk entries still return links (minus mortality) so the UI can show the 988 card next to them with sharing locked.
 
 - [ ] `/api/match`, `/api/scrub`, `/api/moderate` and `/api/transcribe` return the agreed shapes on the deployed URL.
 - [ ] Sebastian swaps each mock for the real call. Nothing else on those screens should need to change. If something does, fix the contract, not the screen.
