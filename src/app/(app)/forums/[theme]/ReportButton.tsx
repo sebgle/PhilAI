@@ -16,7 +16,7 @@ export function ReportButton({ postId, replyId }: { postId?: string; replyId?: s
     setState(res.ok ? "done" : "error");
   }
 
-  const cls = "text-xs underline opacity-50 hover:text-foreground";
+  const cls = "rounded px-1 text-sm leading-none tracking-widest text-muted opacity-60 hover:text-foreground hover:opacity-100";
   if (state === "done") return <span className="text-xs text-muted">Reported. Thank you.</span>;
   if (state === "error") return <span className="text-xs text-red-600">Couldn&apos;t report. Try again later.</span>;
   if (state === "confirm" || state === "sending") {
@@ -33,8 +33,8 @@ export function ReportButton({ postId, replyId }: { postId?: string; replyId?: s
     );
   }
   return (
-    <button type="button" onClick={() => setState("confirm")} className={cls}>
-      Report
+    <button type="button" onClick={() => setState("confirm")} aria-label="Report" title="Report" className={cls}>
+      ···
     </button>
   );
 }

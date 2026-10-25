@@ -6,6 +6,7 @@ import { LocalDate } from "@/components/LocalDate";
 import { Marginalia } from "@/components/Marginalia";
 import { LikeButton } from "@/components/LikeButton";
 import { Backdrop } from "@/components/Backdrop";
+import { ThemeIcon } from "@/components/ThemeIcon";
 import { likesFor, type LikeInfo } from "@/lib/likes";
 import { ReplyForm } from "./ReplyForm";
 import { ReportButton } from "./ReportButton";
@@ -69,8 +70,14 @@ export default async function ThemeForumPage({
     <div className="flex flex-col gap-6">
       <Backdrop variant="community" />
       <div className="min-w-0">
-        <Link href="/forums" className="text-sm text-muted hover:text-foreground">← Community</Link>
-        <h1 className="mt-2 text-[2rem] font-semibold tracking-tight">{theme.name}</h1>
+        <nav aria-label="Breadcrumb" className="text-sm text-muted">
+          <Link href="/forums" className="underline-offset-4 hover:text-foreground hover:underline">Community</Link>
+          <span aria-hidden="true" className="ml-1.5 opacity-60">/</span>
+        </nav>
+        <h1 className="mt-1 flex items-center gap-2.5 text-[2rem] font-semibold tracking-tight">
+          {theme.name}
+          <ThemeIcon slug={theme.slug} className="size-7 text-terracotta" />
+        </h1>
         <p className="mt-1 text-sm text-muted">{theme.description}</p>
       </div>
 
@@ -144,25 +151,26 @@ function PostCard({ post, replies, likes }: { post: Post; replies: Reply[]; like
           <>
             {post.alias} · <LocalDate iso={post.created_at} />
             {post.is_seeded && <span title="Seeded by the PhilAI team for the demo"> · seeded</span>}
-            {" · "}
-            <LikeButton postId={post.id} count={postLikes.count} liked={postLikes.liked} />
           </>
         }
       />
 
-      <div className="border-t border-rule px-5 py-4">
-        {roots.length > 0 && (
-          <ul className="mb-4 flex flex-col gap-3">
-            {roots.map((r) => (
-              <ReplyNode key={r.id} reply={r} postId={post.id} children_={children} likes={likes} depth={0} />
-            ))}
-          </ul>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 pb-4 text-sm text-muted">
+        <LikeButton postId={post.id} count={postLikes.count} liked={postLikes.liked} />
+        {replies.length > 0 && (
+          <span>{replies.length} {replies.length === 1 ? "reply" : "replies"}</span>
         )}
-        <div className="flex items-start gap-3">
-          <div className="flex-1"><ReplyForm postId={post.id} /></div>
-          <ReportButton postId={post.id} />
-        </div>
+        <ReplyForm postId={post.id} />
+        <span className="ml-auto"><ReportButton postId={post.id} /></span>
       </div>
+
+      {roots.length > 0 && (
+        <ul className="flex flex-col gap-4 border-t border-rule px-5 py-4">
+          {roots.map((r) => (
+            <ReplyNode key={r.id} reply={r} postId={post.id} children_={children} likes={likes} depth={0} />
+          ))}
+        </ul>
+      )}
     </article>
   );
 }
@@ -188,9 +196,9 @@ function ReplyNode({
   const mine = likes.replies.get(reply.id) ?? NO_LIKES;
   return (
     <li className="border-l border-rule pl-3">
-      <p className="whitespace-pre-wrap text-sm">{reply.text}</p>
-      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-        <span>{reply.alias} · <LocalDate iso={reply.created_at} /></span>
+      <p className="text-xs text-muted">{reply.alias} · <LocalDate iso={reply.created_at} /></p>
+      <p className="mt-0.5 whitespace-pre-wrap text-sm">{reply.text}</p>
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
         <LikeButton replyId={reply.id} count={mine.count} liked={mine.liked} />
         <ReplyForm postId={postId} parentId={reply.id} parentAlias={reply.alias} />
         <ReportButton replyId={reply.id} />
