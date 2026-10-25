@@ -77,6 +77,7 @@ export default async function EntryPage({
   return (
     <article className="flex flex-col gap-4">
       <Backdrop variant="matches" />
+      <Link href="/entries" className="text-sm text-muted hover:text-foreground">← Entries</Link>
       <div>
         <EntryTitle entryId={entry.id} initial={entry.title} fallback={`Entry #${entryNumber ?? ""}`} />
         <div className="mt-1 text-sm text-muted">

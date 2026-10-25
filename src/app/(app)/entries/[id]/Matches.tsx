@@ -343,46 +343,69 @@ function PassageCard({
       </p>
       {variant === "primary" && <p className="mt-3 text-sm italic text-muted">{link.reason}</p>}
 
-      <div className="mt-4 flex flex-wrap gap-2 text-sm">
-        <button
-          type="button"
-          onClick={onResonate}
-          aria-pressed={resonated}
-          title="Not a bookmark: it tells the matcher what moves you."
-          className="rounded-full border border-rule px-3 py-1 hover:bg-hover aria-pressed:border-foreground aria-pressed:bg-hover"
-        >
-          {resonated ? "♥ Spoke to me" : "♡ Spoke to me"}
-        </button>
-        <button
-          type="button"
-          onClick={() => onFeedback("saved")}
-          aria-pressed={feedback === "saved"}
-          className="rounded-full border border-rule px-3 py-1 hover:bg-hover aria-pressed:border-terracotta aria-pressed:bg-terracotta aria-pressed:text-white"
-        >
-          {feedback === "saved" ? "Saved" : "Save"}
-        </button>
+      {/* Left: thumbs up (spoke to me) and thumbs down (not for me), one axis.
+          Right: Share, and the bookmark (save). Icons only, no borders. */}
+      <div className="mt-4 flex items-center gap-1 text-sm">
+        <IconButton on={resonated} onClick={onResonate} label={resonated ? "Spoke to me (on)" : "Spoke to me"} onClass="text-terracotta">
+          <ThumbIcon up filled={resonated} />
+        </IconButton>
         {variant === "primary" && (
-          <button
-            type="button"
-            onClick={() => onFeedback("not_for_me")}
-            aria-pressed={feedback === "not_for_me"}
-            className="rounded-full border border-rule px-3 py-1 hover:bg-hover aria-pressed:border-foreground aria-pressed:bg-hover"
-          >
-            Not for me
-          </button>
+          <IconButton on={feedback === "not_for_me"} onClick={() => onFeedback("not_for_me")} label="Not for me" onClass="text-foreground">
+            <ThumbIcon up={false} filled={feedback === "not_for_me"} />
+          </IconButton>
         )}
+        <span className="flex-1" />
         {variant === "primary" && link.line_text && canShare && (
           <button
             type="button"
             onClick={() => setSharing(!sharing)}
             aria-expanded={sharing}
-            className="rounded-full border border-rule px-3 py-1 hover:bg-hover"
+            className="rounded-md px-2 py-1 text-muted hover:bg-hover hover:text-foreground"
           >
             Share
           </button>
         )}
+        <IconButton on={feedback === "saved"} onClick={() => onFeedback("saved")} label={feedback === "saved" ? "Saved" : "Save"} onClass="text-terracotta">
+          <BookmarkIcon filled={feedback === "saved"} />
+        </IconButton>
       </div>
       {sharing && <SharePanel entryId={entryId} link={link} onClose={() => setSharing(false)} />}
     </section>
+  );
+}
+
+function IconButton({ on, onClick, label, onClass, children }: { on: boolean; onClick: () => void; label: string; onClass: string; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      aria-label={label}
+      title={label}
+      className={`rounded-md p-1.5 transition-colors hover:bg-hover ${on ? onClass : "text-muted hover:text-foreground"}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+const iconProps = {
+  width: 18, height: 18, viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 1.7,
+  strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true,
+};
+
+function ThumbIcon({ up, filled }: { up: boolean; filled: boolean }) {
+  return (
+    <svg {...iconProps} fill={filled ? "currentColor" : "none"} className={up ? undefined : "rotate-180"}>
+      <path d="M7 10v11H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h3Zm0 0 4.5-7a2.5 2.5 0 0 1 2.4 3.1L13.3 9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7" />
+    </svg>
+  );
+}
+
+function BookmarkIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg {...iconProps} fill={filled ? "currentColor" : "none"}>
+      <path d="M6 4h12v17l-6-4-6 4V4Z" />
+    </svg>
   );
 }
