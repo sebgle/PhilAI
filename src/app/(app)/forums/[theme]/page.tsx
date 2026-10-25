@@ -5,7 +5,7 @@ import { THEMES } from "@/lib/contract";
 import { LocalDate } from "@/components/LocalDate";
 import { Marginalia } from "@/components/Marginalia";
 import { LikeButton } from "@/components/LikeButton";
-import { Doodle } from "@/components/Doodle";
+import { Backdrop } from "@/components/Backdrop";
 import { likesFor, type LikeInfo } from "@/lib/likes";
 import { ReplyForm } from "./ReplyForm";
 import { ReportButton } from "./ReportButton";
@@ -67,13 +67,11 @@ export default async function ThemeForumPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <Link href="/forums" className="text-sm text-muted hover:text-foreground">← Community</Link>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight">{theme.name}</h1>
-          <p className="mt-1 text-sm text-muted">{theme.description}</p>
-        </div>
-        <Doodle name="pinecone" className="mt-8 h-10 w-10 shrink-0 text-foreground/15" />
+      <Backdrop variant="community" />
+      <div className="min-w-0">
+        <Link href="/forums" className="text-sm text-muted hover:text-foreground">← Community</Link>
+        <h1 className="mt-2 text-[2rem] font-semibold tracking-tight">{theme.name}</h1>
+        <p className="mt-1 text-sm text-muted">{theme.description}</p>
       </div>
 
       {authors.length > 1 && (
@@ -136,7 +134,7 @@ function PostCard({ post, replies, likes }: { post: Post; replies: Reply[]; like
   const roots = children.get(null) ?? [];
   const postLikes = likes.posts.get(post.id) ?? NO_LIKES;
   return (
-    <article className="rounded border border-rule">
+    <article className="rounded-lg border border-rule bg-card/70">
       <Marginalia
         passage={post.passage}
         phraseStart={post.phrase_start}

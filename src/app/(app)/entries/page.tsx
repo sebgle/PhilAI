@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LocalDate } from "@/components/LocalDate";
-import { PageTitle } from "@/components/Doodle";
+import { PageTitle } from "@/components/PageTitle";
+import { Backdrop } from "@/components/Backdrop";
 import { THEMES } from "@/lib/contract";
 
 const themeName = new Map(THEMES.map((t) => [t.slug, t.name]));
@@ -16,14 +17,15 @@ export default async function PastEntries() {
 
   return (
     <section className="flex flex-col gap-5">
-        <PageTitle title="Entries" doodle="acorn" />
+        <Backdrop variant="entries" />
+        <PageTitle title="Entries" />
 
         {error && <p className="text-red-600">{error.message}</p>}
 
         {entries && entries.length === 0 && (
           <div className="flex flex-col items-start gap-3 rounded-md border border-dashed border-rule p-6">
             <p className="text-muted">Nothing here yet. Each entry you write lands here, with the passages it found.</p>
-            <Link href="/" className="rounded-md bg-[#2383e2] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#0077d4]">
+            <Link href="/" className="rounded-full bg-terracotta px-4 py-1.5 text-sm font-medium text-white hover:bg-terracotta-deep">
               Write your first entry
             </Link>
           </div>
@@ -35,7 +37,7 @@ export default async function PastEntries() {
               <li key={e.id}>
                 <Link
                   href={`/entries/${e.id}`}
-                  className="block rounded-md border border-rule bg-card px-5 py-4 transition-colors hover:bg-hover"
+                  className="block rounded-lg border border-rule bg-card/70 px-5 py-4 transition-colors hover:bg-hover/70"
                 >
                   <div className="flex items-baseline justify-between gap-3 text-sm text-muted">
                     <span className="font-medium text-foreground">{e.title || `Entry #${entries.length - i}`}</span>

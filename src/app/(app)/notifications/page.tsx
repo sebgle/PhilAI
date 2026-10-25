@@ -3,7 +3,8 @@ import { recentReplies } from "@/lib/notifications";
 import { THEMES } from "@/lib/contract";
 import { MarkSeen } from "./MarkSeen";
 import { NoticeList } from "./NoticeList";
-import { PageTitle } from "@/components/Doodle";
+import { PageTitle } from "@/components/PageTitle";
+import { Backdrop } from "@/components/Backdrop";
 
 const themeNames = Object.fromEntries(THEMES.map((t) => [t.slug, t.name]));
 
@@ -15,7 +16,8 @@ export default async function NotificationsPage() {
   return (
     <div className="flex flex-col gap-6">
       <MarkSeen />
-      <PageTitle title="Replies to you" doodle="moon" />
+      <Backdrop variant="quiet" />
+      <PageTitle title="Replies to you" />
       {replies.length === 0 ? (
         <p className="text-muted">
           No replies yet. When someone answers a line you shared in the forums, it shows up here.

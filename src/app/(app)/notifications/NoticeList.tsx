@@ -20,7 +20,7 @@ export function NoticeList({ replies, themeNames }: { replies: ReplyNotice[]; th
             <Link href={`/forums/${r.post.forum_id}`} className="flex gap-3 px-2 py-4 hover:bg-hover">
               <span
                 aria-label={isNew ? "New" : undefined}
-                className={`mt-2 h-2 w-2 shrink-0 rounded-full ${isNew ? "bg-[#2383e2]" : "bg-transparent"}`}
+                className={`mt-2 h-2 w-2 shrink-0 rounded-full ${isNew ? "bg-terracotta" : "bg-transparent"}`}
               />
               <span className="flex flex-col gap-1">
                 <span className="text-sm text-muted">

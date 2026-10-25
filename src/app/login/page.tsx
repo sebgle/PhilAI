@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Doodle } from "@/components/Doodle";
+import { Backdrop } from "@/components/Backdrop";
 
 export default function Login() {
   const router = useRouter();
@@ -33,14 +33,12 @@ export default function Login() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-8">
+      <Backdrop variant="login" />
       <form onSubmit={submit} className="w-full max-w-sm flex flex-col gap-3">
-        <div className="flex items-end justify-between">
-          <h1 className="text-3xl tracking-tight">
-            <span className="font-serif font-semibold italic">Phil</span>
-            <span className="font-semibold">AI</span>
-          </h1>
-          <Doodle name="maple" className="h-9 w-9 text-foreground/15" />
-        </div>
+        <h1 className="text-3xl tracking-tight">
+          <span className="font-serif font-semibold italic">Phil</span>
+          <span className="font-semibold">AI</span>
+        </h1>
         <p className="text-sm text-muted">
           Your email is only used to log in. Nobody else ever sees it: other people
           only see a random name.
@@ -79,7 +77,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={busy || (mode === "signup" && !adult)}
-          className="rounded px-3 py-2 bg-[#2383e2] text-white disabled:opacity-50"
+          className="rounded-full px-4 py-2 bg-terracotta text-white hover:bg-terracotta-deep disabled:opacity-50"
         >
           {mode === "signup" ? "Create account" : "Log in"}
         </button>

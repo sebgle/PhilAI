@@ -181,7 +181,7 @@ export function SharePanel({
           type="button"
           onClick={post}
           disabled={!canPost}
-          className="rounded bg-[#2383e2] px-4 py-2 text-white disabled:opacity-40"
+          className="rounded-full bg-terracotta px-4 py-2 text-white hover:bg-terracotta-deep disabled:opacity-40"
         >
           {posting ? "Posting…" : `Post to ${forumName}`}
         </button>
