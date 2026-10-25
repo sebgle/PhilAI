@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { ModerateResponse } from "@/lib/contract";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   const supabase = await createClient();

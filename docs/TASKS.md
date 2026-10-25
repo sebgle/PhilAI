@@ -89,6 +89,8 @@ Sync 1 notes (2026-10-24, late): `NEXT_PUBLIC_MATCH_MODE=live` is set in Vercel.
 
 **Seed data (T13):** `npx tsx --env-file=.env.local scripts/seed-demo.mts` creates two demo accounts (`demo-one@philai.app`, `demo-two@philai.app`, password `philai-demo-2026` unless `DEMO_PASSWORD` is set) and 7 seeded posts with replies across belonging, loneliness, home, ambition, identity, grief and meaning. Re-running replaces earlier seeded posts. The demo entry for step 2 is `shared/demo_entry.txt`; it returns Wilde, Brontë and Montgomery, and scrub flags "Westlake".
 
+**Muse outages (2026-10-25 ~01:00):** all three Spark ids returned 404 model_not_found for 30+ min at once, so prod match/moderate/scrub failed for the whole window. `muse-wonder-1.0` (Standard mode, reasoning model) kept answering, so it is now the last model in the fallback chain with `reasoning_effort: "minimal"` (~4-20 s a call depending on load; default effort is ~20 s+). Demo entry through Wonder: 3/3 lines and phrases verified. Route limits raised: match 90 s, moderate and scrub 60 s. If Spark is down during the demo, nothing needs to change; if you want Wonder first, set `MUSE_MODEL=muse-wonder-1.0` in Vercel and redeploy.
+
 **Risk flag (tuned):** passive ideation ("would anyone notice if I stopped showing up") is now flagged; skipping class/practice is not. Spot-check with `scripts/test-risk.mts`.
 
 ## Sync 2: demo
