@@ -5,21 +5,39 @@
 // otherwise fetch ~97 MB. next.config.ts includes models/ and the Linux
 // onnxruntime binaries in the /api/match bundle.
 import path from "node:path";
+import { existsSync } from "node:fs";
 import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
-
-env.localModelPath = path.join(process.cwd(), "models");
-env.allowLocalModels = true;
-env.allowRemoteModels = false;
-// Belt and braces: if anything still tries to cache, use the one writable path.
-if (process.env.VERCEL) env.cacheDir = "/tmp/transformers-cache";
 
 export const EMBED_MODEL = "Xenova/all-MiniLM-L6-v2";
 export const EMBED_DTYPE = "q8" as const; // models/.../onnx/model_quantized.onnx
 export const EMBED_DIM = 384;
 
+// Find the vendored model. The function root differs by host (project dir
+// locally, /var/task on Vercel), so check the likely roots rather than trust
+// process.cwd(). If none has it, fall back to downloading into /tmp so the
+// route degrades to "slow cold start" instead of failing.
+const MODEL_FILE = path.join("Xenova", "all-MiniLM-L6-v2", "onnx", "model_quantized.onnx");
+const roots = [process.cwd(), process.env.LAMBDA_TASK_ROOT, "/var/task", path.resolve(__dirname ?? ".", "..", "..", "..")].filter((r): r is string => !!r);
+const localRoot = roots.map((r) => path.join(r, "models")).find((m) => existsSync(path.join(m, MODEL_FILE)));
+if (localRoot) {
+  env.localModelPath = localRoot;
+  env.allowLocalModels = true;
+  env.allowRemoteModels = false;
+} else {
+  console.warn(`[embed] vendored model not found under ${roots.join(", ")}; downloading instead`);
+  env.allowLocalModels = false;
+  env.allowRemoteModels = true;
+}
+// The only writable path on Vercel; also where a download would land.
+if (process.env.VERCEL) env.cacheDir = "/tmp/transformers-cache";
+
 let extractorPromise: Promise<FeatureExtractionPipeline> | null = null;
 function extractor() {
-  extractorPromise ??= pipeline("feature-extraction", EMBED_MODEL, { dtype: EMBED_DTYPE }) as Promise<FeatureExtractionPipeline>;
+  extractorPromise ??= (pipeline("feature-extraction", EMBED_MODEL, { dtype: EMBED_DTYPE }) as Promise<FeatureExtractionPipeline>).catch((e) => {
+    extractorPromise = null; // let the next call retry instead of caching the failure
+    console.error("[embed] failed to load model:", e);
+    throw e;
+  });
   return extractorPromise;
 }
 
