@@ -27,7 +27,7 @@ export function ReplyForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`underline text-muted hover:text-foreground ${parentId ? "text-xs" : "text-sm"}`}
+        className={`text-muted hover:text-foreground ${parentId ? "text-xs" : "text-sm"}`}
       >
         Reply
       </button>
