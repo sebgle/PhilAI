@@ -5,6 +5,7 @@ import { THEMES, type MatchLink, type MatchResponse } from "@/lib/contract";
 import { requestMatch, type MockVariant } from "@/lib/matching";
 import { SafetyCard } from "@/components/SafetyCard";
 import { setPassageStatus, type Status as Feedback } from "../../library/actions";
+import { SharePanel } from "./SharePanel";
 
 // One color per highlighted line; the passage's echoing phrase uses the same one.
 const COLORS = [
@@ -90,6 +91,7 @@ export function Matches({
   }
 
   const cardProps = (link: MatchLink, i: number) => ({
+    entryId,
     link,
     color: COLORS[i % COLORS.length],
     feedback: feedback[link.passage.id] ?? null,
@@ -182,16 +184,19 @@ function EntryText({
 }
 
 function PassageCard({
+  entryId,
   link,
   color,
   feedback,
   onFeedback,
 }: {
+  entryId: string;
   link: MatchLink;
   color: (typeof COLORS)[number];
   feedback: Feedback;
   onFeedback: (v: Feedback) => void;
 }) {
+  const [sharing, setSharing] = useState(false);
   const { passage, phrase_start: ps, phrase_end: pe } = link;
   const hasPhrase = ps !== null && pe !== null && ps >= 0 && pe <= passage.text.length && ps < pe;
 
@@ -241,12 +246,17 @@ function PassageCard({
         >
           Not for me
         </button>
-        {/* Wired up in S8 (author pages) and S9 (share flow). */}
+        {/* Wired up in S8 (author pages). */}
         <button type="button" disabled title="Author pages are coming soon" className="rounded border border-foreground/10 px-3 py-1 opacity-40">
           More by {passage.author}
         </button>
         {link.line_text && (
-          <button type="button" disabled title="Sharing is coming soon" className="rounded border border-foreground/10 px-3 py-1 opacity-40">
+          <button
+            type="button"
+            onClick={() => setSharing(!sharing)}
+            aria-expanded={sharing}
+            className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5"
+          >
             Share this line
           </button>
         )}
@@ -254,6 +264,7 @@ function PassageCard({
       {feedback === "not_for_me" && (
         <p className="mt-2 text-xs opacity-70">Got it. This helps us find better matches.</p>
       )}
+      {sharing && <SharePanel entryId={entryId} link={link} onClose={() => setSharing(false)} />}
     </section>
   );
 }
