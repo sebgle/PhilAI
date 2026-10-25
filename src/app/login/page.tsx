@@ -35,7 +35,10 @@ export default function Login() {
     <main className="min-h-screen flex items-center justify-center p-8">
       <form onSubmit={submit} className="w-full max-w-sm flex flex-col gap-3">
         <div className="flex items-end justify-between">
-          <h1 className="font-serif text-3xl italic">PhilAI</h1>
+          <h1 className="text-3xl tracking-tight">
+            <span className="font-serif italic">Phil</span>
+            <span className="font-semibold">AI</span>
+          </h1>
           <Doodle name="maple" className="h-9 w-9 text-foreground/15" />
         </div>
         <p className="text-sm text-muted">

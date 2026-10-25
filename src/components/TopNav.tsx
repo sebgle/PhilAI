@@ -22,8 +22,10 @@ export function TopNav({ handle, unread }: { handle: string; unread: number }) {
   return (
     <header>
       <nav className="mx-auto grid max-w-5xl grid-cols-[1fr_auto_1fr] items-center px-5 py-3 text-sm sm:px-8">
-        <Link href="/" className="justify-self-start text-[17px] font-semibold tracking-tight">
-          PhilAI
+        {/* "Phil" in the book face (Literata, italic), "AI" in the UI sans: old and new in one word. */}
+        <Link href="/" className="justify-self-start text-[19px] leading-none tracking-tight">
+          <span className="font-serif italic">Phil</span>
+          <span className="font-semibold">AI</span>
         </Link>
         <div className="no-scrollbar flex items-center gap-1 overflow-x-auto">
           {TABS.map((t) => (
