@@ -1,0 +1,6 @@
+{
+  "text": "I don't belong anywhere yet at Lincoln High",
+  "spans": [
+    { "start": 31, "end": 43, "type": "school", "value": "Lincoln High" }
+  ]
+}

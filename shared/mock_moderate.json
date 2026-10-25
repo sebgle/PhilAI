@@ -1,0 +1,4 @@
+{
+  "ok": { "status": "ok", "reason": null },
+  "flagged": { "status": "flagged", "reason": "Contains a personal attack on another user." }
+}

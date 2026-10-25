@@ -1,0 +1,18 @@
+[
+  { "slug": "belonging", "name": "Belonging", "description": "Finding your people, or feeling like you haven't yet." },
+  { "slug": "loneliness", "name": "Loneliness", "description": "Being alone, and being lonely in a crowd." },
+  { "slug": "grief", "name": "Grief", "description": "Loss of people, places, and versions of yourself." },
+  { "slug": "love", "name": "Love", "description": "Romantic, platonic, familial, unrequited." },
+  { "slug": "longing", "name": "Longing", "description": "Wanting what's out of reach." },
+  { "slug": "home", "name": "Home", "description": "The places that made you, and leaving them." },
+  { "slug": "family", "name": "Family", "description": "Parents, siblings, and the ties you didn't choose." },
+  { "slug": "identity", "name": "Identity", "description": "Who you are, and who you're performing." },
+  { "slug": "freedom", "name": "Freedom", "description": "Independence, escape, and its costs." },
+  { "slug": "ambition", "name": "Ambition", "description": "Striving, pressure, and what success is for." },
+  { "slug": "fear", "name": "Fear", "description": "Anxiety, dread, and the things that keep you up." },
+  { "slug": "hope", "name": "Hope", "description": "Holding on to something better." },
+  { "slug": "change", "name": "Change", "description": "Transitions, growing up, and starting over." },
+  { "slug": "mortality", "name": "Mortality", "description": "Time passing and the shortness of life." },
+  { "slug": "meaning", "name": "Meaning", "description": "Purpose, and whether any of it matters." },
+  { "slug": "regret", "name": "Regret", "description": "What you did, and what you didn't." }
+]
