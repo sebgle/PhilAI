@@ -79,7 +79,7 @@ function Passages({ items }: { items: Item[] }) {
         const hasPhrase =
           m?.phrase_start != null && m.phrase_end != null && m.phrase_start < m.phrase_end && m.phrase_end <= p.text.length;
         return (
-          <li key={item.id} className="rounded-lg border border-rule bg-card p-5">
+          <li key={item.id} className="group relative rounded-lg border border-rule bg-card p-5 pr-12">
             <blockquote className="font-serif text-lg leading-relaxed">
               {hasPhrase ? (
                 <>
@@ -102,7 +102,7 @@ function Passages({ items }: { items: Item[] }) {
                 Your line: <span className="italic">&ldquo;{m.line_text}&rdquo;</span>
               </p>
             )}
-            <RemoveButton id={item.id} />
+            <RemoveButton id={item.id} className="absolute right-3 top-3" />
           </li>
         );
       })}
@@ -121,12 +121,12 @@ function Authors({ items, passages }: { items: Item[]; passages: Item[] }) {
         {items.map((item) => {
           const count = passages.filter((p) => p.passage?.author === item.ref).length;
           return (
-            <li key={item.id} className="flex items-center gap-3 py-3">
+            <li key={item.id} className="group flex items-center gap-3 py-3">
               <Link href={`/authors/${encodeURIComponent(item.ref ?? "")}`} className="font-medium underline-offset-2 hover:underline">{item.ref}</Link>
               <span className="text-sm text-muted">
                 {count} saved passage{count === 1 ? "" : "s"}
               </span>
-              <span className="ml-auto"><RemoveButton id={item.id} /></span>
+              <RemoveButton id={item.id} className="ml-auto" />
             </li>
           );
         })}
@@ -135,12 +135,25 @@ function Authors({ items, passages }: { items: Item[]; passages: Item[] }) {
   );
 }
 
-function RemoveButton({ id }: { id: string }) {
+// A quiet trash can that warms to the accent when you reach for it. Hidden
+// until its card or row is hovered (always shown on touch screens, which can't hover).
+function RemoveButton({ id, className = "" }: { id: string; className?: string }) {
   return (
-    <form action={removeLibraryItem} className="mt-3 inline">
+    <form action={removeLibraryItem} className={className}>
       <input type="hidden" name="id" value={id} />
-      <button type="submit" className="text-sm underline opacity-50 hover:text-foreground">
-        Remove
+      <button
+        type="submit"
+        aria-label="Remove from Saved"
+        title="Remove from Saved"
+        className="rounded-md p-1.5 text-muted opacity-0 transition hover:bg-[var(--hl-3)] hover:text-terracotta-deep focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+      >
+        <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M3 6h18" />
+          <path d="M8 6V4h8v2" />
+          <path d="M19 6l-1 14H6L5 6" />
+          <path d="M10 11v6" />
+          <path d="M14 11v6" />
+        </svg>
       </button>
     </form>
   );

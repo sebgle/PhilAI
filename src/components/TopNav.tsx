@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// Three parts: the name on the left, the worded tabs in the middle, the bell
-// and the account on the right. No bar behind them: they sit on the surface.
+// Three parts: the name on the left, the worded tabs in the middle, and
+// new entry, the bell and the account on the right. No bar behind them: they sit on the surface.
 const TABS = [
-  { href: "/", label: "Write", match: (p: string) => p === "/" },
+  { href: "/", label: "Explore", match: (p: string) => p === "/" || p.startsWith("/posts") },
   { href: "/entries", label: "Entries", match: (p: string) => p.startsWith("/entries") },
   { href: "/library", label: "Saved", match: (p: string) => p.startsWith("/library") },
   // Author pages are browsing, not the reader's saved items, so they count as Community.
@@ -36,6 +36,21 @@ export function TopNav({ handle, unread }: { handle: string; unread: number }) {
           ))}
         </div>
         <div className="flex items-center gap-1 justify-self-end">
+          <Link
+            href="/write"
+            aria-current={path.startsWith("/write") ? "page" : undefined}
+            aria-label="New entry"
+            title="New entry"
+            // The one filled thing in the bar: writing is the way in, so it
+            // gets the accent. The plus turns a quarter on hover; the word
+            // joins it where there's room.
+            className="group mr-1.5 flex items-center gap-1 rounded-full bg-terracotta px-1.5 py-1.5 font-medium text-white shadow-sm shadow-terracotta/30 transition hover:-translate-y-px hover:bg-terracotta-deep hover:shadow-md hover:shadow-terracotta/30 aria-[current=page]:bg-terracotta-deep sm:pr-3.5"
+          >
+            <span className="transition-transform duration-300 group-hover:rotate-90">
+              <PlusIcon />
+            </span>
+            <span className="hidden sm:inline">Write</span>
+          </Link>
           <Link
             href="/notifications"
             aria-current={path.startsWith("/notifications") ? "page" : undefined}
@@ -76,6 +91,15 @@ const iconProps = {
   strokeLinejoin: "round" as const,
   "aria-hidden": true,
 };
+
+function PlusIcon() {
+  return (
+    <svg {...iconProps} width={18} height={18} strokeWidth={2.2}>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
 
 function BellIcon() {
   return (
