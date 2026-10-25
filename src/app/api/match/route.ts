@@ -19,15 +19,25 @@ export const maxDuration = 90;
 const RETRIEVE = 30;
 
 // Unhandled throws used to surface as a bare 500 with nothing in the response;
-// log the real error for Vercel's function logs and return a readable one.
+// log the real error for Vercel's function logs and return a readable one. The
+// `detail` field carries the same message so the cause can be read off a curl
+// against production without dashboard access; the UI shows only `error`.
 export async function POST(req: Request) {
   try {
     return await match(req);
   } catch (e) {
     console.error("[match] failed:", e);
-    return NextResponse.json({ error: "Matching failed. Try again in a moment." }, { status: 500 });
+    const detail = e instanceof Error ? e.message.slice(0, 300) : String(e).slice(0, 300);
+    return NextResponse.json({ error: "Matching failed. Try again in a moment.", detail }, { status: 500 });
   }
 }
+
+type Analysis = Awaited<ReturnType<typeof analyzeEntry>>;
+// When Muse cannot be reached at all the entry still gets passages: embed the
+// whole entry, take the three closest, no highlights and a plain reason. The
+// UI already renders this shape (fallback: true), so the reader never sees an
+// error for something Meta's side did.
+const NO_ANALYSIS: Analysis = { emotions: [], themes: [], summary: "", risk_flag: false, key_lines: [] };
 
 async function match(req: Request) {
   const supabase = await createClient();
@@ -51,7 +61,15 @@ async function match(req: Request) {
       return [r.ref, p?.author].filter((x): x is string => !!x);
     })));
 
-  const analysis = await analyzeEntry(text);
+  let analysis: Analysis;
+  let museDown = false;
+  try {
+    analysis = await analyzeEntry(text);
+  } catch (e) {
+    console.error("[match] analysis failed, falling back to whole-entry retrieval:", (e as Error).message);
+    analysis = NO_ANALYSIS;
+    museDown = true;
+  }
   const lines = verifyLines(text, analysis.key_lines);
   const fallback = lines.length === 0;
   const excluded = analysis.risk_flag ? RISK_EXCLUDED_THEMES : new Set<string>();
@@ -95,8 +113,11 @@ async function match(req: Request) {
       top.push(x); used.add(x.c.author);
       if (top.length === 3) break;
     }
-    const reasons = await Promise.all(top.map((x) => withRetry(() => phraseAndReason(null, analysis.summary, x.c), 2, 500)
-      .catch(() => ({ phrase_start: null, phrase_end: null, reason: "This passage carries the same feeling as your entry." }))));
+    const plain = { phrase_start: null, phrase_end: null, reason: "This passage sits closest to what you wrote tonight." };
+    const reasons = museDown
+      ? top.map(() => plain)
+      : await Promise.all(top.map((x) => withRetry(() => phraseAndReason(null, analysis.summary, x.c), 2, 500)
+          .catch(() => ({ phrase_start: null, phrase_end: null, reason: "This passage carries the same feeling as your entry." }))));
     links = top.map((x, i) => ({
       line_text: null, line_start: null, line_end: null,
       theme: (x.c.themes.find((t) => analysis.themes.includes(t as ThemeSlug)) ?? x.c.themes[0] ?? analysis.themes[0]) as ThemeSlug,
@@ -108,7 +129,7 @@ async function match(req: Request) {
   // Persist: analysis on the entry, one matches row per link (replacing any previous run).
   const entryVec = fallback ? vectors[0] : (await embed([analysis.summary]))[0];
   await admin.from("entries").update({
-    emotions: analysis.emotions, themes: analysis.themes, summary: analysis.summary,
+    emotions: analysis.emotions, themes: analysis.themes, summary: analysis.summary || null,
     risk_flag: analysis.risk_flag, embedding: JSON.stringify(entryVec),
   }).eq("id", entryId);
   await admin.from("matches").delete().eq("entry_id", entryId);

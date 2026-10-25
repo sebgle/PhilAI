@@ -15,6 +15,9 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null);
   const text = typeof body?.text === "string" ? body.text : "";
-  const { unavailable, ...out } = await moderateText(text);
-  return NextResponse.json(out satisfies ModerateResponse, { status: unavailable ? 503 : 200 });
+  const { unavailable, detail, ...out } = await moderateText(text);
+  // `detail` (the Muse error) rides along on a 503 so the cause can be read
+  // from production with curl; the share preview only shows `reason`.
+  const payload: ModerateResponse & { detail?: string } = unavailable ? { ...out, detail } : out;
+  return NextResponse.json(payload, { status: unavailable ? 503 : 200 });
 }

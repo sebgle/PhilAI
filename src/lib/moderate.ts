@@ -15,7 +15,7 @@ Return {"status":"ok","reason":null} or {"status":"flagged","reason":"<one short
 
 // `unavailable` is set when Muse couldn't be reached. Callers fail closed:
 // nothing unreviewed reaches the forum.
-export async function moderateText(text: string): Promise<ModerateResponse & { unavailable?: true }> {
+export async function moderateText(text: string): Promise<ModerateResponse & { unavailable?: true; detail?: string }> {
   const trimmed = text.trim();
   if (!trimmed) return { status: "flagged", reason: "Nothing to post." };
   try {
@@ -29,6 +29,7 @@ export async function moderateText(text: string): Promise<ModerateResponse & { u
       status: "flagged",
       reason: "Moderation is unavailable right now. Try again in a moment.",
       unavailable: true,
+      detail: (e as Error).message.slice(0, 300),
     };
   }
 }
