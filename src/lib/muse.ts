@@ -28,23 +28,35 @@ export async function museText(system: string, user: string, opts: { temperature
       body: JSON.stringify(b),
       signal: AbortSignal.timeout(timeoutMs),
     });
-  // One retry on timeout, 429 or 5xx; Muse occasionally stalls.
+  // Muse intermittently answers 404 model_not_found (about 1 call in 8 under
+  // load) and occasionally stalls or 429s, so retry any failure with a short
+  // backoff: up to 3 attempts in total.
   const attempt = async (): Promise<Response> => {
     let res = await post(opts.json === false ? body : { ...body, response_format: { type: "json_object" } });
     if (res.status === 400 && opts.json !== false) res = await post(body);
     return res;
   };
-  let res: Response;
-  try {
-    res = await attempt();
-    if (res.status === 429 || res.status >= 500) { await new Promise((r) => setTimeout(r, 1500)); res = await attempt(); }
-  } catch (e) {
-    // Timeout, abort, or a network-level "fetch failed": retry once.
-    console.warn(`[muse] ${(e as Error).name}: ${(e as Error).message.slice(0, 80)}, retrying once`);
-    await new Promise((r) => setTimeout(r, 1000));
-    res = await attempt();
+  const MAX = 3;
+  let res: Response | null = null;
+  let lastErr = "";
+  for (let i = 0; i < MAX; i++) {
+    try {
+      res = await attempt();
+      if (res.ok) break;
+      lastErr = `muse ${res.status}: ${(await res.text()).slice(0, 200)}`;
+      // Auth and quota problems will not fix themselves; fail fast on those.
+      if (res.status === 401 || res.status === 403 || res.status === 402) throw new Error(lastErr);
+    } catch (e) {
+      if (/^muse 40[123]:/.test((e as Error).message)) throw e;
+      lastErr = `${(e as Error).name}: ${(e as Error).message.slice(0, 120)}`;
+    }
+    res = null;
+    if (i < MAX - 1) {
+      console.warn(`[muse] attempt ${i + 1} failed (${lastErr}), retrying`);
+      await new Promise((r) => setTimeout(r, 600 * (i + 1)));
+    }
   }
-  if (!res.ok) throw new Error(`muse ${res.status}: ${await res.text()}`);
+  if (!res) throw new Error(lastErr || "muse: no response");
   const data = await res.json();
   const content = data.choices?.[0]?.message?.content;
   if (typeof content === "string") return content;
