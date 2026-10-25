@@ -83,14 +83,10 @@ export function Matches({
     );
   }
 
-  if (match.risk_flag) {
-    return (
-      <div className="flex flex-col gap-6">
-        <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
-        <SafetyCard />
-      </div>
-    );
-  }
+  // Risk-flagged entries still show their passages (the matcher already
+  // skipped any that could romanticize death), under the 988 card, with
+  // sharing turned off. The server refuses those shares too.
+  const locked = match.risk_flag;
 
   const cardProps = (link: MatchLink, i: number) => ({
     entryId,
@@ -98,15 +94,19 @@ export function Matches({
     color: COLORS[i % COLORS.length],
     feedback: feedback[link.passage.id] ?? null,
     onFeedback: (v: Feedback) => setLinkFeedback(link.passage.id, v),
+    canShare: !locked,
   });
 
-  if (match.fallback) {
+  if (match.fallback || (locked && !match.links.length)) {
     return (
       <div className="flex flex-col gap-6">
+        {locked && <SafetyCard />}
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
-        <p className="text-sm opacity-70">
-          We couldn&apos;t pin this one to specific lines, but these passages share its feeling.
-        </p>
+        {match.links.length > 0 && (
+          <p className="text-sm opacity-70">
+            We couldn&apos;t pin this one to specific lines, but these passages share its feeling.
+          </p>
+        )}
         {actionError && <p className="text-sm text-red-600">{actionError}</p>}
         {match.links.map((link, i) => (
           <PassageCard key={link.passage.id} {...cardProps(link, i)} />
@@ -117,6 +117,7 @@ export function Matches({
 
   return (
     <div className="flex flex-col gap-6">
+      {locked && <SafetyCard />}
       <EntryText text={text} links={match.links} selected={selected} onSelect={setSelected} />
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
       {selected === null ? (
@@ -191,12 +192,14 @@ function PassageCard({
   color,
   feedback,
   onFeedback,
+  canShare,
 }: {
   entryId: string;
   link: MatchLink;
   color: (typeof COLORS)[number];
   feedback: Feedback;
   onFeedback: (v: Feedback) => void;
+  canShare: boolean;
 }) {
   const [sharing, setSharing] = useState(false);
   const { passage, phrase_start: ps, phrase_end: pe } = link;
@@ -254,7 +257,7 @@ function PassageCard({
         >
           More by {passage.author}
         </Link>
-        {link.line_text && (
+        {link.line_text && canShare && (
           <button
             type="button"
             onClick={() => setSharing(!sharing)}
