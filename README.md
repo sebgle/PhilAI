@@ -26,7 +26,9 @@ Login is email + password. In the Supabase dashboard, under **Authentication > S
 | Forums | One per theme, 16 themes (below). Authors are a tag plus an author page |
 | Identity | Random handle per account (owner-only). **Fresh alias per thread** in forums |
 | Emotions | GoEmotions: 27 categories + neutral ([shared/emotions.json](shared/emotions.json)) |
-| Embeddings | Not Muse: a free 384-d model, all-MiniLM-L6-v2 or gte-small (**pick one**, same for passages and entries). Columns are `vector(384)` |
+| Embeddings | all-MiniLM-L6-v2 via transformers.js, the same for passages and entries. Columns are `vector(384)` |
+| Moderation | 3 reports hide a post or reply until it's reviewed |
+| Age | 18+ (checkbox on sign-up) |
 | Muse call budget | Per entry: 1 analysis call, then 1 call per line that returns the echoing phrase *and* the reason. The line calls run in parallel, so at most 4 calls |
 | Scrub | Regex pre-pass for emails and phone numbers, then Muse Spark for names, places and schools |
 
@@ -45,7 +47,7 @@ Source of truth: [shared/themes.json](shared/themes.json). The slugs are the for
 | [shared/mock_match_fallback.json](shared/mock_match_fallback.json) | Whole-entry fallback: no highlights |
 | [shared/mock_match_risk.json](shared/mock_match_risk.json) | `risk_flag: true`: 988 card, sharing locked |
 | [shared/mock_entry.txt](shared/mock_entry.txt) | The entry text the mock offsets point into |
-| [shared/mock_scrub.json](shared/mock_scrub.json), [shared/mock_moderate.json](shared/mock_moderate.json) | Scrub and moderate examples |
+| [shared/mock_scrub.json](shared/mock_scrub.json), [shared/mock_moderate.json](shared/mock_moderate.json), [shared/mock_transcribe.json](shared/mock_transcribe.json) | Scrub, moderate and transcribe examples |
 | [scripts/build-mocks.mjs](scripts/build-mocks.mjs) | Regenerates the mock_match files. Offsets come from an exact-match check, so they always line up |
 
 Offsets are character indexes, end exclusive, first occurrence. `entry_text.slice(line_start, line_end) === line_text` always holds.
@@ -55,6 +57,7 @@ Offsets are character indexes, end exclusive, first occurrence. `entry_text.slic
 - `POST /match { entry_id }` returns `MatchResponse`. It also writes one `matches` row per link.
 - `POST /scrub { text }` returns `{ text, spans: [{ start, end, type, value }] }`
 - `POST /moderate { text }` returns `{ status: "ok" | "flagged", reason }`
+- `POST /transcribe` (multipart, field `audio`) returns `{ text }`. Audio is never stored
 
 ## Data model
 

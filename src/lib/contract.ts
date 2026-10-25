@@ -52,6 +52,10 @@ export type ScrubSpan = {
 };
 export type ScrubResponse = { text: string; spans: ScrubSpan[] };
 
+// POST /transcribe  multipart form, field "audio"  ->  TranscribeResponse
+// The audio is passed to Muse transcription and never stored.
+export type TranscribeResponse = { text: string };
+
 // POST /moderate  { text }  ->  ModerateResponse
 export type ModerateResponse =
   | { status: "ok"; reason: null }

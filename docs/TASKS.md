@@ -10,11 +10,11 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
 
 ## Decide together first (15 min)
 
-- [ ] **Embedding model:** all-MiniLM-L6-v2 (runs in Node via transformers.js) or gte-small. Both are 384-d, so the database doesn't change. *Suggested: MiniLM, so it runs inside the Next.js routes.*
-- [ ] **Report threshold** for hiding a post. *Suggested: 3 reports.*
-- [ ] **Minimum age** for the sign-up checkbox. *Suggested: 18+ for the hackathon.*
-- [ ] **App name.** Can wait until polish.
-- [ ] **Transcription contract:** `POST /api/transcribe` (multipart audio) → `{ text }`. Teammate adds the type to `contract.ts` and a `shared/mock_transcribe.json`.
+- [x] **Embedding model:** all-MiniLM-L6-v2, run in Node via transformers.js, for both passages and entries (384-d).
+- [x] **Report threshold:** 3 reports hide a post or reply until it's reviewed.
+- [x] **Minimum age:** 18+, as a checkbox on sign-up.
+- [x] **App name:** PhilAI.
+- [x] **Transcription contract:** `POST /api/transcribe` (multipart, field `audio`) → `TranscribeResponse` `{ text }`. Mock: `shared/mock_transcribe.json`.
 
 ---
 
