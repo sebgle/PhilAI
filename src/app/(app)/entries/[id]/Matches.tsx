@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useEffect, useState } from "react";
 import { THEMES, type MatchLink, type MatchResponse } from "@/lib/contract";
 import { requestMatch, type MockVariant } from "@/lib/matching";
@@ -246,10 +248,12 @@ function PassageCard({
         >
           Not for me
         </button>
-        {/* Wired up in S8 (author pages). */}
-        <button type="button" disabled title="Author pages are coming soon" className="rounded border border-foreground/10 px-3 py-1 opacity-40">
+        <Link
+          href={`/authors/${encodeURIComponent(passage.author)}`}
+          className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5"
+        >
           More by {passage.author}
-        </button>
+        </Link>
         {link.line_text && (
           <button
             type="button"
