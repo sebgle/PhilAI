@@ -12,15 +12,19 @@ const MAX_SECONDS = 120;
 type State = "idle" | "recording" | "transcribing";
 
 // Tap to start, tap to stop. While recording, the browser's speech recognition
-// types words live (onLive); on stop, Muse transcribes the whole recording and
-// its text replaces the preview (onTranscript). If Muse fails, the live text
-// is kept so nothing said is lost. The audio itself is never stored.
+// types words live (onLive) and the box is read-only. On stop the live words
+// are committed at once (onTranscript) so the box is editable again right
+// away; when Muse's transcript of the recording arrives, onReplace swaps the
+// live chunk for it. If Muse fails, the live text simply stays. The audio
+// itself is never stored.
 export function MicButton({
   onLive,
   onTranscript,
+  onReplace,
 }: {
   onLive: (text: string | null) => void;
   onTranscript: (text: string) => void;
+  onReplace: (from: string, to: string) => void;
 }) {
   const [state, setState] = useState<State>("idle");
   const [seconds, setSeconds] = useState(0);
@@ -50,8 +54,11 @@ export function MicButton({
     const rec = recorder.current;
     if (!rec) return;
     recorder.current = null;
-    const liveText = stopLive.current?.() ?? "";
+    const liveText = (stopLive.current?.() ?? "").trim();
     stopLive.current = null;
+    // Hand the words over now; the box is editable again from this moment.
+    onLive(null);
+    if (liveText) onTranscript(liveText);
     setState("transcribing");
     try {
       const form = new FormData();
@@ -59,18 +66,14 @@ export function MicButton({
       const res = await fetch("/api/transcribe", { method: "POST", body: form });
       if (!res.ok) throw new Error();
       const { text }: TranscribeResponse = await res.json();
-      if (text.trim()) onTranscript(text.trim());
-      else if (liveText) onTranscript(liveText);
-      else setError("We didn't catch any words. Try again a little closer to the mic.");
+      const final = text.trim();
+      if (final && liveText) onReplace(liveText, final);
+      else if (final) onTranscript(final);
+      else if (!liveText) setError("We didn't catch any words. Try again a little closer to the mic.");
     } catch {
-      if (liveText) {
-        onTranscript(liveText);
-        setNote("Kept the live transcript; the full transcription didn't go through.");
-      } else {
-        setError("Transcription failed. Your recording wasn't saved. Try again, or type instead.");
-      }
+      if (liveText) setNote("Kept the live transcript; the full transcription didn't go through.");
+      else setError("Transcription failed. Your recording wasn't saved. Try again, or type instead.");
     } finally {
-      onLive(null);
       setState("idle");
     }
   }

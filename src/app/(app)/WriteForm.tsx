@@ -85,7 +85,13 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
         >
           {saving ? "Saving…" : "Save"}
         </button>
-        <MicButton onLive={setLive} onTranscript={(t) => setText((prev) => join(prev, t))} />
+        <MicButton
+          onLive={setLive}
+          onTranscript={(t) => setText((prev) => join(prev, t))}
+          // Muse's transcript replaces the live chunk if it is still there untouched; if the
+          // writer already edited it, their version wins.
+          onReplace={(from, to) => setText((prev) => (prev.includes(from) ? prev.replace(from, to) : prev))}
+        />
         {error && <span className="truncate text-sm text-red-600">{error}</span>}
       </div>
     </section>
