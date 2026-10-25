@@ -51,9 +51,9 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
       />
 
       {/* The prompt plays the placeholder: drawn over the empty box in the
-          placeholder style, with ↻ right after the words, shown on hover.
-          Clicks on the words fall through to the box. */}
-      <div className="group relative">
+          placeholder style. Clicking the words swaps in another prompt;
+          clicking anywhere else in the box starts writing. */}
+      <div className="relative">
         <textarea
           value={live !== null ? join(text, live) : text}
           onChange={(e) => setText(e.target.value)}
@@ -64,18 +64,15 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
           className="block h-[48vh] w-full resize-none overflow-y-auto bg-transparent text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
         />
         {prompt && !text && live === null && (
-          <div className="pointer-events-none absolute left-0 top-0 flex items-center gap-2 text-[17px] leading-[1.9]">
-            <span id="prompt" className="text-muted/60">{prompt}</span>
-            <button
-              type="button"
-              onClick={() => setPrompt(randomPrompt(prompt))}
-              aria-label="Another prompt"
-              title="Another prompt"
-              className="pointer-events-auto rounded-md p-1 text-muted opacity-0 transition-opacity hover:bg-hover hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
-            >
-              <RefreshIcon />
-            </button>
-          </div>
+          <button
+            id="prompt"
+            type="button"
+            onClick={() => setPrompt(randomPrompt(prompt))}
+            title="Another prompt"
+            className="absolute left-0 top-0 text-left text-[17px] leading-[1.9] text-muted/60 transition-colors hover:text-muted"
+          >
+            {prompt}
+          </button>
         )}
       </div>
 
@@ -90,16 +87,10 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
         </button>
         <MicButton onLive={setLive} onTranscript={(t) => setText((prev) => join(prev, t))} />
         {error && <span className="text-sm text-red-600">{error}</span>}
+        {prompt && !text && live === null && (
+          <span className="ml-auto text-[11px] text-muted/80">Click the prompt for a different one.</span>
+        )}
       </div>
     </section>
-  );
-}
-
-function RefreshIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
-      <path d="M21 3v5h-5" />
-    </svg>
   );
 }
