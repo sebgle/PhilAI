@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { THEMES } from "@/lib/contract";
 import { LocalDate } from "@/components/LocalDate";
+import { Marginalia } from "@/components/Marginalia";
 import { ReplyForm } from "./ReplyForm";
 import { ReportButton } from "./ReportButton";
 
@@ -104,42 +105,21 @@ function FilterChip({ href, active, children }: { href: string; active: boolean;
   );
 }
 
-// The forum as marginalia: the passage is the page, the shared line is the
-// note written in its margin.
 function PostCard({ post, replies }: { post: Post; replies: Reply[] }) {
-  const { passage: p, phrase_start: ps, phrase_end: pe } = post;
-  const hasPhrase = ps !== null && pe !== null && ps >= 0 && ps < pe && pe <= p.text.length;
-
   return (
     <article className="rounded border border-foreground/10">
-      <div className="grid gap-4 p-5 sm:grid-cols-[1fr_14rem]">
-        <div>
-          <blockquote className="font-serif text-lg leading-relaxed">
-            {hasPhrase ? (
-              <>
-                {p.text.slice(0, ps!)}
-                <mark className="rounded bg-amber-200/80 px-0.5 text-inherit dark:bg-amber-400/30">
-                  {p.text.slice(ps!, pe!)}
-                </mark>
-                {p.text.slice(pe!)}
-              </>
-            ) : (
-              p.text
-            )}
-          </blockquote>
-          <p className="mt-2 text-sm">
-            <span className="font-medium">{p.author}</span>
-            <span className="opacity-70">, <cite>{p.work}</cite>{p.year ? ` (${p.year})` : ""}</span>
-          </p>
-        </div>
-        <aside className="border-l-2 border-amber-400/60 pl-4 sm:self-start">
-          <p className="italic leading-snug">&ldquo;{post.line_text}&rdquo;</p>
-          <p className="mt-2 text-xs opacity-60">
+      <Marginalia
+        passage={post.passage}
+        phraseStart={post.phrase_start}
+        phraseEnd={post.phrase_end}
+        line={post.line_text}
+        meta={
+          <>
             {post.alias} · <LocalDate iso={post.created_at} />
             {post.is_seeded && <span title="Seeded by the PhilAI team for the demo"> · seeded</span>}
-          </p>
-        </aside>
-      </div>
+          </>
+        }
+      />
 
       <div className="border-t border-foreground/10 px-5 py-4">
         {replies.length > 0 && (
