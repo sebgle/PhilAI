@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { randomPrompt } from "@/lib/prompts";
+import { MicButton } from "./MicButton";
 
 export function WriteForm() {
   const router = useRouter();
@@ -60,6 +61,8 @@ export function WriteForm() {
           </button>
         )}
       </div>
+
+      <MicButton onTranscript={(t) => setText((prev) => (prev.trim() ? `${prev.trimEnd()} ${t}` : t))} />
 
       <textarea
         value={text}
