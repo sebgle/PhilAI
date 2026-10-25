@@ -89,6 +89,11 @@ export async function museText(system: string, user: string, opts: { temperature
     } catch (e) {
       if (/^muse 40[123] /.test((e as Error).message)) throw e;
       lastErr = `${(e as Error).name} (${model}): ${(e as Error).message.slice(0, 120)}`;
+      // A stall or network error on Muse is a Muse-wide condition, not a
+      // per-model one: two 20 s stalls in a row would spend the whole budget
+      // on Spark ids. Go straight to OpenAI when it is in the chain.
+      const openai = MODEL_CHAIN.findIndex((m) => m.startsWith("openai:"));
+      if (target(model).provider === "muse" && openai !== -1) { modelIdx = openai - 1; backoff = 200; }
     }
     res = null;
     // Every failure moves to the next model, not only a 404. From Vercel,
