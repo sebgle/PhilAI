@@ -3,7 +3,10 @@
 import { z } from "zod";
 
 const MUSE_URL = process.env.MUSE_API_URL ?? "https://api.meta.ai/v1/chat/completions";
-const MUSE_MODEL = process.env.MUSE_MODEL ?? "muse-spark-1.3";
+// Standard-mode ids only (no "-contributor": our content must not train Meta
+// models). On a 404 model_not_found, which Muse returns intermittently for one
+// id while the others stay healthy, the client moves down this list.
+const MODEL_CHAIN = [...new Set([process.env.MUSE_MODEL ?? "muse-spark-1.3", "muse-spark-1.2", "muse-spark-1.1"])];
 
 function sparkKey() {
   const k = process.env.MUSE_SPARK_API_KEY ?? process.env.MUSE_API_KEY;
@@ -13,7 +16,7 @@ function sparkKey() {
 
 export async function museText(system: string, user: string, opts: { temperature?: number; json?: boolean; timeoutMs?: number } = {}) {
   const body: Record<string, unknown> = {
-    model: MUSE_MODEL,
+    model: MODEL_CHAIN[0],
     messages: [
       { role: "system", content: system },
       { role: "user", content: user },
@@ -28,32 +31,39 @@ export async function museText(system: string, user: string, opts: { temperature
       body: JSON.stringify(b),
       signal: AbortSignal.timeout(timeoutMs),
     });
-  // Muse intermittently answers 404 model_not_found (about 1 call in 8 under
-  // load) and occasionally stalls or 429s, so retry any failure with a short
-  // backoff: up to 3 attempts in total.
-  const attempt = async (): Promise<Response> => {
-    let res = await post(opts.json === false ? body : { ...body, response_format: { type: "json_object" } });
-    if (res.status === 400 && opts.json !== false) res = await post(body);
+  // Muse intermittently answers 404 model_not_found for one model id while the
+  // others stay up, and occasionally stalls or 429s. On a 404 switch to the next
+  // Standard-mode model at once; on anything else back off and retry. Up to 5
+  // attempts in total.
+  const attempt = async (model: string): Promise<Response> => {
+    const b = { ...body, model };
+    let res = await post(opts.json === false ? b : { ...b, response_format: { type: "json_object" } });
+    if (res.status === 400 && opts.json !== false) res = await post(b);
     return res;
   };
-  const MAX = 3;
+  const MAX = 5;
+  let modelIdx = 0;
   let res: Response | null = null;
   let lastErr = "";
   for (let i = 0; i < MAX; i++) {
+    const model = MODEL_CHAIN[Math.min(modelIdx, MODEL_CHAIN.length - 1)];
+    let backoff = 600 * (i + 1);
     try {
-      res = await attempt();
+      res = await attempt(model);
       if (res.ok) break;
-      lastErr = `muse ${res.status}: ${(await res.text()).slice(0, 200)}`;
+      const text = (await res.text()).slice(0, 200);
+      lastErr = `muse ${res.status} (${model}): ${text}`;
       // Auth and quota problems will not fix themselves; fail fast on those.
-      if (res.status === 401 || res.status === 403 || res.status === 402) throw new Error(lastErr);
+      if (res.status === 401 || res.status === 402 || res.status === 403) throw new Error(lastErr);
+      if (res.status === 404 && /model_not_found/.test(text)) { modelIdx++; backoff = 0; }
     } catch (e) {
-      if (/^muse 40[123]:/.test((e as Error).message)) throw e;
-      lastErr = `${(e as Error).name}: ${(e as Error).message.slice(0, 120)}`;
+      if (/^muse 40[123] /.test((e as Error).message)) throw e;
+      lastErr = `${(e as Error).name} (${model}): ${(e as Error).message.slice(0, 120)}`;
     }
     res = null;
     if (i < MAX - 1) {
-      console.warn(`[muse] attempt ${i + 1} failed (${lastErr}), retrying`);
-      await new Promise((r) => setTimeout(r, 600 * (i + 1)));
+      console.warn(`[muse] attempt ${i + 1} failed: ${lastErr.slice(0, 140)}; retrying${backoff === 0 ? " with next model" : ""}`);
+      if (backoff) await new Promise((r) => setTimeout(r, backoff));
     }
   }
   if (!res) throw new Error(lastErr || "muse: no response");
