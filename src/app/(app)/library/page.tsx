@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { addLibraryItem, removeLibraryItem } from "./actions";
+import { PageTitle } from "@/components/Doodle";
 
 const TABS = [
   { id: "passages", label: "Passages" },
@@ -42,7 +43,7 @@ export default async function LibraryPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold tracking-tight">Saved</h1>
+      <PageTitle title="Saved" doodle="maple" />
       <nav className="flex gap-1 border-b border-rule text-sm">
         {TABS.map((t) => (
           <Link

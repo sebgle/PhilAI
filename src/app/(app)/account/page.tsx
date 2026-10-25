@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { DeleteAccount } from "./DeleteAccount";
 import { signOut } from "../../actions";
+import { PageTitle } from "@/components/Doodle";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -10,7 +11,7 @@ export default async function AccountPage() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Your account</h1>
+        <PageTitle title="Your account" doodle="mushroom" />
         <p>
           You are <span className="font-medium">{profile?.handle}</span>. Only you see this name. In the
           forums you get a fresh one in every thread.
