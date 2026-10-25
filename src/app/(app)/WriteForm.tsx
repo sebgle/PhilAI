@@ -87,9 +87,6 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
         </button>
         <MicButton onLive={setLive} onTranscript={(t) => setText((prev) => join(prev, t))} />
         {error && <span className="text-sm text-red-600">{error}</span>}
-        {prompt && !text && live === null && (
-          <span className="ml-auto text-[11px] text-muted/80">Click the prompt for a different one.</span>
-        )}
       </div>
     </section>
   );
