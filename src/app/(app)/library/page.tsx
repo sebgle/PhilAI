@@ -1,19 +1,19 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { addLibraryItem, removeLibraryItem } from "./actions";
+import { removeLibraryItem } from "./actions";
 import { PageTitle } from "@/components/PageTitle";
 
+// Everything here arrived through matching: passages the reader saved, and
+// the authors those passages came from. Nothing is added by hand.
 const TABS = [
   { id: "passages", label: "Passages" },
   { id: "authors", label: "Authors" },
-  { id: "books", label: "Books" },
-  { id: "quotes", label: "Quotes" },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
 
 type Item = {
   id: string;
-  kind: "passage" | "author" | "book" | "quote";
+  kind: "passage" | "author";
   ref: string | null;
   text: string | null;
   passage: { id: string; author: string; work: string; year: number | null; text: string } | null;
@@ -59,24 +59,6 @@ export default async function LibraryPage({
 
       {tab === "passages" && <Passages items={passages} />}
       {tab === "authors" && <Authors items={byKind("author")} passages={passages} />}
-      {tab === "books" && (
-        <HandAdded
-          kind="book"
-          items={byKind("book")}
-          empty="Add books you love. They'll help us find passages that suit you."
-          textLabel="Title"
-          refLabel="Author (optional)"
-        />
-      )}
-      {tab === "quotes" && (
-        <HandAdded
-          kind="quote"
-          items={byKind("quote")}
-          empty="Keep the lines that stay with you."
-          textLabel="Quote"
-          refLabel="Who said it (optional)"
-        />
-      )}
     </div>
   );
 }
@@ -149,73 +131,6 @@ function Authors({ items, passages }: { items: Item[]; passages: Item[] }) {
           );
         })}
       </ul>
-    </div>
-  );
-}
-
-function HandAdded({
-  kind,
-  items,
-  empty,
-  textLabel,
-  refLabel,
-}: {
-  kind: "book" | "quote";
-  items: Item[];
-  empty: string;
-  textLabel: string;
-  refLabel: string;
-}) {
-  return (
-    <div className="flex flex-col gap-5">
-      <form action={addLibraryItem} className="flex flex-col gap-2 sm:flex-row">
-        <input type="hidden" name="kind" value={kind} />
-        {kind === "quote" ? (
-          <textarea
-            name="text"
-            required
-            placeholder={textLabel}
-            aria-label={textLabel}
-            rows={2}
-            className="flex-1 rounded border border-rule bg-transparent px-3 py-2"
-          />
-        ) : (
-          <input
-            name="text"
-            required
-            placeholder={textLabel}
-            aria-label={textLabel}
-            className="flex-1 rounded border border-rule bg-transparent px-3 py-2"
-          />
-        )}
-        <input
-          name="ref"
-          placeholder={refLabel}
-          aria-label={refLabel}
-          className="rounded border border-rule bg-transparent px-3 py-2 sm:w-48"
-        />
-        <button type="submit" className="rounded-full bg-terracotta px-4 py-2 text-white hover:bg-terracotta-deep">
-          Add
-        </button>
-      </form>
-
-      {items.length ? (
-        <ul className="flex flex-col divide-y divide-rule">
-          {items.map((item) => (
-            <li key={item.id} className="flex items-start gap-3 py-3">
-              <div className="flex-1">
-                <p className={kind === "quote" ? "font-serif" : "font-medium"}>
-                  {kind === "quote" ? <>&ldquo;{item.text}&rdquo;</> : item.text}
-                </p>
-                {item.ref && <p className="text-sm text-muted">{kind === "quote" ? `— ${item.ref}` : item.ref}</p>}
-              </div>
-              <RemoveButton id={item.id} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-muted">{empty}</p>
-      )}
     </div>
   );
 }
