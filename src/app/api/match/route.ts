@@ -7,7 +7,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { embed } from "@/lib/embed";
 import {
   analyzeEntry, verifyLines, scoreCandidate, pickPerLine, phraseAndReason,
-  lineQuery, RISK_EXCLUDED_THEMES, type Candidate,
+  lineQuery, RISK_EXCLUDED_THEMES, withRetry, type Candidate,
 } from "@/lib/match-core";
 import type { MatchResponse, MatchLink, ThemeSlug } from "@/lib/contract";
 
@@ -57,11 +57,11 @@ async function match(req: Request) {
   const queries = fallback ? [analysis.summary || text.slice(0, 500)] : lines.map((l) => lineQuery(l.text, analysis.summary));
   const vectors = await embed(queries);
 
-  const retrieved: Candidate[][] = await Promise.all(vectors.map(async (v) => {
+  const retrieved: Candidate[][] = await Promise.all(vectors.map((v) => withRetry(async () => {
     const { data, error } = await admin.rpc("match_passages", { query_embedding: JSON.stringify(v), match_count: RETRIEVE });
     if (error) throw new Error(`match_passages: ${error.message}`);
     return (data ?? []) as Candidate[];
-  }));
+  })));
   const tasteAuthors = await tastePromise;
 
   let links: MatchLink[] = [];

@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import { embed } from "../src/lib/embed.ts";
 import { findSpan } from "../src/lib/exact-match.ts";
-import { analyzeEntry, verifyLines, scoreCandidate, pickPerLine, phraseAndReason, lineQuery, RISK_EXCLUDED_THEMES, type Candidate } from "../src/lib/match-core.ts";
+import { analyzeEntry, verifyLines, scoreCandidate, pickPerLine, phraseAndReason, lineQuery, RISK_EXCLUDED_THEMES, withRetry, type Candidate } from "../src/lib/match-core.ts";
 
 const args = process.argv.slice(2);
 const mode = (args.find((a) => a.startsWith("--mode="))?.split("=")[1] ?? "line+summary") as "line" | "line+summary";
@@ -22,11 +22,11 @@ const fallback = lines.length === 0;
 const queries = fallback ? [analysis.summary] : lines.map((l) => lineQuery(l.text, analysis.summary, mode));
 const vectors = await embed(queries);
 const excluded = analysis.risk_flag ? RISK_EXCLUDED_THEMES : new Set<string>();
-const retrieved: Candidate[][] = await Promise.all(vectors.map(async (v) => {
+const retrieved: Candidate[][] = await Promise.all(vectors.map((v) => withRetry(async () => {
   const { data, error } = await admin.rpc("match_passages", { query_embedding: JSON.stringify(v), match_count: 30 });
   if (error) throw new Error(`match_passages: ${error.message}`);
   return data as Candidate[];
-}));
+})));
 const tR = Date.now();
 console.log(`retrieve ${tR - tA}ms (${retrieved.map((r) => r.length).join(",")} candidates)`);
 if (fallback) {
