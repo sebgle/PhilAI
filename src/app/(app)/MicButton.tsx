@@ -109,10 +109,10 @@ export function MicButton({
         aria-pressed={state === "recording"}
         aria-label={label}
         title={label}
-        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors disabled:opacity-50 ${
+        className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors disabled:opacity-50 ${
           state === "recording"
-            ? "animate-pulse border-terracotta bg-terracotta/10 text-terracotta"
-            : "border-rule text-muted hover:bg-hover hover:text-foreground"
+            ? "animate-pulse bg-terracotta/10 text-terracotta"
+            : "text-muted hover:bg-hover hover:text-foreground"
         }`}
       >
         {state === "recording" ? <StopIcon /> : <MicIcon />}

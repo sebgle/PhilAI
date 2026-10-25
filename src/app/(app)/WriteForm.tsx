@@ -50,27 +50,32 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
         className="-mx-1 w-full rounded-md bg-transparent px-1 text-[2rem] font-semibold tracking-tight placeholder:text-foreground hover:bg-hover/60 focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
       />
 
-      {/* The prompt is the placeholder. While the box is empty, hovering it
-          shows ↻ in the corner for another prompt. */}
+      {/* The prompt plays the placeholder: drawn over the empty box in the
+          placeholder style, with ↻ right after the words, shown on hover.
+          Clicks on the words fall through to the box. */}
       <div className="group relative">
         <textarea
           value={live !== null ? join(text, live) : text}
           onChange={(e) => setText(e.target.value)}
           readOnly={live !== null}
-          placeholder={prompt ?? "Write what you need to get off your chest…"}
+          placeholder={prompt ? undefined : "Write what you need to get off your chest…"}
           aria-label="Journal entry"
+          aria-describedby={prompt && !text ? "prompt" : undefined}
           className="block h-[48vh] w-full resize-none overflow-y-auto bg-transparent text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
         />
-        {!text && live === null && (
-          <button
-            type="button"
-            onClick={() => setPrompt(randomPrompt(prompt))}
-            aria-label="Another prompt"
-            title="Another prompt"
-            className="absolute right-0 top-1 rounded-md p-1.5 text-muted opacity-0 transition-opacity hover:bg-hover hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
-          >
-            <RefreshIcon />
-          </button>
+        {prompt && !text && live === null && (
+          <div className="pointer-events-none absolute left-0 top-0 flex items-center gap-2 text-[17px] leading-[1.9]">
+            <span id="prompt" className="text-muted/60">{prompt}</span>
+            <button
+              type="button"
+              onClick={() => setPrompt(randomPrompt(prompt))}
+              aria-label="Another prompt"
+              title="Another prompt"
+              className="pointer-events-auto rounded-md p-1 text-muted opacity-0 transition-opacity hover:bg-hover hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+            >
+              <RefreshIcon />
+            </button>
+          </div>
         )}
       </div>
 
