@@ -95,6 +95,8 @@ Sync 1 notes (2026-10-24, late): `NEXT_PUBLIC_MATCH_MODE=live` is set in Vercel.
 
 **Stored results (2026-10-25 ~04:00, Teammate):** `/api/match` returns the stored analysis and `matches` rows for an entry that was already matched (response header `x-philai-match: stored|fresh|degraded`); send `{ "force": true }` to re-run. A Muse-down (degraded) result is returned but not stored, so the next visit re-runs for real. Scrub identifiers and moderation verdicts are cached by text hash in `llm_cache` (migration `20261025040000_llm_cache.sql`, server-only; apply any time, the code tolerates its absence), so the share preview and the post that follows cost one model call.
 
+**Alternates + "spoke to me" (2026-10-25 ~05:30, Teammate):** migration `20261025050000_match_alternates.sql` adds `matches.rank` (0 shown, 1-2 runners-up) and `matches.resonated`. Apply BEFORE merging: the match route inserts `rank`. Each highlighted line now shows its passage plus two runners-up by other authors, all with phrase + reason (nine Muse calls in parallel, same wall time as three). Every card has "Spoke to me": not a save, a ranking signal; resonated authors get taste weight 1.0 vs 0.6 for saved authors in `scoreCandidate`. `MatchLink.alternates` carries the runners-up; mocks have none.
+
 **Risk flag (tuned):** passive ideation ("would anyone notice if I stopped showing up") is now flagged; skipping class/practice is not. Spot-check with `scripts/test-risk.mts`.
 
 ## Sync 2: demo

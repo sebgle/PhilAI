@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { THEMES, type MatchLink, type MatchResponse } from "@/lib/contract";
 import { requestMatch, type MockVariant } from "@/lib/matching";
 import { SafetyCard } from "@/components/SafetyCard";
-import { setPassageStatus, type Status as Feedback } from "../../library/actions";
+import { setPassageStatus, setResonated, type Status as Feedback } from "../../library/actions";
 import { SharePanel } from "./SharePanel";
 
 // One highlighter per line; the passage's echoing phrase uses the same one.
@@ -57,6 +57,8 @@ export function Matches({
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Record<string, Feedback>>(initialFeedback);
+  // "Spoke to me" per passage, seeded from the stored rows.
+  const [resonated, setResonated_] = useState<Set<string>>(() => resonatedIn(initial));
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Muse has stretches of refusing requests that outlast one server call's
@@ -92,6 +94,14 @@ export function Matches({
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function toggleResonated(passageId: string) {
+    const was = resonated.has(passageId);
+    setResonated_((r) => { const n = new Set(r); if (was) n.delete(passageId); else n.add(passageId); return n; });
+    const { error } = await setResonated(entryId, passageId, !was);
+    setActionError(error);
+    if (error) setResonated_((r) => { const n = new Set(r); if (was) n.add(passageId); else n.delete(passageId); return n; });
+  }
 
   // Optimistic: flip the card now, roll back if the server refuses.
   async function setLinkFeedback(passageId: string, value: Feedback) {
@@ -141,6 +151,8 @@ export function Matches({
     color: COLORS[i % COLORS.length],
     feedback: feedback[link.passage.id] ?? null,
     onFeedback: (v: Feedback) => setLinkFeedback(link.passage.id, v),
+    resonated: resonated.has(link.passage.id),
+    onResonate: () => toggleResonated(link.passage.id),
     canShare: !locked,
   });
 
@@ -174,10 +186,29 @@ export function Matches({
             : "No passages found for this entry yet."}
         </p>
       ) : (
-        <PassageCard key={selected} {...cardProps(match.links[selected], selected)} />
+        <div key={selected} className="flex flex-col gap-4">
+          <PassageCard {...cardProps(match.links[selected], selected)} />
+          {(match.links[selected].alternates?.length ?? 0) > 0 && (
+            <>
+              <p className="text-sm text-muted">Two more that came close. Tell us which ones spoke to you.</p>
+              {match.links[selected].alternates!.map((alt) => (
+                <PassageCard key={alt.passage.id} {...cardProps(alt, selected)} />
+              ))}
+            </>
+          )}
+        </div>
       )}
     </div>
   );
+}
+
+function resonatedIn(m: MatchResponse | null) {
+  const out = new Set<string>();
+  for (const l of m?.links ?? []) {
+    if (l.resonated) out.add(l.passage.id);
+    for (const a of l.alternates ?? []) if (a.resonated) out.add(a.passage.id);
+  }
+  return out;
 }
 
 // The entry with each verified line wrapped in its color. Spans come straight
@@ -242,6 +273,8 @@ function PassageCard({
   color,
   feedback,
   onFeedback,
+  resonated,
+  onResonate,
   canShare,
 }: {
   entryId: string;
@@ -249,6 +282,8 @@ function PassageCard({
   color: (typeof COLORS)[number];
   feedback: Feedback;
   onFeedback: (v: Feedback) => void;
+  resonated: boolean;
+  onResonate: () => void;
   canShare: boolean;
 }) {
   const [sharing, setSharing] = useState(false);
@@ -288,6 +323,15 @@ function PassageCard({
       <p className="mt-3 text-sm italic opacity-80">{link.reason}</p>
 
       <div className="mt-4 flex flex-wrap gap-2 text-sm">
+        <button
+          type="button"
+          onClick={onResonate}
+          aria-pressed={resonated}
+          title="Not a bookmark: it tells the matcher what moves you."
+          className="rounded border border-rule px-3 py-1 hover:bg-hover aria-pressed:border-foreground aria-pressed:bg-hover"
+        >
+          {resonated ? "♥ Spoke to me" : "♡ Spoke to me"}
+        </button>
         <button
           type="button"
           onClick={() => onFeedback("saved")}

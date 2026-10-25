@@ -5,6 +5,7 @@ import { LocalDate } from "@/components/LocalDate";
 import type { MatchLink, MatchResponse } from "@/lib/contract";
 import type { MockVariant } from "@/lib/matching";
 import { Matches } from "./Matches";
+import { groupAlternates } from "@/lib/match-links";
 import { EntryTitle } from "./EntryTitle";
 
 const VARIANTS: MockVariant[] = ["match", "fallback", "risk"];
@@ -39,12 +40,13 @@ export default async function EntryPage({
   const { data: rows } = await supabase
     .from("matches")
     .select(
-      "line_text, line_start, line_end, theme, phrase_start, phrase_end, score, reason, feedback, passage:passages(id, author, work, year, text)",
+      "line_text, line_start, line_end, theme, phrase_start, phrase_end, score, reason, feedback, rank, resonated, passage:passages(id, author, work, year, text)",
     )
     .eq("entry_id", id)
-    .order("line_start", { ascending: true, nullsFirst: false });
+    .order("line_start", { ascending: true, nullsFirst: false })
+    .order("rank", { ascending: true });
 
-  const links = (rows ?? []) as unknown as MatchLink[];
+  const links = groupAlternates((rows ?? []) as unknown as (MatchLink & { rank: number })[]);
   const analyzed = entry.summary !== null || entry.risk_flag || links.length > 0;
   const initial: MatchResponse | null = analyzed
     ? {

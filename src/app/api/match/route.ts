@@ -10,7 +10,14 @@ import {
   analyzeEntry, verifyLines, scoreCandidate, pickPerLine, phraseAndReason,
   lineQuery, RISK_EXCLUDED_THEMES, withRetry, type Candidate,
 } from "@/lib/match-core";
+
+// Runners-up kept per line, shown under the chosen passage.
+const ALTERNATES = 2;
+// Taste weights: a library save counts, a "spoke to me" counts more.
+const TASTE_SAVED = 0.6, TASTE_RESONATED = 1;
+const PLAIN_REASON = "This passage carries the same feeling as your line.";
 import type { MatchResponse, MatchLink, ThemeSlug } from "@/lib/contract";
+import { groupAlternates } from "@/lib/match-links";
 
 export const runtime = "nodejs";
 // 90 s: Muse analysis + 3 phrase calls, with headroom for the model fallback
@@ -60,10 +67,11 @@ async function match(req: Request) {
   // double submit must not spend 20 s and five model calls on the same entry.
   if (body?.force !== true && (entry.summary !== null || entry.risk_flag)) {
     const { data: rows } = await admin.from("matches")
-      .select("line_text, line_start, line_end, theme, phrase_start, phrase_end, score, reason, passage:passages(id, author, work, year, text)")
+      .select("line_text, line_start, line_end, theme, phrase_start, phrase_end, score, reason, rank, resonated, passage:passages(id, author, work, year, text)")
       .eq("entry_id", entryId)
-      .order("line_start", { ascending: true, nullsFirst: false });
-    const links = (rows ?? []) as unknown as MatchLink[];
+      .order("line_start", { ascending: true, nullsFirst: false })
+      .order("rank", { ascending: true });
+    const links = groupAlternates((rows ?? []) as unknown as (MatchLink & { rank: number })[]);
     const stored: MatchResponse = {
       entry_id: entryId, emotions: entry.emotions, themes: entry.themes, risk_flag: entry.risk_flag,
       fallback: links.length > 0 && links[0].line_text === null, links,
@@ -71,12 +79,23 @@ async function match(req: Request) {
     return NextResponse.json(stored, { headers: { "x-philai-match": "stored" } });
   }
 
-  // Taste signal: authors the user saved or favorited.
-  const tastePromise = admin.from("library_items").select("ref, passage_id, passages(author)").eq("user_id", user.id)
-    .then(({ data }) => new Set((data ?? []).flatMap((r: { ref: string | null; passages: { author: string } | { author: string }[] | null }) => {
-      const p = Array.isArray(r.passages) ? r.passages[0] : r.passages;
-      return [r.ref, p?.author].filter((x): x is string => !!x);
-    })));
+  // Taste signal: authors the user saved or favorited, and, weighted higher,
+  // authors of passages they said spoke to them.
+  const tastePromise = Promise.all([
+    admin.from("library_items").select("ref, passage_id, passages(author)").eq("user_id", user.id),
+    admin.from("matches").select("passages(author), entries!inner(user_id)").eq("resonated", true).eq("entries.user_id", user.id),
+  ]).then(([saved, resonated]) => {
+    const taste = new Map<string, number>();
+    const one = (p: { author: string } | { author: string }[] | null) => (Array.isArray(p) ? p[0] : p)?.author;
+    for (const r of (saved.data ?? []) as { ref: string | null; passages: { author: string } | { author: string }[] | null }[]) {
+      for (const a of [r.ref, one(r.passages)]) if (a) taste.set(a, Math.max(taste.get(a) ?? 0, TASTE_SAVED));
+    }
+    for (const r of (resonated.data ?? []) as { passages: { author: string } | { author: string }[] | null }[]) {
+      const a = one(r.passages);
+      if (a) taste.set(a, TASTE_RESONATED);
+    }
+    return taste;
+  });
 
   let analysis: Analysis;
   let museDown = false;
@@ -108,17 +127,35 @@ async function match(req: Request) {
       .sort((a, b) => b.s - a.s).map((x) => x.c));
     const scoreOf = (c: Candidate, i: number) => scoreCandidate(c, analysis.emotions, [lines[i].theme, ...analysis.themes], tasteAuthors);
     const picks = pickPerLine(lines, scored, scoreOf, excluded);
+    // Runners-up for each line: the next best candidates by a different
+    // author than the chosen one (and than each other).
+    const alternatesFor = (i: number, chosen: Candidate) => {
+      const out: { cand: Candidate; score: number }[] = [];
+      const authors = new Set([chosen.author]);
+      for (const c of scored[i]) {
+        if (out.length === ALTERNATES) break;
+        if (authors.has(c.author) || c.themes.some((t) => excluded.has(t))) continue;
+        authors.add(c.author);
+        out.push({ cand: c, score: scoreOf(c, i) });
+      }
+      return out;
+    };
+    // One phrase+reason call per card, all in parallel: nine calls take about
+    // as long as the slowest one, not nine times as long.
+    const describe = (i: number, p: { cand: Candidate; score: number }) =>
+      withRetry(() => phraseAndReason(lines[i].text, analysis.summary, p.cand), 2, 500)
+        .catch(() => ({ phrase_start: null, phrase_end: null, reason: PLAIN_REASON }))
+        .then((pr) => ({
+          line_text: lines[i].text, line_start: lines[i].start, line_end: lines[i].end, theme: lines[i].theme,
+          passage: { id: p.cand.id, author: p.cand.author, work: p.cand.work, year: p.cand.year, text: p.cand.text },
+          phrase_start: pr.phrase_start, phrase_end: pr.phrase_end, reason: pr.reason, score: Number(p.score.toFixed(3)),
+        }) as MatchLink);
     const results = await Promise.all(picks.map(async (p, i) => {
       if (!p) return null;
-      const pr = await withRetry(() => phraseAndReason(lines[i].text, analysis.summary, p.cand), 2, 500)
-        .catch(() => ({ phrase_start: null, phrase_end: null, reason: "This passage carries the same feeling as your line." }));
-      return { i, p, pr };
+      const [primary, ...alternates] = await Promise.all([describe(i, p), ...alternatesFor(i, p.cand).map((a) => describe(i, a))]);
+      return { ...primary, alternates };
     }));
-    links = results.filter((r): r is NonNullable<typeof r> => !!r).map(({ i, p, pr }) => ({
-      line_text: lines[i].text, line_start: lines[i].start, line_end: lines[i].end, theme: lines[i].theme,
-      passage: { id: p.cand.id, author: p.cand.author, work: p.cand.work, year: p.cand.year, text: p.cand.text },
-      phrase_start: pr.phrase_start, phrase_end: pr.phrase_end, reason: pr.reason, score: Number(p.score.toFixed(3)),
-    }));
+    links = results.filter((r): r is NonNullable<typeof r> => !!r);
   } else {
     const cands = retrieved[0]
       .map((c) => ({ c, s: scoreCandidate(c, analysis.emotions, analysis.themes, tasteAuthors) }))
@@ -157,12 +194,15 @@ async function match(req: Request) {
   }).eq("id", entryId);
   await admin.from("matches").delete().eq("entry_id", entryId);
   if (links.length) {
-    const { error: insErr } = await admin.from("matches").insert(links.map((l) => ({
+    const row = (l: MatchLink, rank: number) => ({
       entry_id: entryId, line_text: l.line_text, line_start: l.line_start, line_end: l.line_end, theme: l.theme,
-      passage_id: l.passage.id, phrase_start: l.phrase_start, phrase_end: l.phrase_end, score: l.score, reason: l.reason,
-    })));
+      passage_id: l.passage.id, phrase_start: l.phrase_start, phrase_end: l.phrase_end, score: l.score, reason: l.reason, rank,
+    });
+    const rows = links.flatMap((l) => [row(l, 0), ...(l.alternates ?? []).map((a, k) => row(a, k + 1))]);
+    const { error: insErr } = await admin.from("matches").insert(rows);
     if (insErr) console.error("[match] insert matches:", insErr.message);
   }
 
   return NextResponse.json(res, { headers: { "x-philai-match": "fresh" } });
 }
+
