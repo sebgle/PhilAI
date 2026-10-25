@@ -8,6 +8,7 @@ import { groupAlternates } from "@/lib/match-links";
 import { withQualityFeedback } from "@/lib/match-feedback";
 import { isCurrentMatch } from "@/lib/match-version";
 import { EntryTitle } from "./EntryTitle";
+import { EntryBody } from "./EntryBody";
 import { Breadcrumb } from "@/components/Breadcrumb";
 
 const VARIANTS: MockVariant[] = ["match", "fallback", "risk"];
@@ -82,19 +83,21 @@ export default async function EntryPage({
       <div>
         <Breadcrumb href="/entries" label="Entries" />
         <EntryTitle entryId={entry.id} initial={entry.title} fallback={`Entry #${entryNumber ?? ""}`} />
-        <div className="mt-1 text-sm text-muted">
-          <LocalDate iso={entry.created_at} withTime />
-        </div>
       </div>
-      {entry.prompt && <p className="text-sm italic text-muted">{entry.prompt}</p>}
-      <Matches
-        entryId={entry.id}
-        text={entry.text}
-        initial={initial}
-        initialRiskFlag={entry.risk_flag}
-        initialFeedback={initialFeedback}
-        mockVariant={VARIANTS.includes(mock as MockVariant) ? (mock as MockVariant) : "match"}
-      />
+      <EntryBody entryId={entry.id} text={entry.text} date={<LocalDate iso={entry.created_at} withTime />}>
+        {entry.prompt && <p className="text-sm italic text-muted">{entry.prompt}</p>}
+        {/* Keyed on the text so an edit remounts it with no matches, which
+            starts matching the new text. */}
+        <Matches
+          key={entry.text}
+          entryId={entry.id}
+          text={entry.text}
+          initial={initial}
+          initialRiskFlag={entry.risk_flag}
+          initialFeedback={initialFeedback}
+          mockVariant={VARIANTS.includes(mock as MockVariant) ? (mock as MockVariant) : "match"}
+        />
+      </EntryBody>
     </article>
   );
 }
