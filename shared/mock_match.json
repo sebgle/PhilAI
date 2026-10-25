@@ -28,7 +28,9 @@
       "phrase_start": 21,
       "phrase_end": 47,
       "reason": "You both describe holding it together on the outside while something heavier sits underneath.",
-      "score": 0.58
+      "score": 0.58,
+      "connection_kind": "recognition",
+      "quality_feedback": null
     },
     {
       "line_text": "I don't belong anywhere yet",
@@ -45,7 +47,9 @@
       "phrase_start": 0,
       "phrase_end": 24,
       "reason": "You both name the ache of being surrounded by people and still having no one who is yours.",
-      "score": 0.51
+      "score": 0.51,
+      "connection_kind": "recognition",
+      "quality_feedback": null
     },
     {
       "line_text": "I miss my mom's kitchen",
@@ -62,7 +66,9 @@
       "phrase_start": 13,
       "phrase_end": 50,
       "reason": "You both describe missing a place while being relieved to be gone.",
-      "score": 0.47
+      "score": 0.47,
+      "connection_kind": "recognition",
+      "quality_feedback": null
     }
   ]
 }

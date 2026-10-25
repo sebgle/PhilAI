@@ -6,6 +6,7 @@ import type { MatchLink, MatchResponse } from "@/lib/contract";
 import type { MockVariant } from "@/lib/matching";
 import { Matches } from "./Matches";
 import { groupAlternates } from "@/lib/match-links";
+import { withQualityFeedback } from "@/lib/match-feedback";
 import { isCurrentMatch } from "@/lib/match-version";
 import { EntryTitle } from "./EntryTitle";
 import { Backdrop } from "@/components/Backdrop";
@@ -42,7 +43,7 @@ export default async function EntryPage({
   const { data: rows, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "line_text, line_start, line_end, theme, phrase_start, phrase_end, score, reason, feedback, rank, resonated, passage:passages(id, author, work, year, text)",
+      "line_text, line_start, line_end, theme, phrase_start, phrase_end, score, reason, feedback, rank, resonated, connection_kind, passage:passages(id, author, work, year, text)",
     )
     .eq("entry_id", id)
     .eq("generation", entry.match_generation ?? "00000000-0000-0000-0000-000000000000")
@@ -50,7 +51,10 @@ export default async function EntryPage({
     .order("rank", { ascending: true });
 
   if (matchesError) throw new Error("Could not load saved matches");
-  const links = groupAlternates((rows ?? []) as unknown as (MatchLink & { rank: number })[]);
+  const { data: qualityRows, error: qualityError } = await supabase.from("match_quality_feedback")
+    .select("passage_id, rating").eq("entry_id", id);
+  if (qualityError) throw new Error("Could not load match feedback");
+  const links = withQualityFeedback(groupAlternates((rows ?? []) as unknown as (MatchLink & { rank: number })[]), qualityRows ?? []);
   const analyzed = isCurrentMatch(entry);
   const initial: MatchResponse | null = analyzed
     ? {

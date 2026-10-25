@@ -121,3 +121,7 @@ Querying `posts`/`replies` from the client means listing columns explicitly. `se
 ### Insight-based matching
 
 The current matcher compares actual candidate passages for specific fit and useful perspective before selecting cards. It can return no match when the connection is weak. Apply `supabase/migrations/20261025060000_insight_matches.sql` before deploying this version. See [implementation, checks, and evaluation limits](docs/insight-matching.md). Run `npm run test:matching` for the offline matching and storage tests.
+
+### Matching version 3
+
+The next matcher searches situations, tensions, and perspectives across semantic retrieval and 24 curated passage annotations. It adds distinct alternate purposes and private quality feedback separate from bookmarks. Apply `supabase/migrations/20261025070000_richer_passage_matching.sql` before deploying version 3. See [preview steps, controlled evaluation, and limits](docs/richer-matching.md). Run `npm run evaluate:retrieval` for the offline retrieval benchmark.

@@ -1,0 +1,681 @@
+{
+  "method": "Controlled offline recall@10 with authored queries and expected passages; not model selection or a blind test. Candidate corpus quality>=3; production corpus may differ.",
+  "corpus_size": 911,
+  "positive_cases": 20,
+  "baseline_hits": 8,
+  "expanded_hits": 20,
+  "baseline_recall": 0.4,
+  "expanded_recall": 1,
+  "results": [
+    {
+      "id": "empty-success",
+      "expected": [
+        "p_205_f6226ba4"
+      ],
+      "baseline_hit": true,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_205_c26eb8ae",
+        "p_1524_722b53a3",
+        "p_1322_b8133d59",
+        "p_58585_7741853a",
+        "p_1952_d1df101a",
+        "p_64317_60b767a5",
+        "p_205_9abed0cd",
+        "p_113_cc2754ac",
+        "p_205_f6226ba4",
+        "p_174_001e735d"
+      ],
+      "expanded_ids": [
+        "p_113_cc2754ac",
+        "p_105_1dc3f305",
+        "p_1524_722b53a3",
+        "p_205_9abed0cd",
+        "p_2944_0cc3142f",
+        "p_205_f6226ba4",
+        "p_205_c26eb8ae",
+        "p_1260_59826312",
+        "p_12242_079e3015",
+        "p_12242_0c6a7207"
+      ]
+    },
+    {
+      "id": "understood",
+      "expected": [
+        "p_1260_59826312"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_219_bc6aca1e",
+        "p_1952_585c69ac",
+        "p_216_a11cb92a",
+        "p_205_8307092c",
+        "p_84_642cd766",
+        "p_219_2b13f624",
+        "p_113_8bfe380f",
+        "p_2944_3d5e1078",
+        "p_1322_a8ccdf72",
+        "p_58585_674a2a69"
+      ],
+      "expanded_ids": [
+        "p_84_642cd766",
+        "p_1260_59826312",
+        "p_1952_585c69ac",
+        "p_4217_d8294011",
+        "p_12242_0c6a7207",
+        "p_205_e612206b",
+        "p_2944_28f2257c",
+        "p_58585_87ef2a4f",
+        "p_67138_54934677",
+        "p_219_bc6aca1e"
+      ]
+    },
+    {
+      "id": "welcome-solitude",
+      "expected": [
+        "p_205_e612206b"
+      ],
+      "baseline_hit": true,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_205_e612206b",
+        "p_205_ecb9c7eb",
+        "p_2944_40f5ba34",
+        "p_541_64d8a210",
+        "p_23_682ae07c",
+        "p_1322_ff954469",
+        "p_45_10158e32",
+        "p_2554_cc760bbc",
+        "p_1998_b92f98a4",
+        "p_16_3a599868"
+      ],
+      "expanded_ids": [
+        "p_205_ecb9c7eb",
+        "p_921_b1618d93",
+        "p_16_3a599868",
+        "p_205_e612206b",
+        "p_2944_40f5ba34",
+        "p_1322_ff954469",
+        "p_2554_cc760bbc",
+        "p_45_10158e32",
+        "p_1998_b92f98a4",
+        "p_541_64d8a210"
+      ]
+    },
+    {
+      "id": "one-mistake",
+      "expected": [
+        "p_58585_8012715b"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_1342_1c2822ed",
+        "p_153_a550dcdd",
+        "p_921_070dd690",
+        "p_145_dcbdf272",
+        "p_18269_d086cdb2",
+        "p_766_7f5189cb",
+        "p_2701_b9929036",
+        "p_153_7d08204d",
+        "p_23_7ce60994",
+        "p_18269_227fae9f"
+      ],
+      "expanded_ids": [
+        "p_145_dcbdf272",
+        "p_4217_c462f560",
+        "p_4217_ea5b762d",
+        "p_4363_0dccf948",
+        "p_58585_8012715b",
+        "p_23_7ce60994",
+        "p_766_7f5189cb",
+        "p_18269_227fae9f",
+        "p_135_2d4ab4f0",
+        "p_135_cf63ddd1"
+      ]
+    },
+    {
+      "id": "approval",
+      "expected": [
+        "p_23_7ce60994"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_110_de953026",
+        "p_600_76858825",
+        "p_541_4a5711eb",
+        "p_1400_6b543883",
+        "p_1260_09ebf724",
+        "p_1998_4cd90813",
+        "p_219_09a32bf7",
+        "p_10661_191859c0",
+        "p_2944_df5f2ff3",
+        "p_174_da897791"
+      ],
+      "expanded_ids": [
+        "p_110_de953026",
+        "p_4217_c462f560",
+        "p_110_4fc27b3b",
+        "p_23_7ce60994",
+        "p_216_3c89e416",
+        "p_216_b02f58de",
+        "p_145_dcbdf272",
+        "p_135_154c0027",
+        "p_4217_b18f45af",
+        "p_10661_5eaa4813"
+      ]
+    },
+    {
+      "id": "ordinary-contentment",
+      "expected": [
+        "p_921_b1618d93"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_45_582e6d42",
+        "p_1952_d1df101a",
+        "p_2554_6a42bf86",
+        "p_600_0927b2ca",
+        "p_1952_7ba61a53",
+        "p_4217_334d0a71",
+        "p_215_5bbc7812",
+        "p_205_c26eb8ae",
+        "p_6688_d9171109",
+        "p_766_4d29dadf"
+      ],
+      "expanded_ids": [
+        "p_113_a3770290",
+        "p_921_b1618d93",
+        "p_408_1b168ccc",
+        "p_1260_59826312",
+        "p_28054_ad1b0177",
+        "p_135_cf63ddd1",
+        "p_216_b02f58de",
+        "p_216_4b226d6d",
+        "p_12242_079e3015",
+        "p_4217_b18f45af"
+      ]
+    },
+    {
+      "id": "changed-grief",
+      "expected": [
+        "p_18269_06ccb609"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_2413_c7f2f5c3",
+        "p_416_0b2bd4da",
+        "p_766_8abf2bbb",
+        "p_1400_661c64b1",
+        "p_84_4d19278d",
+        "p_2413_66d49526",
+        "p_1727_bd1668a0",
+        "p_1322_57b2e928",
+        "p_23_ffd394f8",
+        "p_1041_4231a2ff"
+      ],
+      "expanded_ids": [
+        "p_416_0b2bd4da",
+        "p_110_4b17f04e",
+        "p_2413_0c04aefe",
+        "p_18269_06ccb609",
+        "p_113_8dc8e8d2",
+        "p_135_cf63ddd1",
+        "p_12242_0c6a7207",
+        "p_2413_c7f2f5c3",
+        "p_135_4be02f59",
+        "p_12242_079e3015"
+      ]
+    },
+    {
+      "id": "joy-and-grief",
+      "expected": [
+        "p_58585_6cc5a163"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_766_8abf2bbb",
+        "p_289_e04b3bce",
+        "p_289_17210c0b",
+        "p_2413_66d49526",
+        "p_766_4d29dadf",
+        "p_541_e8428d43",
+        "p_766_bb932d5d",
+        "p_58585_7741853a",
+        "p_1260_9deee91f",
+        "p_1727_bd1668a0"
+      ],
+      "expanded_ids": [
+        "p_766_8abf2bbb",
+        "p_110_4b17f04e",
+        "p_58585_6cc5a163",
+        "p_2814_4e897e82",
+        "p_58585_7741853a",
+        "p_2413_027b19f2",
+        "p_541_e8428d43",
+        "p_135_cf63ddd1",
+        "p_1041_3d77cccf",
+        "p_2944_28f2257c"
+      ]
+    },
+    {
+      "id": "shared-world",
+      "expected": [
+        "p_110_4b17f04e"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_216_6997d8cd",
+        "p_3296_75bf04ae",
+        "p_113_cd5b1ab2",
+        "p_3296_3c97533f",
+        "p_64317_a039ebac",
+        "p_3296_c8b39d64",
+        "p_84_642cd766",
+        "p_600_52cab856",
+        "p_215_0219c401",
+        "p_219_db95a314"
+      ],
+      "expanded_ids": [
+        "p_216_6997d8cd",
+        "p_110_4b17f04e",
+        "p_219_bc6aca1e",
+        "p_2944_3d5e1078",
+        "p_2944_28f2257c",
+        "p_12242_0c6a7207",
+        "p_28054_ad1b0177",
+        "p_135_4be02f59",
+        "p_921_b1618d93",
+        "p_1260_59826312"
+      ]
+    },
+    {
+      "id": "making-identity",
+      "expected": [
+        "p_4217_c462f560"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_3296_bf12799a",
+        "p_416_7c378824",
+        "p_153_7d08204d",
+        "p_205_6e1dabdd",
+        "p_153_17fe2afe",
+        "p_18269_43be89f4",
+        "p_766_efe16ac5",
+        "p_921_dc953313",
+        "p_1260_d64cbd91",
+        "p_145_ed1f808d"
+      ],
+      "expanded_ids": [
+        "p_3296_bf12799a",
+        "p_28054_ad1b0177",
+        "p_18269_43be89f4",
+        "p_216_b02f58de",
+        "p_4217_c462f560",
+        "p_12242_0c6a7207",
+        "p_58585_8012715b",
+        "p_4217_b18f45af",
+        "p_10661_a1bdb911",
+        "p_1041_3d77cccf"
+      ]
+    },
+    {
+      "id": "outsiders",
+      "expected": [
+        "p_12242_0c6a7207"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_3296_37b2b711",
+        "p_145_4445c95f",
+        "p_23_682ae07c",
+        "p_408_126d31f9",
+        "p_174_da897791",
+        "p_1322_2cd0008f",
+        "p_216_a14503bc",
+        "p_2944_f6ea0b0a",
+        "p_408_d8768d48",
+        "p_1342_2bdbc478"
+      ],
+      "expanded_ids": [
+        "p_67138_f6454c04",
+        "p_12242_0c6a7207",
+        "p_219_bc6aca1e",
+        "p_2944_40f5ba34",
+        "p_4217_c462f560",
+        "p_135_cf63ddd1",
+        "p_205_e612206b",
+        "p_1260_59826312",
+        "p_135_4be02f59",
+        "p_18269_06ccb609"
+      ]
+    },
+    {
+      "id": "distant-success",
+      "expected": [
+        "p_12242_079e3015"
+      ],
+      "baseline_hit": true,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_1524_722b53a3",
+        "p_2701_b9929036",
+        "p_2413_cdba9635",
+        "p_18269_7eb43296",
+        "p_12242_079e3015",
+        "p_1998_4cb4865b",
+        "p_205_c26eb8ae",
+        "p_1727_8a7f68b0",
+        "p_289_17210c0b",
+        "p_2413_5578a636"
+      ],
+      "expanded_ids": [
+        "p_2413_cdba9635",
+        "p_110_4b17f04e",
+        "p_1524_722b53a3",
+        "p_12242_079e3015",
+        "p_205_9abed0cd",
+        "p_1041_3d77cccf",
+        "p_205_c26eb8ae",
+        "p_2701_b9929036",
+        "p_2814_1429346f",
+        "p_105_1dc3f305"
+      ]
+    },
+    {
+      "id": "independent-risk",
+      "expected": [
+        "p_4217_b18f45af"
+      ],
+      "baseline_hit": true,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_23_cfe201ab",
+        "p_4217_b18f45af",
+        "p_153_7d08204d",
+        "p_766_7f5189cb",
+        "p_4217_bad809d7",
+        "p_23_513c246e",
+        "p_160_704444c9",
+        "p_145_a800ab25",
+        "p_174_a32fcefe",
+        "p_1399_5d220bea"
+      ],
+      "expanded_ids": [
+        "p_4217_b18f45af",
+        "p_58585_43ef1819",
+        "p_4363_bb95f987",
+        "p_921_b1618d93",
+        "p_1260_59826312",
+        "p_12242_079e3015",
+        "p_2680_be5dc3f2",
+        "p_10661_9c007d5a",
+        "p_105_1dc3f305",
+        "p_23_cfe201ab"
+      ]
+    },
+    {
+      "id": "busy-life",
+      "expected": [
+        "p_205_c64bb865"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_160_f3cb17a4",
+        "p_12242_32810f29",
+        "p_1952_f0f8ff15",
+        "p_408_b639072a",
+        "p_105_e4c513af",
+        "p_2814_f6e95c88",
+        "p_12242_46beb4ae",
+        "p_2814_622ed8d4",
+        "p_216_06dabc58",
+        "p_63107_ab76b1b1"
+      ],
+      "expanded_ids": [
+        "p_1952_f0f8ff15",
+        "p_205_c64bb865",
+        "p_4363_f0313898",
+        "p_219_2b13f624",
+        "p_28054_ad1b0177",
+        "p_145_04fbb9c9",
+        "p_205_9abed0cd",
+        "p_216_06dabc58",
+        "p_4217_b18f45af",
+        "p_2814_bdf7679a"
+      ]
+    },
+    {
+      "id": "doubt-and-love",
+      "expected": [
+        "p_28054_ad1b0177"
+      ],
+      "baseline_hit": true,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_28054_ad1b0177",
+        "p_921_975d3b9e",
+        "p_216_97b2407c",
+        "p_2944_0cc3142f",
+        "p_768_7b8f9c15",
+        "p_113_8bfe380f",
+        "p_600_4dd677d9",
+        "p_1322_279860e0",
+        "p_3296_cc0e86b1",
+        "p_1399_320e0f73"
+      ],
+      "expanded_ids": [
+        "p_28054_ad1b0177",
+        "p_921_975d3b9e",
+        "p_110_c8425d6a",
+        "p_145_04fbb9c9",
+        "p_921_b1618d93",
+        "p_205_c64bb865",
+        "p_2814_bdf7679a",
+        "p_110_4b17f04e",
+        "p_12242_63dd2dec",
+        "p_4363_343bc5d3"
+      ]
+    },
+    {
+      "id": "uncertain-love",
+      "expected": [
+        "p_105_1dc3f305"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_153_270b45f4",
+        "p_1727_d227519e",
+        "p_58585_951d0942",
+        "p_153_4c97deb7",
+        "p_67138_309e43d2",
+        "p_2554_73a7335f",
+        "p_1400_8244c43a",
+        "p_921_58cbe176",
+        "p_1998_efb6252f",
+        "p_921_9721be0f"
+      ],
+      "expanded_ids": [
+        "p_160_96458fa7",
+        "p_105_1dc3f305",
+        "p_1998_efb6252f",
+        "p_145_04fbb9c9",
+        "p_1260_9deee91f",
+        "p_84_75f1c1fc",
+        "p_58585_7741853a",
+        "p_18269_b4d2a474",
+        "p_205_c64bb865",
+        "p_2413_5578a636"
+      ]
+    },
+    {
+      "id": "guest",
+      "expected": [
+        "p_135_4be02f59"
+      ],
+      "baseline_hit": true,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_135_4be02f59",
+        "p_45_1172bf36",
+        "p_1400_6b543883",
+        "p_23_9c654a85",
+        "p_105_a6f1982d",
+        "p_28054_a4dc9c61",
+        "p_64317_a039ebac",
+        "p_921_83946ae6",
+        "p_84_78a8ff4c",
+        "p_145_dc1810c5"
+      ],
+      "expanded_ids": [
+        "p_135_4be02f59",
+        "p_219_db95a314",
+        "p_1260_59826312",
+        "p_45_1172bf36",
+        "p_12242_0c6a7207",
+        "p_2944_28f2257c",
+        "p_1400_6b543883",
+        "p_1041_3d77cccf",
+        "p_2500_0e421afd",
+        "p_12242_079e3015"
+      ]
+    },
+    {
+      "id": "remember-and-live",
+      "expected": [
+        "p_2814_bdf7679a"
+      ],
+      "baseline_hit": true,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_2814_bdf7679a",
+        "p_766_8abf2bbb",
+        "p_135_6f64020d",
+        "p_766_bb932d5d",
+        "p_67138_94b5ce1a",
+        "p_766_4d29dadf",
+        "p_2680_5a125046",
+        "p_2413_66d49526",
+        "p_1998_4cb4865b",
+        "p_1400_ab461f7a"
+      ],
+      "expanded_ids": [
+        "p_2814_bdf7679a",
+        "p_766_bb932d5d",
+        "p_145_04fbb9c9",
+        "p_205_9abed0cd",
+        "p_766_8abf2bbb",
+        "p_766_4d29dadf",
+        "p_4217_b18f45af",
+        "p_921_b1618d93",
+        "p_1260_59826312",
+        "p_2680_af6a58fb"
+      ]
+    },
+    {
+      "id": "own-dream",
+      "expected": [
+        "p_205_9abed0cd"
+      ],
+      "baseline_hit": true,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_67138_309e43d2",
+        "p_2500_544036e9",
+        "p_3296_10e333d2",
+        "p_45_1172bf36",
+        "p_416_569be0a7",
+        "p_408_50dce5cd",
+        "p_416_f0a7a473",
+        "p_921_58cbe176",
+        "p_205_9abed0cd",
+        "p_113_8dc8e8d2"
+      ],
+      "expanded_ids": [
+        "p_3296_10e333d2",
+        "p_145_04fbb9c9",
+        "p_205_9abed0cd",
+        "p_1260_59826312",
+        "p_416_f0a7a473",
+        "p_2944_28f2257c",
+        "p_110_4b17f04e",
+        "p_205_c64bb865",
+        "p_84_0ea5f4bd",
+        "p_416_569be0a7"
+      ]
+    },
+    {
+      "id": "enough",
+      "expected": [
+        "p_216_b02f58de"
+      ],
+      "baseline_hit": false,
+      "expanded_hit": true,
+      "baseline_ids": [
+        "p_2701_b9929036",
+        "p_921_e1d05945",
+        "p_205_c26eb8ae",
+        "p_219_94468daa",
+        "p_12242_079e3015",
+        "p_1524_722b53a3",
+        "p_2944_a2205e35",
+        "p_2413_cdba9635",
+        "p_2814_1429346f",
+        "p_67138_6f9ec9b1"
+      ],
+      "expanded_ids": [
+        "p_2701_b9929036",
+        "p_216_b02f58de",
+        "p_216_3da00a9e",
+        "p_12242_079e3015",
+        "p_921_b1618d93",
+        "p_2413_cdba9635",
+        "p_2680_be5dc3f2",
+        "p_67138_6f9ec9b1",
+        "p_1322_11cc1fc4",
+        "p_2944_993cef3d"
+      ]
+    },
+    {
+      "id": "no-fit",
+      "expected": [],
+      "baseline_hit": false,
+      "expanded_hit": false,
+      "baseline_ids": [
+        "p_3296_d371fb08",
+        "p_160_28507ddc",
+        "p_1260_8a0e78c8",
+        "p_215_963a1f79",
+        "p_541_219c50e1",
+        "p_1524_012af5d8",
+        "p_4363_b465a352",
+        "p_219_2b13f624",
+        "p_2500_cebd44c0",
+        "p_1400_ab461f7a"
+      ],
+      "expanded_ids": [
+        "p_3296_d371fb08",
+        "p_18269_06ccb609",
+        "p_6688_602acdb2",
+        "p_28054_ad1b0177",
+        "p_2814_bdf7679a",
+        "p_1260_8a0e78c8",
+        "p_2500_476b9747",
+        "p_4363_b465a352",
+        "p_135_cf63ddd1",
+        "p_219_2b13f624"
+      ]
+    }
+  ]
+}
