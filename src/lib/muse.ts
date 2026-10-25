@@ -31,22 +31,27 @@ export async function museText(system: string, user: string, opts: { temperature
       body: JSON.stringify(b),
       signal: AbortSignal.timeout(timeoutMs),
     });
-  // Muse intermittently answers 404 model_not_found for one model id while the
-  // others stay up, and occasionally stalls or 429s. On a 404 switch to the next
-  // Standard-mode model at once; on anything else back off and retry. Up to 5
-  // attempts in total.
+  // Muse intermittently answers 404 model_not_found, and occasionally stalls or
+  // 429s. The 404s come in bursts that hit every model id at once (seen from
+  // Vercel: 8/8 failing one hour, 3/8 the next), so retrying instantly just
+  // fails the whole call in under a second. On a 404, rotate to the next
+  // Standard-mode model and back off too; on anything else back off and retry.
+  // Up to 8 attempts, and no new attempt once RETRY_BUDGET_MS has passed, so
+  // the calling route keeps time for its other steps.
   const attempt = async (model: string): Promise<Response> => {
     const b = { ...body, model };
     let res = await post(opts.json === false ? b : { ...b, response_format: { type: "json_object" } });
     if (res.status === 400 && opts.json !== false) res = await post(b);
     return res;
   };
-  const MAX = 5;
+  const MAX = 8;
+  const RETRY_BUDGET_MS = 25_000;
+  const started = Date.now();
   let modelIdx = 0;
   let res: Response | null = null;
   let lastErr = "";
   for (let i = 0; i < MAX; i++) {
-    const model = MODEL_CHAIN[Math.min(modelIdx, MODEL_CHAIN.length - 1)];
+    const model = MODEL_CHAIN[modelIdx % MODEL_CHAIN.length];
     let backoff = 600 * (i + 1);
     try {
       res = await attempt(model);
@@ -55,15 +60,16 @@ export async function museText(system: string, user: string, opts: { temperature
       lastErr = `muse ${res.status} (${model}): ${text}`;
       // Auth and quota problems will not fix themselves; fail fast on those.
       if (res.status === 401 || res.status === 402 || res.status === 403) throw new Error(lastErr);
-      if (res.status === 404 && /model_not_found/.test(text)) { modelIdx++; backoff = 0; }
+      if (res.status === 404 && /model_not_found/.test(text)) { modelIdx++; backoff = 400 * (i + 1); }
     } catch (e) {
       if (/^muse 40[123] /.test((e as Error).message)) throw e;
       lastErr = `${(e as Error).name} (${model}): ${(e as Error).message.slice(0, 120)}`;
     }
     res = null;
     if (i < MAX - 1) {
-      console.warn(`[muse] attempt ${i + 1} failed: ${lastErr.slice(0, 140)}; retrying${backoff === 0 ? " with next model" : ""}`);
-      if (backoff) await new Promise((r) => setTimeout(r, backoff));
+      if (Date.now() - started + backoff > RETRY_BUDGET_MS) break;
+      console.warn(`[muse] attempt ${i + 1} failed: ${lastErr.slice(0, 140)}; retrying in ${backoff} ms with ${MODEL_CHAIN[modelIdx % MODEL_CHAIN.length]}`);
+      await new Promise((r) => setTimeout(r, backoff));
     }
   }
   if (!res) throw new Error(lastErr || "muse: no response");
