@@ -1,0 +1,36 @@
+{
+  "method": "One live comparison call with authored synthetic context and offline retrieval. No production journal access or writes; not a full signed-in flow.",
+  "journal": "I made one selfish choice and now I keep thinking that must be the whole truth about who I am.",
+  "baseline_ids": [
+    "p_1342_1c2822ed",
+    "p_153_a550dcdd",
+    "p_921_070dd690",
+    "p_145_dcbdf272",
+    "p_18269_d086cdb2",
+    "p_766_7f5189cb",
+    "p_2701_b9929036",
+    "p_153_7d08204d",
+    "p_23_7ce60994",
+    "p_18269_227fae9f"
+  ],
+  "expanded_ids": [
+    "p_145_dcbdf272",
+    "p_4217_c462f560",
+    "p_4217_ea5b762d",
+    "p_4363_0dccf948",
+    "p_58585_8012715b",
+    "p_23_7ce60994",
+    "p_766_7f5189cb",
+    "p_18269_227fae9f",
+    "p_135_2d4ab4f0",
+    "p_135_cf63ddd1"
+  ],
+  "selected": [
+    {
+      "id": "p_58585_8012715b",
+      "text": "To measure you by your smallest deed is to reckon the power of ocean by the frailty of its foam.",
+      "reason": "This line names exactly what you're describing, treating one small, selfish moment as if it could measure your whole character. It helps you notice that a single foam-like deed doesn't reveal the deeper power and breadth of who you are over time.",
+      "connection_kind": "distinction"
+    }
+  ]
+}

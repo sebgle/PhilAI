@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:matching": "tsx --test scripts/test-insight-match.mts && tsx scripts/test-exact-match.mts && node scripts/test-insight-storage.mjs",
-    "evaluate:matching": "tsx scripts/evaluate-matches.mts"
+    "test:matching": "tsx --test scripts/test-insight-match.mts scripts/test-richer-matching.mts && tsx scripts/test-exact-match.mts && node scripts/test-insight-storage.mjs",
+    "evaluate:matching": "tsx scripts/evaluate-matches.mts",
+    "evaluate:retrieval": "tsx scripts/evaluate-retrieval.mts"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.3.1",

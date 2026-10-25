@@ -5,11 +5,11 @@ import { isCurrentMatch, MATCH_VERSION } from "../src/lib/match-version.ts";
 import { analyzeEntry, verifyLines, RISK_EXCLUDED_THEMES, type Candidate } from "../src/lib/match-core.ts";
 
 function candidate(id = "a", author = "One"): Candidate {
-  return { id, author, work: "Test", year: null, text: "Keeping every feeling hidden can leave a friend outside the door.", emotions: [], themes: ["belonging"], summary: null, similarity: 0.8 };
+  return { id, author, work: "Test", year: null, text: `Keeping every feeling hidden can leave a friend outside the door. ${id}`, emotions: [], themes: ["belonging"], summary: null, similarity: 0.8 };
 }
 function evaluation(id = "a") {
   return { id, fit: 3, insight: 2, standalone: true, evidence: "leave a friend outside the door", phrase: "leave a friend outside the door",
-    reason: "The passage links hiding feelings with distance. It offers a way to consider what sharing might make possible.", perspective: "concealment and connection" };
+    reason: "The passage links hiding feelings with distance. It offers a way to consider what sharing might make possible.", perspective: "concealment and connection", connection_kind: "recognition" as const, redundant_with: [] as string[] };
 }
 const review = (...evaluations: ReturnType<typeof evaluation>[]) => ({ evaluations });
 
@@ -79,7 +79,7 @@ test("analysis and comparison use two calls, retain context, and reject incomple
     calls.push(body);
     const result = calls.length === 1 ? {
       emotions: ["sadness"], themes: ["belonging"], summary: "Wanting support while hiding feelings from friends.", risk_flag: false,
-      key_lines: [{ text: "I keep saying I am fine.", theme: "belonging", interpretation: "Concealing feelings while wanting support" }],
+      key_lines: [{ text: "I keep saying I am fine.", theme: "belonging", interpretation: "Concealing feelings while wanting support", situation: "Hiding feelings from friends", perspective_query: "Sharing feelings can allow connection" }],
     } : calls.length === 2 ? review(evaluation()) : review();
     return Response.json({ choices: [{ message: { content: JSON.stringify(result) } }] });
   });

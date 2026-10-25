@@ -1,3 +1,4 @@
+// Legacy/v2 comparison (single-query retrieval); use evaluate-retrieval.mts for v3 retrieval.
 // Read-only comparison using synthetic journals and the existing passage library.
 // npx tsx --env-file=.env.local scripts/evaluate-matches.mts --limit=3 --out=report.json
 import { readFileSync, writeFileSync } from "node:fs";

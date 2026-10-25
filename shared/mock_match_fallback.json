@@ -28,7 +28,9 @@
       "phrase_start": null,
       "phrase_end": null,
       "reason": "You both describe holding it together on the outside while something heavier sits underneath.",
-      "score": 0.58
+      "score": 0.58,
+      "connection_kind": "recognition",
+      "quality_feedback": null
     },
     {
       "line_text": null,
@@ -45,7 +47,9 @@
       "phrase_start": null,
       "phrase_end": null,
       "reason": "You both name the ache of being surrounded by people and still having no one who is yours.",
-      "score": 0.51
+      "score": 0.51,
+      "connection_kind": "recognition",
+      "quality_feedback": null
     },
     {
       "line_text": null,
@@ -62,7 +66,9 @@
       "phrase_start": null,
       "phrase_end": null,
       "reason": "You both describe missing a place while being relieved to be gone.",
-      "score": 0.47
+      "score": 0.47,
+      "connection_kind": "recognition",
+      "quality_feedback": null
     }
   ]
 }

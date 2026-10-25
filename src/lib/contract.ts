@@ -36,6 +36,8 @@ export type MatchLink = {
   alternates?: MatchLink[];
   // The reader said this one spoke to them (matches.resonated).
   resonated?: boolean;
+  connection_kind?: "recognition" | "distinction" | "reframe";
+  quality_feedback?: "helped" | "related" | "misunderstood" | null;
 };
 
 // POST /match  { entry_id }  ->  MatchResponse
