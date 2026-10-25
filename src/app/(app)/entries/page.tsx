@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LocalDate } from "@/components/LocalDate";
 import { PageTitle } from "@/components/PageTitle";
-import { Backdrop } from "@/components/Backdrop";
 
 type Row = { id: string; title: string | null; text: string; created_at: string; match_generation: string | null };
 type Lead = { entry_id: string; generation: string | null; line_text: string | null; line_start: number | null;
@@ -39,7 +38,6 @@ export default async function PastEntries() {
 
   return (
     <section className="flex flex-col gap-5">
-      <Backdrop variant="entries" />
       <PageTitle title="Entries" />
 
       {error && <p className="text-red-600">{error.message}</p>}
