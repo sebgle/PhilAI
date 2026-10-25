@@ -50,8 +50,8 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <Link href="/forums" className="text-sm text-muted hover:text-foreground">← Forums</Link>
-        <Backdrop variant="saved" />
+        <Link href="/forums" className="text-sm text-muted hover:text-foreground">← Community</Link>
+        <Backdrop variant="community" />
         <h1 className="mt-2 text-[2rem] font-semibold tracking-tight">{name}</h1>
         <p className="mt-1 text-sm text-muted">
           {passages.length} passage{passages.length === 1 ? "" : "s"} from{" "}

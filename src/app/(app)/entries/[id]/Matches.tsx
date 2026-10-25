@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { useEffect, useRef, useState } from "react";
-import { THEMES, type MatchLink, type MatchResponse } from "@/lib/contract";
+import type { MatchLink, MatchResponse } from "@/lib/contract";
 import { requestMatch, type MockVariant } from "@/lib/matching";
 import { SafetyCard } from "@/components/SafetyCard";
 import { setPassageStatus, setResonated, type Status as Feedback } from "../../library/actions";
@@ -38,7 +38,6 @@ function Finding() {
   );
 }
 
-const themeName = new Map(THEMES.map((t) => [t.slug, t.name]));
 
 export function Matches({
   entryId,
@@ -99,19 +98,23 @@ export function Matches({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // "Spoke to me" and "Not for me" are the two ends of one axis, so turning
+  // one on turns the other off. Save is a bookmark and independent of both.
   async function toggleResonated(passageId: string) {
     const was = resonated.has(passageId);
     setResonated_((r) => { const n = new Set(r); if (was) n.delete(passageId); else n.add(passageId); return n; });
+    if (!was && feedback[passageId] === "not_for_me") void setLinkFeedback(passageId, "not_for_me", true);
     const { error } = await setResonated(entryId, passageId, !was);
     setActionError(error);
     if (error) setResonated_((r) => { const n = new Set(r); if (was) n.add(passageId); else n.delete(passageId); return n; });
   }
 
   // Optimistic: flip the card now, roll back if the server refuses.
-  async function setLinkFeedback(passageId: string, value: Feedback) {
+  async function setLinkFeedback(passageId: string, value: Feedback, fromResonate = false) {
     const prev = feedback[passageId] ?? null;
     const next = prev === value ? null : value;
     setFeedback((f) => ({ ...f, [passageId]: next }));
+    if (next === "not_for_me" && !fromResonate && resonated.has(passageId)) void toggleResonated(passageId);
     const { error } = await setPassageStatus(entryId, passageId, next);
     setActionError(error);
     if (error) setFeedback((f) => ({ ...f, [passageId]: prev }));
@@ -151,9 +154,10 @@ export function Matches({
   // sharing turned off. The server refuses those shares too.
   const locked = match.risk_flag;
 
-  const cardProps = (link: MatchLink, i: number) => ({
+  const cardProps = (link: MatchLink, i: number, variant: "primary" | "alt" = "primary") => ({
     entryId,
     link,
+    variant,
     color: COLORS[i % COLORS.length],
     feedback: feedback[link.passage.id] ?? null,
     onFeedback: (v: Feedback) => setLinkFeedback(link.passage.id, v),
@@ -196,7 +200,7 @@ export function Matches({
       {selected === null ? (
         <p className="text-sm text-muted">
           {match.links.length
-            ? "Tap a highlighted line to see the passage it found."
+            ? "Tap a highlighted line to see its match."
             : "We couldn’t find a passage that adds enough to this line."}
         </p>
       ) : (
@@ -204,9 +208,9 @@ export function Matches({
           <PassageCard {...cardProps(match.links[selected], selected)} />
           {(match.links[selected].alternates?.length ?? 0) > 0 && (
             <>
-              <p className="text-sm text-muted">Other perspectives worth considering.</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted">Also close</p>
               {match.links[selected].alternates!.map((alt) => (
-                <PassageCard key={alt.passage.id} {...cardProps(alt, selected)} />
+                <PassageCard key={alt.passage.id} {...cardProps(alt, selected, "alt")} />
               ))}
             </>
           )}
@@ -281,9 +285,12 @@ function EntryText({
   return <p className="whitespace-pre-wrap leading-relaxed">{parts}</p>;
 }
 
+// The chosen passage shows its reason and the full action row; a runner-up
+// ("alt") is just the passage, who wrote it, and the two signals.
 function PassageCard({
   entryId,
   link,
+  variant,
   color,
   feedback,
   onFeedback,
@@ -293,6 +300,7 @@ function PassageCard({
 }: {
   entryId: string;
   link: MatchLink;
+  variant: "primary" | "alt";
   color: (typeof COLORS)[number];
   feedback: Feedback;
   onFeedback: (v: Feedback) => void;
@@ -325,16 +333,15 @@ function PassageCard({
         )}
       </blockquote>
       <p className="mt-3 text-sm">
-        <span className="font-medium">{passage.author}</span>
+        <Link href={`/authors/${encodeURIComponent(passage.author)}`} className="font-medium underline-offset-2 hover:underline">
+          {passage.author}
+        </Link>
         <span className="text-muted">
           , <cite>{passage.work}</cite>
           {passage.year ? ` (${passage.year})` : ""}
         </span>
-        <span className="ml-2 rounded-full bg-hover px-2 py-0.5 text-xs">
-          {themeName.get(link.theme) ?? link.theme}
-        </span>
       </p>
-      <p className="mt-3 text-sm italic opacity-80">{link.reason}</p>
+      {variant === "primary" && <p className="mt-3 text-sm italic text-muted">{link.reason}</p>}
 
       <div className="mt-4 flex flex-wrap gap-2 text-sm">
         <button
@@ -354,34 +361,27 @@ function PassageCard({
         >
           {feedback === "saved" ? "Saved" : "Save"}
         </button>
-        <button
-          type="button"
-          onClick={() => onFeedback("not_for_me")}
-          aria-pressed={feedback === "not_for_me"}
-          className="rounded-full border border-rule px-3 py-1 hover:bg-hover aria-pressed:bg-hover"
-        >
-          Not for me
-        </button>
-        <Link
-          href={`/authors/${encodeURIComponent(passage.author)}`}
-          className="rounded-full border border-rule px-3 py-1 hover:bg-hover"
-        >
-          More by {passage.author}
-        </Link>
-        {link.line_text && canShare && (
+        {variant === "primary" && (
+          <button
+            type="button"
+            onClick={() => onFeedback("not_for_me")}
+            aria-pressed={feedback === "not_for_me"}
+            className="rounded-full border border-rule px-3 py-1 hover:bg-hover aria-pressed:border-foreground aria-pressed:bg-hover"
+          >
+            Not for me
+          </button>
+        )}
+        {variant === "primary" && link.line_text && canShare && (
           <button
             type="button"
             onClick={() => setSharing(!sharing)}
             aria-expanded={sharing}
             className="rounded-full border border-rule px-3 py-1 hover:bg-hover"
           >
-            Share this line
+            Share
           </button>
         )}
       </div>
-      {feedback === "not_for_me" && (
-        <p className="mt-2 text-xs text-muted">Got it. This helps us find better matches.</p>
-      )}
       {sharing && <SharePanel entryId={entryId} link={link} onClose={() => setSharing(false)} />}
     </section>
   );
