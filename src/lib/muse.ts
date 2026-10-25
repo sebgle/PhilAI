@@ -1,22 +1,35 @@
-// One Muse Spark entry point for routes and scripts. Returns zod-validated JSON.
-// Meta Model API is OpenAI-compatible: https://api.meta.ai/v1/chat/completions
+// One LLM entry point for routes and scripts. Returns zod-validated JSON.
+// Muse Spark (Meta Model API, OpenAI-compatible) answers every call it can;
+// OpenAI is the last resort when every Spark id is failing.
 import { z } from "zod";
 
 const MUSE_URL = process.env.MUSE_API_URL ?? "https://api.meta.ai/v1/chat/completions";
-// Standard-mode ids only (no "-contributor": our content must not train Meta
-// models). On a 404 model_not_found, which Muse returns intermittently for one
-// id and sometimes for every Spark id at once (2026-10-25 01:00: all three
-// Spark ids 404 for 30+ min while Wonder answered), the client moves down
-// this list. Muse Wonder is last: it is a reasoning model, so it costs more
-// and thinks for ~20 s per call at default effort. With reasoning_effort
-// "minimal" it answers our JSON prompts in ~4 s with the same quality.
-const MODEL_CHAIN = [...new Set([process.env.MUSE_MODEL ?? "muse-spark-1.3", "muse-spark-1.2", "muse-spark-1.1", "muse-wonder-1.0"])];
-const WONDER_EFFORT = process.env.MUSE_WONDER_EFFORT ?? "minimal";
+const OPENAI_URL = process.env.OPENAI_API_URL ?? "https://api.openai.com/v1/chat/completions";
+const OPENAI_MODEL = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
+
+// Standard-mode Muse ids only (no "-contributor": our content must not train
+// Meta models). Muse returns 404 model_not_found intermittently for one id and
+// sometimes for every Spark id at once (2026-10-25 01:00: all three down for
+// 35+ min), and from Vercel it fails far more often than from a laptop. So the
+// chain ends with OpenAI, used only when OPENAI_API_KEY is set and only after
+// the Spark ids have failed. The "openai:" prefix routes the request.
+const MODEL_CHAIN = [...new Set([
+  process.env.MUSE_MODEL ?? "muse-spark-1.3", "muse-spark-1.2", "muse-spark-1.1",
+  ...(process.env.OPENAI_API_KEY ? [`openai:${OPENAI_MODEL}`] : []),
+])];
 
 function sparkKey() {
   const k = process.env.MUSE_SPARK_API_KEY ?? process.env.MUSE_API_KEY;
   if (!k) throw new Error("MUSE_SPARK_API_KEY is not set");
   return k;
+}
+
+// Where a chain entry goes and what the provider calls the model.
+function target(entry: string) {
+  if (entry.startsWith("openai:")) {
+    return { provider: "openai", url: OPENAI_URL, key: process.env.OPENAI_API_KEY ?? "", model: entry.slice("openai:".length) };
+  }
+  return { provider: "muse", url: MUSE_URL, key: sparkKey(), model: entry };
 }
 
 export async function museText(system: string, user: string, opts: { temperature?: number; json?: boolean; timeoutMs?: number } = {}) {
@@ -29,10 +42,10 @@ export async function museText(system: string, user: string, opts: { temperature
     temperature: opts.temperature ?? 0.2,
   };
   const timeoutMs = opts.timeoutMs ?? Number(process.env.MUSE_TIMEOUT_MS ?? 40_000);
-  const post = (b: Record<string, unknown>) =>
-    fetch(MUSE_URL, {
+  const post = (t: ReturnType<typeof target>, b: Record<string, unknown>) =>
+    fetch(t.url, {
       method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${sparkKey()}` },
+      headers: { "content-type": "application/json", authorization: `Bearer ${t.key}` },
       body: JSON.stringify(b),
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -40,15 +53,15 @@ export async function museText(system: string, user: string, opts: { temperature
   // 429s. The 404s come in bursts that hit every model id at once (seen from
   // Vercel: 8/8 failing one hour, 3/8 the next), so retrying instantly just
   // fails the whole call in under a second. On a 404, rotate to the next
-  // Standard-mode model and back off too; on anything else back off and retry.
+  // model in the chain and back off too; on anything else back off and retry.
   // Up to 12 attempts (404 waits capped at 3 s), and no new attempt once
-  // RETRY_BUDGET_MS has passed, so
-  // the calling route keeps time for its other steps.
-  const attempt = async (model: string): Promise<Response> => {
-    const b: Record<string, unknown> = { ...body, model };
-    if (model.startsWith("muse-wonder")) b.reasoning_effort = WONDER_EFFORT;
-    let res = await post(opts.json === false ? b : { ...b, response_format: { type: "json_object" } });
-    if (res.status === 400 && opts.json !== false) res = await post(b);
+  // RETRY_BUDGET_MS has passed, so the calling route keeps time for its other
+  // steps.
+  const attempt = async (entry: string): Promise<Response> => {
+    const t = target(entry);
+    const b: Record<string, unknown> = { ...body, model: t.model };
+    let res = await post(t, opts.json === false ? b : { ...b, response_format: { type: "json_object" } });
+    if (res.status === 400 && opts.json !== false) res = await post(t, b);
     return res;
   };
   const MAX = 12;
@@ -64,9 +77,12 @@ export async function museText(system: string, user: string, opts: { temperature
       res = await attempt(model);
       if (res.ok) break;
       const text = (await res.text()).slice(0, 200);
-      lastErr = `muse ${res.status} (${model}): ${text}`;
-      // Auth and quota problems will not fix themselves; fail fast on those.
-      if (res.status === 401 || res.status === 402 || res.status === 403) throw new Error(lastErr);
+      const provider = target(model).provider;
+      lastErr = `${provider} ${res.status} (${model}): ${text}`;
+      // Muse auth and quota problems will not fix themselves; fail fast on
+      // those. A bad OpenAI key only costs that attempt: rotate back to Spark.
+      if (provider === "muse" && (res.status === 401 || res.status === 402 || res.status === 403)) throw new Error(lastErr);
+      if (provider === "openai" && (res.status === 401 || res.status === 402 || res.status === 403)) { modelIdx++; backoff = 400; }
       if (res.status === 404 && /model_not_found/.test(text)) { modelIdx++; backoff = Math.min(400 * (i + 1), 3000); }
     } catch (e) {
       if (/^muse 40[123] /.test((e as Error).message)) throw e;

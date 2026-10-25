@@ -36,7 +36,7 @@ Production is Vercel, built from `main`. Every PR gets a preview deploy.
 | Frontend | Next.js 15 (App Router), TypeScript, Tailwind |
 | Backend | Supabase: Postgres, pgvector, Auth (email + password), RLS |
 | Anonymity | Anonymous **to other users**, not to the server. The email is used only for login and is never shown or returned by any API. Other users see only a handle or alias |
-| Text AI | **Muse Spark** for entry analysis, passage tagging, echoing phrase, "why this fits", scrub and moderate; **Muse Wonder** (minimal reasoning effort) as the fallback when Spark is unavailable |
+| Text AI | **Muse Spark** for entry analysis, passage tagging, echoing phrase, "why this fits", scrub and moderate; OpenAI only as the last resort when every Spark id is down |
 | Voice | **Muse voice transcription**. Audio is transcribed, then discarded |
 | Forums | One per theme, 16 themes (below). Authors are a tag plus an author page |
 | Identity | Random handle per account (owner-only). **Fresh alias per thread** in forums |
@@ -80,7 +80,7 @@ Offsets are character indexes, end exclusive, first occurrence. `entry_text.slic
 
 ## Muse data use (T11)
 
-PhilAI calls Meta's Model API in **Standard mode** (`muse-spark-1.3`, falling back to `muse-spark-1.2`, `muse-spark-1.1` and then `muse-wonder-1.0` when Muse answers 404 for a model id, plus `muse-voice-transcribe-1.0`; never the `-contributor` ids). Meta's model docs state: "In Standard mode, your content is not used to train Meta models." Meta does not publish how long it retains Standard-mode request data, so the pitch says exactly that: entries and audio are sent to Meta for analysis, are not used for training, and we store no audio ourselves. Source: dev.meta.ai/docs/models.
+PhilAI calls Meta's Model API in **Standard mode** (`muse-spark-1.3`, falling back to `muse-spark-1.2` and `muse-spark-1.1` when Muse answers 404 for a model id, plus `muse-voice-transcribe-1.0`; never the `-contributor` ids). If every Spark id is failing and `OPENAI_API_KEY` is set, that one call goes to OpenAI (`gpt-4.1-mini` by default) so the reader still gets their passages; OpenAI's API does not train on API requests by default. Meta's model docs state: "In Standard mode, your content is not used to train Meta models." Meta does not publish how long it retains Standard-mode request data, so the pitch says exactly that: entries and audio are sent to Meta for analysis, are not used for training, and we store no audio ourselves. Source: dev.meta.ai/docs/models.
 
 ## Library and matching (teammate track)
 
