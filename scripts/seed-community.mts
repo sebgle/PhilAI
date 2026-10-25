@@ -14,8 +14,9 @@ import { randomAlias } from "../src/lib/forum.ts";
 import { embed, cosine } from "../src/lib/embed.ts";
 
 const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!, { auth: { persistSession: false } });
-const PASSWORD = process.env.DEMO_PASSWORD ?? "philai-demo-2026";
-const DEMO_EMAIL = process.env.DEMO_EMAIL ?? "sebastianle1259@gmail.com";
+const PASSWORD = process.env.DEMO_PASSWORD ?? "";
+const DEMO_EMAIL = process.env.DEMO_EMAIL ?? "";
+if (!PASSWORD || !DEMO_EMAIL) throw new Error("Set DEMO_PASSWORD (for the cast accounts) and DEMO_EMAIL (the demo account).");
 
 // A reply: plain text from someone in the cast, or with `to` (index of an
 // earlier reply in the thread it answers), `op` (written by the poster), `me`

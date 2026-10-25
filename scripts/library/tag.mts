@@ -3,7 +3,7 @@
 // labels outside the lists are rejected. Resumable: skips ids already in
 // data/passages.tagged.jsonl.
 // Run: npx tsx --env-file=.env.local scripts/library/tag.mts
-import { readFileSync, writeFileSync, appendFileSync, existsSync } from "node:fs";
+import { readFileSync, appendFileSync, existsSync } from "node:fs";
 import { z } from "zod";
 import { museJson } from "../../src/lib/muse.ts";
 import emotionsList from "../../shared/emotions.json" with { type: "json" };
