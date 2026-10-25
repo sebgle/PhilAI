@@ -7,10 +7,10 @@ type Row = { id: string; title: string | null; text: string; created_at: string;
 type Lead = { entry_id: string; generation: string | null; line_text: string | null; line_start: number | null;
   passage: { author: string; work: string; year: number | null } | null };
 
-// Every entry, newest first, as a ruled list of quotations: the line the
-// matcher chose leads in the book face, the author who answered sits under it
-// as a byline. Date and title share one quiet eyebrow. The list is an index of
-// what the entry screen shows, not a dashboard of its metadata.
+// Every entry, newest first, as a ruled list. The title leads, since it is
+// the one thing the writer chose to say about the entry; the line the matcher
+// chose follows in the book face as the preview; date and the author who
+// answered close the row in one small line. An index, not a dashboard.
 export default async function PastEntries() {
   const supabase = await createClient();
   const { data: entries, error } = await supabase
@@ -59,18 +59,20 @@ export default async function PastEntries() {
             return (
               <li key={e.id} className="border-t border-rule">
                 <Link href={`/entries/${e.id}`} className="-mx-3 block rounded-lg px-3 py-5 transition-colors hover:bg-hover">
-                  <p className="text-xs text-muted">
-                    <LocalDate iso={e.created_at} /> · {e.title || `Entry #${rows.length - i}`}
-                  </p>
-                  <p className="mt-1.5 line-clamp-2 font-serif text-[1.25rem] leading-snug">&ldquo;{quote}&rdquo;</p>
-                  <p className="mt-2 text-xs text-muted">
+                  {/* The title is what the writer chose to call it, so it leads. The
+                      matcher's line follows as the preview, and the date with the
+                      author who answered close the row in one small line. */}
+                  <p className="text-[1.2rem] font-semibold tracking-tight">{e.title || `Entry #${rows.length - i}`}</p>
+                  <p className="mt-1.5 line-clamp-2 font-serif leading-snug text-foreground/80">&ldquo;{quote}&rdquo;</p>
+                  <p className="mt-2.5 text-xs text-muted">
+                    <LocalDate iso={e.created_at} />
                     {m?.passage ? (
                       <>
-                        {m.passage.author}, <cite>{m.passage.work}</cite>
+                        {" · "}{m.passage.author}, <cite>{m.passage.work}</cite>
                         {m.passage.year ? ` (${m.passage.year})` : ""}
                       </>
                     ) : (
-                      "Finding passages…"
+                      " · Finding passages…"
                     )}
                   </p>
                 </Link>
