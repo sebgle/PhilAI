@@ -5,6 +5,7 @@ import { THEMES } from "@/lib/contract";
 import { LocalDate } from "@/components/LocalDate";
 import { Marginalia } from "@/components/Marginalia";
 import { LikeButton } from "@/components/LikeButton";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { ThemeIcon } from "@/components/ThemeIcon";
 import { likesFor, type LikeInfo } from "@/lib/likes";
 import { ReplyForm } from "./ReplyForm";
@@ -68,10 +69,7 @@ export default async function ThemeForumPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="min-w-0">
-        <nav aria-label="Breadcrumb" className="text-sm text-muted">
-          <Link href="/forums" className="underline-offset-4 hover:text-foreground hover:underline">Community</Link>
-          <span aria-hidden="true" className="ml-1.5 opacity-60">/</span>
-        </nav>
+        <Breadcrumb href="/forums" label="Community" />
         <h1 className="mt-1 flex items-center gap-2.5 text-[2rem] font-semibold tracking-tight">
           {theme.name}
           <ThemeIcon slug={theme.slug} className="size-7 text-terracotta" />
