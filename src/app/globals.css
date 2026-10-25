@@ -83,6 +83,10 @@ button:not(:disabled),
 a {
   cursor: pointer;
 }
+/* No drag handles on text boxes anywhere; long text scrolls inside them. */
+textarea {
+  resize: none;
+}
 
 /* A highlighter stroke: the color sweeps left to right. Set --hl to the
    color and --delay to stagger strokes. */
