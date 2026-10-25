@@ -42,14 +42,14 @@ export default async function LibraryPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Library</h1>
-      <nav className="flex gap-1 border-b border-foreground/10 text-sm">
+      <h1 className="text-3xl font-bold tracking-tight">Saved</h1>
+      <nav className="flex gap-1 border-b border-rule text-sm">
         {TABS.map((t) => (
           <Link
             key={t.id}
             href={`/library?tab=${t.id}`}
             aria-current={tab === t.id ? "page" : undefined}
-            className="-mb-px border-b-2 border-transparent px-3 py-2 opacity-60 hover:opacity-100 aria-[current=page]:border-foreground aria-[current=page]:opacity-100"
+            className="-mb-px border-b-2 border-transparent px-3 py-2 text-muted hover:text-foreground aria-[current=page]:border-foreground aria-[current=page]:opacity-100"
           >
             {t.label}
           </Link>
@@ -83,7 +83,7 @@ export default async function LibraryPage({
 function Passages({ items }: { items: Item[] }) {
   if (!items.length) {
     return (
-      <p className="opacity-70">
+      <p className="text-muted">
         No saved passages yet. When a passage hits, tap Save on its card and it lands here.
       </p>
     );
@@ -96,7 +96,7 @@ function Passages({ items }: { items: Item[] }) {
         const hasPhrase =
           m?.phrase_start != null && m.phrase_end != null && m.phrase_start < m.phrase_end && m.phrase_end <= p.text.length;
         return (
-          <li key={item.id} className="rounded border border-foreground/15 p-5">
+          <li key={item.id} className="rounded border border-rule p-5">
             <blockquote className="font-serif text-lg leading-relaxed">
               {hasPhrase ? (
                 <>
@@ -112,10 +112,10 @@ function Passages({ items }: { items: Item[] }) {
             </blockquote>
             <p className="mt-3 text-sm">
               <span className="font-medium">{p.author}</span>
-              <span className="opacity-70">, <cite>{p.work}</cite>{p.year ? ` (${p.year})` : ""}</span>
+              <span className="text-muted">, <cite>{p.work}</cite>{p.year ? ` (${p.year})` : ""}</span>
             </p>
             {m?.line_text && (
-              <p className="mt-2 text-sm opacity-70">
+              <p className="mt-2 text-sm text-muted">
                 Your line: <span className="italic">&ldquo;{m.line_text}&rdquo;</span>
               </p>
             )}
@@ -129,18 +129,18 @@ function Passages({ items }: { items: Item[] }) {
 
 function Authors({ items, passages }: { items: Item[]; passages: Item[] }) {
   if (!items.length) {
-    return <p className="opacity-70">Authors whose passages you save show up here: the authors who found you.</p>;
+    return <p className="text-muted">Authors whose passages you save show up here: the authors who found you.</p>;
   }
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm opacity-60">Authors who found you</p>
-      <ul className="flex flex-col divide-y divide-foreground/10">
+      <p className="text-sm text-muted">Authors who found you</p>
+      <ul className="flex flex-col divide-y divide-rule">
         {items.map((item) => {
           const count = passages.filter((p) => p.passage?.author === item.ref).length;
           return (
             <li key={item.id} className="flex items-center gap-3 py-3">
               <Link href={`/authors/${encodeURIComponent(item.ref ?? "")}`} className="font-medium underline-offset-2 hover:underline">{item.ref}</Link>
-              <span className="text-sm opacity-60">
+              <span className="text-sm text-muted">
                 {count} saved passage{count === 1 ? "" : "s"}
               </span>
               <span className="ml-auto"><RemoveButton id={item.id} /></span>
@@ -176,7 +176,7 @@ function HandAdded({
             placeholder={textLabel}
             aria-label={textLabel}
             rows={2}
-            className="flex-1 rounded border border-foreground/15 bg-transparent px-3 py-2"
+            className="flex-1 rounded border border-rule bg-transparent px-3 py-2"
           />
         ) : (
           <input
@@ -184,36 +184,36 @@ function HandAdded({
             required
             placeholder={textLabel}
             aria-label={textLabel}
-            className="flex-1 rounded border border-foreground/15 bg-transparent px-3 py-2"
+            className="flex-1 rounded border border-rule bg-transparent px-3 py-2"
           />
         )}
         <input
           name="ref"
           placeholder={refLabel}
           aria-label={refLabel}
-          className="rounded border border-foreground/15 bg-transparent px-3 py-2 sm:w-48"
+          className="rounded border border-rule bg-transparent px-3 py-2 sm:w-48"
         />
-        <button type="submit" className="rounded bg-foreground px-4 py-2 text-background">
+        <button type="submit" className="rounded bg-[#2383e2] px-4 py-2 text-white">
           Add
         </button>
       </form>
 
       {items.length ? (
-        <ul className="flex flex-col divide-y divide-foreground/10">
+        <ul className="flex flex-col divide-y divide-rule">
           {items.map((item) => (
             <li key={item.id} className="flex items-start gap-3 py-3">
               <div className="flex-1">
                 <p className={kind === "quote" ? "font-serif" : "font-medium"}>
                   {kind === "quote" ? <>&ldquo;{item.text}&rdquo;</> : item.text}
                 </p>
-                {item.ref && <p className="text-sm opacity-60">{kind === "quote" ? `— ${item.ref}` : item.ref}</p>}
+                {item.ref && <p className="text-sm text-muted">{kind === "quote" ? `— ${item.ref}` : item.ref}</p>}
               </div>
               <RemoveButton id={item.id} />
             </li>
           ))}
         </ul>
       ) : (
-        <p className="opacity-70">{empty}</p>
+        <p className="text-muted">{empty}</p>
       )}
     </div>
   );
@@ -223,7 +223,7 @@ function RemoveButton({ id }: { id: string }) {
   return (
     <form action={removeLibraryItem} className="mt-3 inline">
       <input type="hidden" name="id" value={id} />
-      <button type="submit" className="text-sm underline opacity-50 hover:opacity-100">
+      <button type="submit" className="text-sm underline opacity-50 hover:text-foreground">
         Remove
       </button>
     </form>

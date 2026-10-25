@@ -13,7 +13,7 @@ export function ReplyForm({ postId }: { postId: string }) {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="text-sm underline opacity-70 hover:opacity-100">
+      <button type="button" onClick={() => setOpen(true)} className="text-sm underline text-muted hover:text-foreground">
         Reply
       </button>
     );
@@ -49,17 +49,17 @@ export function ReplyForm({ postId }: { postId: string }) {
         autoFocus
         aria-label="Your reply"
         placeholder="Reply anonymously. You'll get a name for this thread."
-        className="w-full rounded border border-foreground/15 bg-transparent p-2 text-sm"
+        className="w-full rounded border border-rule bg-transparent p-2 text-sm"
       />
       <div className="flex items-center gap-3 text-sm">
         <button
           type="submit"
           disabled={busy || !text.trim()}
-          className="rounded bg-foreground px-3 py-1 text-background disabled:opacity-40"
+          className="rounded bg-[#2383e2] px-3 py-1 text-white disabled:opacity-40"
         >
           {busy ? "Checking…" : "Post reply"}
         </button>
-        <button type="button" onClick={() => setOpen(false)} className="opacity-60 hover:opacity-100">
+        <button type="button" onClick={() => setOpen(false)} className="text-muted hover:text-foreground">
           Cancel
         </button>
         {error && <span className="text-red-600">{error}</span>}

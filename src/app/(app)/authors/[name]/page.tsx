@@ -49,9 +49,9 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <Link href="/forums" className="text-sm opacity-60 hover:opacity-100">← Forums</Link>
-        <h1 className="mt-2 text-xl font-semibold">{name}</h1>
-        <p className="mt-1 text-sm opacity-70">
+        <Link href="/forums" className="text-sm text-muted hover:text-foreground">← Forums</Link>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight">{name}</h1>
+        <p className="mt-1 text-sm text-muted">
           {passages.length} passage{passages.length === 1 ? "" : "s"} from{" "}
           {works.map(([work, year], i) => (
             <span key={work}>
@@ -65,11 +65,11 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
 
       {posts.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="text-sm font-medium uppercase tracking-wide opacity-60">What strangers wrote beside {name.split(" ").pop()}</h2>
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted">What strangers wrote beside {name.split(" ").pop()}</h2>
           <ul className="flex flex-col gap-6">
             {posts.map((post) => (
               <li key={post.id}>
-                <article className="rounded border border-foreground/10">
+                <article className="rounded border border-rule">
                   <Marginalia
                     passage={post.passage}
                     phraseStart={post.phrase_start}
@@ -78,7 +78,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
                     meta={
                       <>
                         {post.alias} · <LocalDate iso={post.created_at} /> ·{" "}
-                        <Link href={`/forums/${post.forum_id}`} className="underline hover:opacity-100">
+                        <Link href={`/forums/${post.forum_id}`} className="underline hover:text-foreground">
                           {themeName(post.forum_id)}
                         </Link>
                         {post.is_seeded && <span title="Seeded by the PhilAI team for the demo"> · seeded</span>}
@@ -93,12 +93,12 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
       )}
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-medium uppercase tracking-wide opacity-60">Passages</h2>
+        <h2 className="text-sm font-medium uppercase tracking-wide text-muted">Passages</h2>
         <ul className="flex flex-col gap-5">
           {passages.map((p) => (
-            <li key={p.id} className="rounded border border-foreground/10 p-5">
+            <li key={p.id} className="rounded border border-rule p-5">
               <blockquote className="whitespace-pre-line font-serif text-lg leading-relaxed">{p.text}</blockquote>
-              <p className="mt-2 text-sm opacity-70">
+              <p className="mt-2 text-sm text-muted">
                 <cite>{p.work}</cite>{p.year ? ` (${p.year})` : ""}
               </p>
             </li>

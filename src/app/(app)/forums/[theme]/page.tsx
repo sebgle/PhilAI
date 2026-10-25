@@ -58,9 +58,9 @@ export default async function ThemeForumPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/forums" className="text-sm opacity-60 hover:opacity-100">← All forums</Link>
-        <h1 className="mt-2 text-xl font-semibold">{theme.name}</h1>
-        <p className="mt-1 text-sm opacity-70">{theme.description}</p>
+        <Link href="/forums" className="text-sm text-muted hover:text-foreground">← All forums</Link>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight">{theme.name}</h1>
+        <p className="mt-1 text-sm text-muted">{theme.description}</p>
       </div>
 
       {authors.length > 1 && (
@@ -75,7 +75,7 @@ export default async function ThemeForumPage({
       )}
 
       {posts.length === 0 ? (
-        <p className="opacity-70">
+        <p className="text-muted">
           {author
             ? `No posts linked to ${author} here yet.`
             : "No one has shared here yet. When a line of yours lands in this theme, share it from its passage card."}
@@ -98,7 +98,7 @@ function FilterChip({ href, active, children }: { href: string; active: boolean;
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className="rounded-full border border-foreground/15 px-3 py-1 opacity-70 hover:opacity-100 aria-[current=page]:bg-foreground aria-[current=page]:text-background aria-[current=page]:opacity-100"
+      className="rounded-full border border-rule px-3 py-1 text-muted hover:text-foreground aria-[current=page]:bg-hover aria-[current=page]:text-foreground"
     >
       {children}
     </Link>
@@ -107,7 +107,7 @@ function FilterChip({ href, active, children }: { href: string; active: boolean;
 
 function PostCard({ post, replies }: { post: Post; replies: Reply[] }) {
   return (
-    <article className="rounded border border-foreground/10">
+    <article className="rounded border border-rule">
       <Marginalia
         passage={post.passage}
         phraseStart={post.phrase_start}
@@ -121,13 +121,13 @@ function PostCard({ post, replies }: { post: Post; replies: Reply[] }) {
         }
       />
 
-      <div className="border-t border-foreground/10 px-5 py-4">
+      <div className="border-t border-rule px-5 py-4">
         {replies.length > 0 && (
           <ul className="mb-4 flex flex-col gap-3">
             {replies.map((r) => (
-              <li key={r.id} className="border-l border-foreground/15 pl-3">
+              <li key={r.id} className="border-l border-rule pl-3">
                 <p className="whitespace-pre-wrap text-sm">{r.text}</p>
-                <p className="mt-1 flex items-center gap-2 text-xs opacity-60">
+                <p className="mt-1 flex items-center gap-2 text-xs text-muted">
                   {r.alias} · <LocalDate iso={r.created_at} />
                   <ReportButton replyId={r.id} />
                 </p>

@@ -12,8 +12,8 @@ export default async function ForumsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold">Forums</h1>
-        <p className="mt-1 text-sm opacity-70">
+        <h1 className="text-3xl font-bold tracking-tight">Forums</h1>
+        <p className="mt-1 text-sm text-muted">
           One room per feeling. Everyone here is anonymous: you get a fresh name in every thread.
         </p>
       </div>
@@ -24,15 +24,15 @@ export default async function ForumsPage() {
             <li key={t.slug}>
               <Link
                 href={`/forums/${t.slug}`}
-                className="block h-full rounded border border-foreground/10 p-4 hover:border-foreground/30"
+                className="block h-full rounded border border-rule p-4 hover:bg-hover"
               >
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="font-medium">{t.name}</span>
-                  <span className="text-xs opacity-60">
+                  <span className="text-xs text-muted">
                     {n} post{n === 1 ? "" : "s"}
                   </span>
                 </div>
-                <p className="mt-1 text-sm opacity-70">{t.description}</p>
+                <p className="mt-1 text-sm text-muted">{t.description}</p>
               </Link>
             </li>
           );

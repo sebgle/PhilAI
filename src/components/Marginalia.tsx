@@ -35,7 +35,7 @@ export function Marginalia({
         </blockquote>
         <p className="mt-2 text-sm">
           <span className="font-medium">{passage.author}</span>
-          <span className="opacity-70">
+          <span className="text-muted">
             , <cite>{passage.work}</cite>
             {passage.year ? ` (${passage.year})` : ""}
           </span>
@@ -43,7 +43,7 @@ export function Marginalia({
       </div>
       <aside className="border-l-2 border-rule pl-4 sm:self-start">
         <p className="break-words font-serif italic leading-snug">&ldquo;{line}&rdquo;</p>
-        <p className="mt-2 text-xs opacity-60">{meta}</p>
+        <p className="mt-2 text-xs text-muted">{meta}</p>
       </aside>
     </div>
   );

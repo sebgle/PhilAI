@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { THEMES, type MatchLink, type MatchResponse } from "@/lib/contract";
 import { requestMatch, type MockVariant } from "@/lib/matching";
 import { SafetyCard } from "@/components/SafetyCard";
@@ -59,18 +59,37 @@ export function Matches({
   const [feedback, setFeedback] = useState<Record<string, Feedback>>(initialFeedback);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  // Muse has stretches of refusing requests that outlast one server call's
+  // retry budget, so the page itself tries again a few times before giving up.
+  const AUTO_RETRIES = 3;
+  const [retrying, setRetrying] = useState(0);
+
   async function run() {
     setError(null);
-    try {
-      setMatch(await requestMatch(entryId, text, mockVariant));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Matching failed");
+    for (let attempt = 0; attempt <= AUTO_RETRIES; attempt++) {
+      setRetrying(attempt);
+      try {
+        setMatch(await requestMatch(entryId, text, mockVariant));
+        setRetrying(0);
+        return;
+      } catch (e) {
+        if (attempt === AUTO_RETRIES) {
+          setRetrying(0);
+          setError(e instanceof Error ? e.message : "Matching failed");
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 4000 * (attempt + 1)));
+      }
     }
   }
 
+  // Only on first mount: an entry that already has matches is never re-run.
+  // The ref stops React's dev-mode double effect from matching twice.
+  const started = useRef(false);
   useEffect(() => {
-    if (!initial) run();
-    // Only on first mount: an entry that already has matches is never re-run.
+    if (initial || started.current) return;
+    started.current = true;
+    run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -89,7 +108,7 @@ export function Matches({
       <div className="flex flex-col gap-4">
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
         <p className="text-sm text-red-600">
-          {error}{" "}
+          Muse, the model that finds your passages, isn&apos;t responding right now. Your entry is saved.{" "}
           <button type="button" onClick={run} className="underline">Try again</button>
         </p>
       </div>
@@ -100,7 +119,13 @@ export function Matches({
     return (
       <div className="flex flex-col gap-4">
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
-        <Finding />
+        {retrying > 0 ? (
+          <p className="animate-pulse text-sm text-muted" aria-live="polite">
+            Muse is busy. Trying again ({retrying} of {AUTO_RETRIES})…
+          </p>
+        ) : (
+          <Finding />
+        )}
       </div>
     );
   }
@@ -125,7 +150,7 @@ export function Matches({
         {locked && <SafetyCard />}
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
         {match.links.length > 0 && (
-          <p className="text-sm opacity-70">
+          <p className="text-sm text-muted">
             We couldn&apos;t pin this one to specific lines, but these passages share its feeling.
           </p>
         )}
@@ -143,7 +168,7 @@ export function Matches({
       <EntryText text={text} links={match.links} selected={selected} onSelect={setSelected} />
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
       {selected === null ? (
-        <p className="text-sm opacity-60">
+        <p className="text-sm text-muted">
           {match.links.length
             ? "Tap a highlighted line to see the passage it found."
             : "No passages found for this entry yet."}
@@ -252,11 +277,11 @@ function PassageCard({
       </blockquote>
       <p className="mt-3 text-sm">
         <span className="font-medium">{passage.author}</span>
-        <span className="opacity-70">
+        <span className="text-muted">
           , <cite>{passage.work}</cite>
           {passage.year ? ` (${passage.year})` : ""}
         </span>
-        <span className="ml-2 rounded-full bg-foreground/5 px-2 py-0.5 text-xs">
+        <span className="ml-2 rounded-full bg-hover px-2 py-0.5 text-xs">
           {themeName.get(link.theme) ?? link.theme}
         </span>
       </p>
@@ -267,7 +292,7 @@ function PassageCard({
           type="button"
           onClick={() => onFeedback("saved")}
           aria-pressed={feedback === "saved"}
-          className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5 aria-pressed:bg-foreground aria-pressed:text-background"
+          className="rounded border border-rule px-3 py-1 hover:bg-hover aria-pressed:bg-[#2383e2] aria-pressed:text-white"
         >
           {feedback === "saved" ? "Saved" : "Save"}
         </button>
@@ -275,13 +300,13 @@ function PassageCard({
           type="button"
           onClick={() => onFeedback("not_for_me")}
           aria-pressed={feedback === "not_for_me"}
-          className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5 aria-pressed:bg-foreground/10"
+          className="rounded border border-rule px-3 py-1 hover:bg-hover aria-pressed:bg-hover"
         >
           Not for me
         </button>
         <Link
           href={`/authors/${encodeURIComponent(passage.author)}`}
-          className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5"
+          className="rounded border border-rule px-3 py-1 hover:bg-hover"
         >
           More by {passage.author}
         </Link>
@@ -290,14 +315,14 @@ function PassageCard({
             type="button"
             onClick={() => setSharing(!sharing)}
             aria-expanded={sharing}
-            className="rounded border border-foreground/20 px-3 py-1 hover:bg-foreground/5"
+            className="rounded border border-rule px-3 py-1 hover:bg-hover"
           >
             Share this line
           </button>
         )}
       </div>
       {feedback === "not_for_me" && (
-        <p className="mt-2 text-xs opacity-70">Got it. This helps us find better matches.</p>
+        <p className="mt-2 text-xs text-muted">Got it. This helps us find better matches.</p>
       )}
       {sharing && <SharePanel entryId={entryId} link={link} onClose={() => setSharing(false)} />}
     </section>
