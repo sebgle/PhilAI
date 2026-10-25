@@ -96,7 +96,7 @@ npx tsx --env-file=.env.local scripts/test-match.mts        # T7: run the pipeli
 
 Apply `supabase/migrations/20261024001000_match_passages.sql` in the SQL editor before running load or match: it adds the `match_passages` RPC that `/api/match` calls.
 
-Embeddings run in-process with transformers.js (`src/lib/embed.ts`, all-MiniLM-L6-v2). Passages are embedded by their plain-English summary; entry lines are embedded as line + entry summary (`lineQuery` in `src/lib/match-core.ts`). Every quoted line and phrase passes `findSpan` in `src/lib/exact-match.ts` before it is returned.
+Embeddings run in-process with transformers.js (`src/lib/embed.ts`, all-MiniLM-L6-v2, quantized). The model is vendored in `models/Xenova/all-MiniLM-L6-v2` and read from disk, so nothing is downloaded or cached at runtime; `next.config.ts` adds `models/` and the Linux onnxruntime binaries to the `/api/match` bundle because the native binding path is built at runtime and the file tracer misses it. If the model or dtype ever changes, re-run `scripts/library/load.mts` so passages and entries share one embedding space. Passages are embedded by their plain-English summary; entry lines are embedded as line + entry summary (`lineQuery` in `src/lib/match-core.ts`). Every quoted line and phrase passes `findSpan` in `src/lib/exact-match.ts` before it is returned.
 
 Voice: `/api/transcribe` forwards mono 16-bit PCM WAV (16 or 24 kHz) to Muse. Record in the browser with `WavRecorder` from `src/lib/wav-recorder.ts`; MediaRecorder's webm/opus only works locally where ffmpeg is installed.
 
