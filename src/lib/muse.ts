@@ -41,7 +41,9 @@ export async function museText(system: string, user: string, opts: { temperature
     ],
     temperature: opts.temperature ?? 0.2,
   };
-  const timeoutMs = opts.timeoutMs ?? Number(process.env.MUSE_TIMEOUT_MS ?? 40_000);
+  // 20 s per attempt: Spark analysis takes 8-14 s, OpenAI less. A stalled
+  // attempt then still leaves room for another model inside the budget.
+  const timeoutMs = opts.timeoutMs ?? Number(process.env.MUSE_TIMEOUT_MS ?? 20_000);
   const post = (t: ReturnType<typeof target>, b: Record<string, unknown>) =>
     fetch(t.url, {
       method: "POST",
@@ -54,9 +56,9 @@ export async function museText(system: string, user: string, opts: { temperature
   // Vercel: 8/8 failing one hour, 3/8 the next), so retrying instantly just
   // fails the whole call in under a second. On a 404, rotate to the next
   // model in the chain and back off too; on anything else back off and retry.
-  // Up to 12 attempts (404 waits capped at 3 s), and no new attempt once
-  // RETRY_BUDGET_MS has passed, so the calling route keeps time for its other
-  // steps.
+  // Up to 12 attempts (404 waits capped at 3 s), each on the next model in
+  // the chain, and no new attempt once RETRY_BUDGET_MS has passed, so the
+  // calling route keeps time for its other steps.
   const attempt = async (entry: string): Promise<Response> => {
     const t = target(entry);
     const b: Record<string, unknown> = { ...body, model: t.model };
@@ -65,7 +67,7 @@ export async function museText(system: string, user: string, opts: { temperature
     return res;
   };
   const MAX = 12;
-  const RETRY_BUDGET_MS = 25_000;
+  const RETRY_BUDGET_MS = 35_000;
   const started = Date.now();
   let modelIdx = 0;
   let res: Response | null = null;
@@ -82,13 +84,18 @@ export async function museText(system: string, user: string, opts: { temperature
       // Muse auth and quota problems will not fix themselves; fail fast on
       // those. A bad OpenAI key only costs that attempt: rotate back to Spark.
       if (provider === "muse" && (res.status === 401 || res.status === 402 || res.status === 403)) throw new Error(lastErr);
-      if (provider === "openai" && (res.status === 401 || res.status === 402 || res.status === 403)) { modelIdx++; backoff = 400; }
-      if (res.status === 404 && /model_not_found/.test(text)) { modelIdx++; backoff = Math.min(400 * (i + 1), 3000); }
+      if (provider === "openai" && (res.status === 401 || res.status === 402 || res.status === 403)) backoff = 400;
+      if (res.status === 404 && /model_not_found/.test(text)) backoff = Math.min(400 * (i + 1), 3000);
     } catch (e) {
       if (/^muse 40[123] /.test((e as Error).message)) throw e;
       lastErr = `${(e as Error).name} (${model}): ${(e as Error).message.slice(0, 120)}`;
     }
     res = null;
+    // Every failure moves to the next model, not only a 404. From Vercel,
+    // Muse mostly fails with fetch errors and stalls, and retrying the same
+    // id through those burned the whole budget without ever reaching the
+    // fallbacks. The chain is cyclic, so Spark gets tried again later anyway.
+    modelIdx++;
     if (i < MAX - 1) {
       if (Date.now() - started + backoff > RETRY_BUDGET_MS) break;
       console.warn(`[muse] attempt ${i + 1} failed: ${lastErr.slice(0, 140)}; retrying in ${backoff} ms with ${MODEL_CHAIN[modelIdx % MODEL_CHAIN.length]}`);
