@@ -65,11 +65,13 @@ Source of truth: [shared/themes.json](shared/themes.json). The slugs are the for
 | [shared/mock_scrub.json](shared/mock_scrub.json), [shared/mock_moderate.json](shared/mock_moderate.json), [shared/mock_transcribe.json](shared/mock_transcribe.json) | Scrub, moderate and transcribe examples |
 | [scripts/build-mocks.mjs](scripts/build-mocks.mjs) | Regenerates the mock_match files. Offsets come from an exact-match check, so they always line up |
 
+**Mock mode.** Until Sync 1, `NEXT_PUBLIC_MATCH_MODE=mock` (the default) makes the entry page use the mocks, with lines re-anchored in your actual entry text. If you write [shared/mock_entry.txt](shared/mock_entry.txt) as an entry, you get all three highlights. Other text falls back. Add `?mock=fallback` or `?mock=risk` to an entry URL to see those states. Set `NEXT_PUBLIC_MATCH_MODE=live` (locally and in Vercel) to switch to `/api/match`.
+
 Offsets are character indexes, end exclusive, first occurrence. `entry_text.slice(line_start, line_end) === line_text` always holds.
 
 ### Endpoints (teammate owns these)
 
-- `POST /match { entry_id }` returns `MatchResponse`. It also writes one `matches` row per link.
+- `POST /match { entry_id }` returns `MatchResponse`. It also writes one `matches` row per link and fills `entries.summary`, `emotions`, `themes` and `risk_flag`. The entry page reads those saved rows on later visits. An entry whose `summary` is still null counts as not yet matched, and gets matched on first view.
 - `POST /scrub { text }` returns `{ text, spans: [{ start, end, type, value }] }`
 - `POST /moderate { text }` returns `{ status: "ok" | "flagged", reason }`
 - `POST /transcribe` (multipart, field `audio`) returns `{ text }`. Audio is never stored

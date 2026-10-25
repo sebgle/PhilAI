@@ -95,16 +95,16 @@ const match = {
 const fallback = {
   ...base,
   fallback: true,
-  links: Object.values(passages).map((passage, i) => ({
+  links: match.links.map(({ theme, passage, reason, score }) => ({
     line_text: null,
     line_start: null,
     line_end: null,
-    theme: base.themes[i],
+    theme,
     passage,
     phrase_start: null,
     phrase_end: null,
-    reason: match.links[i].reason,
-    score: match.links[i].score,
+    reason,
+    score,
   })),
 };
 
