@@ -5,6 +5,7 @@ import { LikeButton } from "@/components/LikeButton";
 import { likesFor, type LikeInfo } from "@/lib/likes";
 import { ReplyThread, ReplyButton, ReplyComposer } from "./ReplyComposer";
 import { ReportButton } from "./ReportButton";
+import { SavePassageButton } from "./SavePassageButton";
 
 // One post as strangers see it. Explore tiles open these in their room.
 export type Post = {
@@ -19,7 +20,7 @@ export type Post = {
   passage: { id: string; author: string; work: string; year: number | null; text: string };
 };
 type Reply = { id: string; post_id: string; parent_id: string | null; alias: string; text: string; created_at: string };
-export type Thread = { repliesByPost: Map<string, Reply[]>; likes: Likes };
+export type Thread = { repliesByPost: Map<string, Reply[]>; likes: Likes; saved: Set<string> };
 type Likes = { posts: Map<string, LikeInfo>; replies: Map<string, LikeInfo> };
 
 // Explicit columns only: user_id is not granted to clients.
@@ -30,7 +31,7 @@ const NO_LIKES: LikeInfo = { count: 0, liked: false };
 
 // Replies and like counts for a page of posts. Likes come from the server side
 // (likes rows are never granted to clients); the signed-in user also learns
-// which ones are theirs.
+// which ones are theirs, and which of the posts' passages they've saved.
 export async function loadThreads(supabase: Awaited<ReturnType<typeof createClient>>, posts: Post[]): Promise<Thread> {
   const { data: replyRows } = posts.length
     ? await supabase
@@ -45,7 +46,11 @@ export async function loadThreads(supabase: Awaited<ReturnType<typeof createClie
 
   const { data: { user } } = await supabase.auth.getUser();
   const likes = await likesFor(posts.map((p) => p.id), replies.map((r) => r.id), user?.id ?? null);
-  return { repliesByPost, likes };
+  // RLS returns only the reader's own library rows.
+  const { data: savedRows } = user && posts.length
+    ? await supabase.from("library_items").select("passage_id").eq("kind", "passage").in("passage_id", posts.map((p) => p.passage.id))
+    : { data: [] };
+  return { repliesByPost, likes, saved: new Set((savedRows ?? []).map((r) => r.passage_id as string)) };
 }
 
 // Replies arrive flat (oldest first). Group them by parent so each level
@@ -84,6 +89,7 @@ export function PostCard({ post, thread }: { post: Post; thread: Thread }) {
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 pb-4 text-sm text-muted">
           <LikeButton postId={post.id} count={postLikes.count} liked={postLikes.liked} />
+          <SavePassageButton passageId={post.passage.id} saved={thread.saved.has(post.passage.id)} />
           {replies.length > 0 && (
             <span>{replies.length} {replies.length === 1 ? "reply" : "replies"}</span>
           )}

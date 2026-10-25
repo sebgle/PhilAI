@@ -69,6 +69,28 @@ export async function setResonated(entryId: string, passageId: string, value: bo
   return { error: error?.message ?? null };
 }
 
+// Save from a post in the community. No entry or matched line behind it, so
+// only the passage and its author go in; un-saving removes just the passage,
+// like Remove on the Saved page.
+export async function setPostPassageSaved(passageId: string, save: boolean) {
+  const supabase = await createClient();
+  if (save) {
+    const { data: passage } = await supabase.from("passages").select("author").eq("id", passageId).single();
+    if (!passage) return { error: "That passage isn't in the library." };
+    const results = await Promise.all([
+      supabase.from("library_items").insert({ kind: "passage", passage_id: passageId }),
+      supabase.from("library_items").insert({ kind: "author", ref: passage.author }),
+    ]);
+    const failed = results.find((r) => r.error && r.error.code !== DUPLICATE);
+    if (failed) return { error: failed.error!.message };
+  } else {
+    const { error } = await supabase.from("library_items").delete().eq("kind", "passage").eq("passage_id", passageId);
+    if (error) return { error: error.message };
+  }
+  revalidatePath("/library");
+  return { error: null };
+}
+
 export async function removeLibraryItem(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
