@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { WavRecorder } from "@/lib/wav-recorder";
-import { liveSpeechSupported, startLiveSpeech } from "@/lib/live-speech";
+import { startLiveSpeech } from "@/lib/live-speech";
 import type { TranscribeResponse } from "@/lib/contract";
 
 // 16 kHz mono WAV is ~32 KB/s and Vercel rejects request bodies over 4.5 MB,
@@ -100,8 +100,16 @@ export function MicButton({
 
   const label =
     state === "idle" ? "Speak instead" : state === "recording" ? `Stop recording, ${clock} left` : "Finishing transcript";
+  // One line, to the right of Save: the mic, then a short status that trims
+  // rather than wraps.
+  const status =
+    state === "recording"
+      ? `${clock} · Listening. Audio isn't stored.`
+      : state === "transcribing"
+        ? "Finishing transcript…"
+        : error ?? note;
   return (
-    <div className="flex flex-wrap items-center gap-2 text-sm">
+    <div className="flex min-w-0 items-center gap-2 text-sm">
       <button
         type="button"
         onClick={state === "recording" ? stop : start}
@@ -109,7 +117,7 @@ export function MicButton({
         aria-pressed={state === "recording"}
         aria-label={label}
         title={label}
-        className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors disabled:opacity-50 ${
+        className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-50 ${
           state === "recording"
             ? "animate-pulse bg-terracotta/10 text-terracotta"
             : "text-muted hover:bg-hover hover:text-foreground"
@@ -117,15 +125,11 @@ export function MicButton({
       >
         {state === "recording" ? <StopIcon /> : <MicIcon />}
       </button>
-      {state === "recording" && <span className="tabular-nums text-muted">{clock}</span>}
-      {state === "transcribing" && <span className="text-muted">Finishing transcript…</span>}
-      {state === "recording" && (
-        <span className="text-muted">
-          {liveSpeechSupported() ? "Live preview by your browser; the final transcript comes from Muse. Audio isn't stored." : "Listening. Audio isn't stored."}
+      {status && (
+        <span className={`truncate ${error ? "text-red-600" : "text-muted"}`} title={status}>
+          {status}
         </span>
       )}
-      {note && <span className="text-muted">{note}</span>}
-      {error && <span className="text-red-600">{error}</span>}
     </div>
   );
 }
