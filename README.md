@@ -14,6 +14,21 @@ npm run dev
 
 Login is email + password. In the Supabase dashboard, under **Authentication > Sign In / Providers > Email**, turn **off** "Confirm email". Supabase's built-in mailer won't deliver to arbitrary addresses without custom SMTP. After signing up, the home page shows your random handle.
 
+## Workflow
+
+- One short branch per task in [docs/TASKS.md](docs/TASKS.md), named `seb/<task>-<slug>` or `<teammate>/<task>-<slug>`, e.g. `seb/s2-write-screen`, `<teammate>/t4-tagging`.
+- Open a PR into `main`. Vercel posts a preview URL on each PR. Merge once it builds and works on the preview.
+- Keep `main` deployable. Pull `main` before starting each new task.
+- Contract changes (`src/lib/contract.ts`, `shared/mock_*`) go in their own PR, and the other person approves it.
+
+## Deploy
+
+Production is Vercel, built from `main`. Every PR gets a preview deploy.
+
+1. On vercel.com, choose **Add New → Project** and import `sebgle/PhilAI`. The defaults are fine: framework Next.js, root `./`.
+2. Add the environment variables from `.env.example` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, and the Muse keys once you have them) for Production and Preview.
+3. Deploy. In Supabase, go to **Authentication → URL Configuration** and set **Site URL** to the production URL. Add `https://*.vercel.app/**` under Redirect URLs so preview deploys work.
+
 ## Decisions (Step 0)
 
 | Decision | Choice |
