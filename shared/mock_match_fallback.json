@@ -17,7 +17,7 @@
       "line_text": null,
       "line_start": null,
       "line_end": null,
-      "theme": "belonging",
+      "theme": "identity",
       "passage": {
         "id": "p_mock_thoreau_walden_01",
         "author": "Henry David Thoreau",
@@ -34,7 +34,7 @@
       "line_text": null,
       "line_start": null,
       "line_end": null,
-      "theme": "home",
+      "theme": "belonging",
       "passage": {
         "id": "p_mock_shelley_frankenstein_01",
         "author": "Mary Shelley",
@@ -51,7 +51,7 @@
       "line_text": null,
       "line_start": null,
       "line_end": null,
-      "theme": "identity",
+      "theme": "home",
       "passage": {
         "id": "p_mock_dickens_great_expectations_01",
         "author": "Charles Dickens",
