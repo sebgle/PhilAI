@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
-/* Notion-plain surfaces; the lofi artwork carries the mood. Highlight colors
-   are Notion's own highlight palette: each highlighted line of an entry gets
-   one, and its passage's echoing phrase reuses it. */
+/* Notion-plain: white, near-black text, grey rules, one blue. Decoration is a
+   few faded line icons (components/Doodle.tsx). Highlight colors are Notion's
+   own highlight palette: each highlighted line of an entry gets one, and its
+   passage's echoing phrase reuses it. */
 :root {
   --background: #ffffff;
   --foreground: #37352f;
@@ -10,11 +11,9 @@
   --hover: #f7f7f5;   /* Notion's sidebar/hover grey; also the active nav cell */
   --muted: #787774;
   --rule: #e9e9e7;
-  --paper: #fffdf8;   /* the writing sheet */
   --hl-1: #fbecdd;    /* yellow-orange */
   --hl-2: #e7f3f8;    /* blue */
   --hl-3: #fdebec;    /* red */
-  --art-frame: #f3eee5; /* window frames, sills in the artwork */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,11 +24,9 @@
     --hover: #252525;
     --muted: #9b9a97;
     --rule: #2f2f2f;
-    --paper: #1e1e1e;
     --hl-1: #5c3b23;
     --hl-2: #143a4e;
     --hl-3: #522e2a;
-    --art-frame: #2b2a28;
   }
 }
 
@@ -40,7 +37,6 @@
   --color-hover: var(--hover);
   --color-muted: var(--muted);
   --color-rule: var(--rule);
-  --color-paper: var(--paper);
   --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-serif: var(--font-book);
 }
@@ -75,14 +71,13 @@ body {
   to { background-size: 100% 100%; }
 }
 
-/* The passage arrives like a letter set down on the desk. */
+/* The passage card fades up into place. */
 .letter {
-  animation: letter-in 520ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
-  box-shadow: rgb(15 15 15 / 0.05) 0 0 0 1px, rgb(15 15 15 / 0.08) 0 3px 8px;
+  animation: letter-in 400ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 
 @keyframes letter-in {
-  from { opacity: 0; transform: translateY(14px) rotate(-0.6deg); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
 }
 

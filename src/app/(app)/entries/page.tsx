@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LocalDate } from "@/components/LocalDate";
-import { RoomNight } from "@/components/art/RoomNight";
+import { PageTitle } from "@/components/Doodle";
 import { THEMES } from "@/lib/contract";
 
 const themeName = new Map(THEMES.map((t) => [t.slug, t.name]));
 
-// The Entries page from the sketch: the moonlit room on the left, the list of
-// entries stacked on the right.
+// Every entry, newest first.
 export default async function PastEntries() {
   const supabase = await createClient();
   const { data: entries, error } = await supabase
@@ -16,11 +15,8 @@ export default async function PastEntries() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="grid items-start gap-12 md:grid-cols-[17rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)]">
-      <RoomNight className="hidden w-full text-foreground md:block md:sticky md:top-24" />
-
-      <section className="flex flex-col gap-5">
-        <h1 className="text-3xl font-bold tracking-tight">Entries</h1>
+    <section className="flex flex-col gap-5">
+        <PageTitle title="Entries" doodle="acorn" />
 
         {error && <p className="text-red-600">{error.message}</p>}
 
@@ -61,7 +57,6 @@ export default async function PastEntries() {
             ))}
           </ul>
         )}
-      </section>
-    </div>
+    </section>
   );
 }

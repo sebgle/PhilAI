@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Doodle } from "@/components/Doodle";
 
 export default function Login() {
   const router = useRouter();
@@ -33,7 +34,10 @@ export default function Login() {
   return (
     <main className="min-h-screen flex items-center justify-center p-8">
       <form onSubmit={submit} className="w-full max-w-sm flex flex-col gap-3">
-        <h1 className="font-serif text-3xl italic">PhilAI</h1>
+        <div className="flex items-end justify-between">
+          <h1 className="font-serif text-3xl italic">PhilAI</h1>
+          <Doodle name="maple" className="h-9 w-9 text-foreground/15" />
+        </div>
         <p className="text-sm text-muted">
           Your email is only used to log in. Nobody else ever sees it: other people
           only see a random name.
@@ -45,7 +49,7 @@ export default function Login() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border rounded px-3 py-2 bg-transparent"
+          className="rounded border border-rule bg-transparent px-3 py-2"
         />
         <input
           type="password"
@@ -55,7 +59,7 @@ export default function Login() {
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border rounded px-3 py-2 bg-transparent"
+          className="rounded border border-rule bg-transparent px-3 py-2"
         />
         {mode === "signup" && (
           <label className="flex items-start gap-2 text-sm">

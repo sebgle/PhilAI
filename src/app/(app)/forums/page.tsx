@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { THEMES } from "@/lib/contract";
+import { PageTitle } from "@/components/Doodle";
 
 export default async function ForumsPage() {
   const supabase = await createClient();
@@ -11,12 +12,11 @@ export default async function ForumsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Forums</h1>
-        <p className="mt-1 text-sm text-muted">
-          One room per feeling. Everyone here is anonymous: you get a fresh name in every thread.
-        </p>
-      </div>
+      <PageTitle
+        title="Forums"
+        subtitle="One room per feeling. Everyone here is anonymous: you get a fresh name in every thread."
+        doodle="mug"
+      />
       <ul className="grid gap-3 sm:grid-cols-2">
         {THEMES.map((t) => {
           const n = counts.get(t.slug) ?? 0;
