@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { THEMES, type MatchLink, type MatchResponse } from "@/lib/contract";
-import { IS_MOCK, requestMatch, type MockVariant } from "@/lib/matching";
+import { requestMatch, type MockVariant } from "@/lib/matching";
 import { SafetyCard } from "@/components/SafetyCard";
-
-type Feedback = "saved" | "not_for_me" | null;
+import { setPassageStatus, type Status as Feedback } from "../../library/actions";
 
 // One color per highlighted line; the passage's echoing phrase uses the same one.
 const COLORS = [
@@ -34,6 +32,7 @@ export function Matches({
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Record<string, Feedback>>(initialFeedback);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   async function run() {
     setError(null);
@@ -50,16 +49,14 @@ export function Matches({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Optimistic: flip the card now, roll back if the server refuses.
   async function setLinkFeedback(passageId: string, value: Feedback) {
-    const next = feedback[passageId] === value ? null : value;
+    const prev = feedback[passageId] ?? null;
+    const next = prev === value ? null : value;
     setFeedback((f) => ({ ...f, [passageId]: next }));
-    if (IS_MOCK) return;
-    const { error } = await createClient()
-      .from("matches")
-      .update({ feedback: next })
-      .eq("entry_id", entryId)
-      .eq("passage_id", passageId);
-    if (error) setError(error.message);
+    const { error } = await setPassageStatus(entryId, passageId, next);
+    setActionError(error);
+    if (error) setFeedback((f) => ({ ...f, [passageId]: prev }));
   }
 
   if (error) {
@@ -106,6 +103,7 @@ export function Matches({
         <p className="text-sm opacity-70">
           We couldn&apos;t pin this one to specific lines, but these passages share its feeling.
         </p>
+        {actionError && <p className="text-sm text-red-600">{actionError}</p>}
         {match.links.map((link, i) => (
           <PassageCard key={link.passage.id} {...cardProps(link, i)} />
         ))}
@@ -116,6 +114,7 @@ export function Matches({
   return (
     <div className="flex flex-col gap-6">
       <EntryText text={text} links={match.links} selected={selected} onSelect={setSelected} />
+      {actionError && <p className="text-sm text-red-600">{actionError}</p>}
       {selected === null ? (
         <p className="text-sm opacity-60">
           {match.links.length

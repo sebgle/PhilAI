@@ -67,6 +67,8 @@ Source of truth: [shared/themes.json](shared/themes.json). The slugs are the for
 
 **Mock mode.** Until Sync 1, `NEXT_PUBLIC_MATCH_MODE=mock` (the default) makes the entry page use the mocks, with lines re-anchored in your actual entry text. If you write [shared/mock_entry.txt](shared/mock_entry.txt) as an entry, you get all three highlights. Other text falls back. Add `?mock=fallback` or `?mock=risk` to an entry URL to see those states. Set `NEXT_PUBLIC_MATCH_MODE=live` (locally and in Vercel) to switch to `/api/match`.
 
+**Mock passages in the database.** The 3 mock passages are seeded into `passages` with ids starting `p_mock_`, so Save and the library work before the real library is loaded. They have no embedding, so the similarity search must skip rows where `embedding is null`. Before the demo, remove them with `delete from passages where id like 'p_mock_%';`. Saved copies in users' libraries are deleted along with them.
+
 Offsets are character indexes, end exclusive, first occurrence. `entry_text.slice(line_start, line_end) === line_text` always holds.
 
 ### Endpoints (teammate owns these)

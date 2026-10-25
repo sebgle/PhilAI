@@ -18,6 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Link href="/" className="font-semibold">PhilAI</Link>
           <Link href="/" className="opacity-70 hover:opacity-100">Write</Link>
           <Link href="/entries" className="opacity-70 hover:opacity-100">Past entries</Link>
+          <Link href="/library" className="opacity-70 hover:opacity-100">Library</Link>
           <span className="ml-auto opacity-60">{data?.handle}</span>
           <form action={signOut}>
             <button type="submit" className="underline opacity-60 hover:opacity-100">Log out</button>
