@@ -62,7 +62,8 @@ export async function POST(req: Request) {
     const picks = pickPerLine(lines, scored, scoreOf, excluded);
     const results = await Promise.all(picks.map(async (p, i) => {
       if (!p) return null;
-      const pr = await phraseAndReason(lines[i].text, analysis.summary, p.cand).catch(() => ({ phrase_start: null, phrase_end: null, reason: "This passage carries the same feeling as your line." }));
+      const pr = await withRetry(() => phraseAndReason(lines[i].text, analysis.summary, p.cand), 2, 500)
+        .catch(() => ({ phrase_start: null, phrase_end: null, reason: "This passage carries the same feeling as your line." }));
       return { i, p, pr };
     }));
     links = results.filter((r): r is NonNullable<typeof r> => !!r).map(({ i, p, pr }) => ({
@@ -81,7 +82,8 @@ export async function POST(req: Request) {
       top.push(x); used.add(x.c.author);
       if (top.length === 3) break;
     }
-    const reasons = await Promise.all(top.map((x) => phraseAndReason(null, analysis.summary, x.c).catch(() => ({ phrase_start: null, phrase_end: null, reason: "This passage carries the same feeling as your entry." }))));
+    const reasons = await Promise.all(top.map((x) => withRetry(() => phraseAndReason(null, analysis.summary, x.c), 2, 500)
+      .catch(() => ({ phrase_start: null, phrase_end: null, reason: "This passage carries the same feeling as your entry." }))));
     links = top.map((x, i) => ({
       line_text: null, line_start: null, line_end: null,
       theme: (x.c.themes.find((t) => analysis.themes.includes(t as ThemeSlug)) ?? x.c.themes[0] ?? analysis.themes[0]) as ThemeSlug,
