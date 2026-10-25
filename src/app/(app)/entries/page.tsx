@@ -58,13 +58,13 @@ export default async function PastEntries() {
             const quote = (m?.line_text ?? e.text).trim();
             return (
               <li key={e.id} className="border-t border-rule">
-                <Link href={`/entries/${e.id}`} className="-mx-3 block rounded-lg px-3 py-5 transition-colors hover:bg-hover">
+                <Link href={`/entries/${e.id}`} className="group -mx-3 block rounded-lg px-3 py-5 transition-colors hover:bg-card hover:shadow-sm hover:ring-1 hover:ring-rule">
                   {/* The title is what the writer chose to call it, so it leads. The
                       matcher's line follows as the preview, and the date with the
                       author who answered close the row in one small line. */}
                   <p className="text-[1.2rem] font-semibold tracking-tight">{e.title || `Entry #${rows.length - i}`}</p>
-                  <p className="mt-1.5 line-clamp-2 font-serif leading-snug text-foreground/80">&ldquo;{quote}&rdquo;</p>
-                  <p className="mt-2.5 text-xs text-muted">
+                  <p className="mt-1.5 line-clamp-2 font-serif leading-snug text-foreground/80 transition-colors group-hover:text-foreground">&ldquo;{quote}&rdquo;</p>
+                  <p className="mt-2.5 text-xs text-muted transition-colors group-hover:text-foreground/80">
                     <LocalDate iso={e.created_at} />
                     {m?.passage ? (
                       <>

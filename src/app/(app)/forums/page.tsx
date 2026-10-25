@@ -13,10 +13,7 @@ export default async function ForumsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle
-        title="Community"
-        subtitle="Pick the room closest to how you feel. You get a new name in every thread, so no one knows it's you."
-      />
+      <PageTitle title="Community" />
       <ul className="grid gap-3 sm:grid-cols-2">
         {THEMES.map((t) => {
           const n = counts.get(t.slug) ?? 0;

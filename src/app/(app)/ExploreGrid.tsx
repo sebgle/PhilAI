@@ -118,10 +118,10 @@ function Tile({ tile }: { tile: TileData }) {
       className={`group flex flex-col gap-4 rounded-xl p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/5 sm:p-5 ${tintFor(tile.id)}`}
     >
       <p className={`break-words font-serif ${sizeFor(tile.line).cls}`}>&ldquo;{tile.line}&rdquo;</p>
-      <p className="text-xs text-foreground/60">
+      <p className="text-xs text-foreground/60 transition-colors group-hover:text-foreground">
         {tile.author}, <cite>{tile.work}</cite>
       </p>
-      <div className="flex items-center gap-3 text-xs text-foreground/60">
+      <div className="flex items-center gap-3 text-xs text-foreground/60 transition-colors group-hover:text-foreground">
         {room && (
           <span className="flex min-w-0 items-center gap-1">
             <ThemeIcon slug={room.slug} className="size-3.5 shrink-0 text-terracotta" />

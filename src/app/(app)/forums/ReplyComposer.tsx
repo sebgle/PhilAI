@@ -83,7 +83,7 @@ export function ReplyComposer({ postId }: { postId: string }) {
           maxLength={MAX_REPLY}
           rows={1}
           aria-label={target ? `Your reply to ${target.alias}` : "Your reply"}
-          placeholder={target ? `Reply to ${target.alias}…` : "Add a reply… you'll get a name for this thread"}
+          placeholder={target ? `Reply to ${target.alias}…` : "Add a reply…"}
           className="max-h-40 min-w-0 flex-1 resize-none bg-transparent py-1 text-sm outline-none [field-sizing:content] placeholder:text-muted/80"
         />
         <button

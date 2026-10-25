@@ -41,9 +41,15 @@ export function TopNav({ handle, unread }: { handle: string; unread: number }) {
             aria-current={path.startsWith("/write") ? "page" : undefined}
             aria-label="New entry"
             title="New entry"
-            className={icon}
+            // The one filled thing in the bar: writing is the way in, so it
+            // gets the accent. The plus turns a quarter on hover; the word
+            // joins it where there's room.
+            className="group mr-1.5 flex items-center gap-1 rounded-full bg-terracotta px-1.5 py-1.5 font-medium text-white shadow-sm shadow-terracotta/30 transition hover:-translate-y-px hover:bg-terracotta-deep hover:shadow-md hover:shadow-terracotta/30 aria-[current=page]:bg-terracotta-deep sm:pr-3.5"
           >
-            <PlusIcon />
+            <span className="transition-transform duration-300 group-hover:rotate-90">
+              <PlusIcon />
+            </span>
+            <span className="hidden sm:inline">Write</span>
           </Link>
           <Link
             href="/notifications"
@@ -88,7 +94,7 @@ const iconProps = {
 
 function PlusIcon() {
   return (
-    <svg {...iconProps}>
+    <svg {...iconProps} width={18} height={18} strokeWidth={2.2}>
       <path d="M12 5v14" />
       <path d="M5 12h14" />
     </svg>
