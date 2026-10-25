@@ -26,7 +26,9 @@ Login is email + password. In the Supabase dashboard, under **Authentication > S
 | Forums | One per theme, 16 themes (below). Authors are a tag plus an author page |
 | Identity | Random handle per account (owner-only). **Fresh alias per thread** in forums |
 | Emotions | GoEmotions: 27 categories + neutral ([shared/emotions.json](shared/emotions.json)) |
-| Embeddings | `vector(384)`, which fits all-MiniLM-L6-v2 or gte-small. **Still open:** confirm the model, and change the column if it isn't 384-d |
+| Embeddings | Not Muse: a free 384-d model, all-MiniLM-L6-v2 or gte-small (**pick one**, same for passages and entries). Columns are `vector(384)` |
+| Muse call budget | Per entry: 1 analysis call, then 1 call per line that returns the echoing phrase *and* the reason. The line calls run in parallel, so at most 4 calls |
+| Scrub | Regex pre-pass for emails and phone numbers, then Muse Spark for names, places and schools |
 
 ### Themes
 
