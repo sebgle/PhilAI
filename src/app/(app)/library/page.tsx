@@ -139,11 +139,10 @@ function Authors({ items, passages }: { items: Item[]; passages: Item[] }) {
           const count = passages.filter((p) => p.passage?.author === item.ref).length;
           return (
             <li key={item.id} className="flex items-center gap-3 py-3">
-              <span className="font-medium">{item.ref}</span>
+              <Link href={`/authors/${encodeURIComponent(item.ref ?? "")}`} className="font-medium underline-offset-2 hover:underline">{item.ref}</Link>
               <span className="text-sm opacity-60">
                 {count} saved passage{count === 1 ? "" : "s"}
               </span>
-              {/* Links to the author page once S8 lands. */}
               <span className="ml-auto"><RemoveButton id={item.id} /></span>
             </li>
           );

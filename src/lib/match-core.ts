@@ -29,7 +29,7 @@ const ANALYSIS_SYSTEM = `You read one private journal entry and return structure
 - emotions: 1-3 labels from exactly this list: ${EMOTIONS.join(", ")}.
 - themes: 1-2 labels from exactly this list: ${THEMES.map((t) => t.slug).join(", ")}.
 - summary: one neutral, plain sentence (12-25 words) describing the feeling and situation, no names.
-- risk_flag: true only if the entry expresses intent or desire to harm themselves or others, or suicidal thoughts. Ordinary sadness, stress or anger is false.
+- risk_flag: true if the entry expresses suicidal thoughts (active or passive: wanting to die, disappear, not wake up, "stop existing", wondering whether anyone would notice or care if they were gone), intent or desire to self-harm, or intent to harm others. Ordinary sadness, stress, loneliness, anger, or skipping class/work is false.
 - key_lines: the 2-3 sentences or clauses (6-30 words each) that carry the most feeling or the central idea. Each "text" MUST be copied character for character from the entry: same words, same punctuation, no paraphrase, no ellipsis, no fixes. Each gets a "theme" from the themes list. Prefer lines that would stand alone if shown to a stranger. Do not pick the same line twice.
 Return {"emotions":[...],"themes":[...],"summary":"...","risk_flag":false,"key_lines":[{"text":"...","theme":"..."}]}.`;
 

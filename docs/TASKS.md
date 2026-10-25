@@ -64,7 +64,7 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
   - `POST /api/reports`: hide the post or reply once it reaches the report threshold.
   - Never return `user_id` from any of them.
 - [ ] **S7. Forum pages.** `/forums` lists the 16 themes. `/forums/[theme]` shows posts newest first, with an author filter. Each post shows the line beside its passage ("marginalia"), with replies one level deep and a report button. Client queries list columns explicitly (no `select('*')`).
-- [ ] **S8. Author pages.** `/authors/[name]` shows the author's passages and every visible post linked to them, across all themes.
+- [x] **S8. Author pages.** (done by Teammate under T13) `/authors/[name]` shows the author's passages and every visible post linked to them, across all themes.
 - [ ] **S9. Share flow.** "Share this line" opens a preview with the editable line, theme tag and linked passage. It calls `/api/scrub` and highlights any warnings, then posts via `/api/posts`. Build it against `mock_scrub.json` and `mock_moderate.json` first.
 - [ ] **S10. Safety UI.** When `risk_flag` is true, show a calm card offering 988 (call or text 988, or chat online), and hide or disable sharing for that entry. Add the "not therapy or emergency help" line to the footer and the sign-up screen, plus the age checkbox.
 - [ ] **S11. Delete account.** A route that calls `auth.admin.deleteUser` with the admin client. Everything the user owns cascades.
@@ -81,9 +81,13 @@ Teammate notes (2026-10-24, late): all four routes are live locally and tested w
 ## Phase 2: tune and harden
 
 - [x] **T12. Tuning.** Run 10 test entries. Compare embedding the raw line vs the line plus summary. Adjust the weights using "not for me" results, and aim for under ~5 s until the first highlight appears.
-- [ ] **T13. Spare capacity.** If ahead, take S8 (author pages) and the seed data in S12.
+- [x] **T13. Spare capacity.** If ahead, take S8 (author pages) and the seed data in S12.
 - [ ] **S12. Polish.** Warm paper tones in light mode, ink tones in dark mode, serif type for passages. Lines light up one at a time, and the passage card slides in like a letter. Empty states everywhere. Seed 2 demo accounts and a few posts (`is_seeded = true`).
 - [ ] **S13. Spare capacity.** If ahead, help Teammate hand-check passage tags.
+
+**Seed data (T13):** `npx tsx --env-file=.env.local scripts/seed-demo.mts` creates two demo accounts (`demo-one@philai.app`, `demo-two@philai.app`, password `philai-demo-2026` unless `DEMO_PASSWORD` is set) and 7 seeded posts with replies across belonging, loneliness, home, ambition, identity, grief and meaning. Re-running replaces earlier seeded posts. The demo entry for step 2 is `shared/demo_entry.txt`; it returns Wilde, Brontë and Montgomery, and scrub flags "Westlake".
+
+**Risk flag (tuned):** passive ideation ("would anyone notice if I stopped showing up") is now flagged; skipping class/practice is not. Spot-check with `scripts/test-risk.mts`.
 
 ## Sync 2: demo
 
