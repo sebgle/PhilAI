@@ -101,7 +101,7 @@ function Passages({ items }: { items: Item[] }) {
               {hasPhrase ? (
                 <>
                   {p.text.slice(0, m!.phrase_start!)}
-                  <mark className="rounded bg-amber-200/80 px-0.5 text-inherit dark:bg-amber-400/30">
+                  <mark className="rounded-sm bg-[var(--hl-1)] px-0.5 text-inherit">
                     {p.text.slice(m!.phrase_start!, m!.phrase_end!)}
                   </mark>
                   {p.text.slice(m!.phrase_end!)}

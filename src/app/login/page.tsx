@@ -33,7 +33,7 @@ export default function Login() {
   return (
     <main className="min-h-screen flex items-center justify-center p-8">
       <form onSubmit={submit} className="w-full max-w-sm flex flex-col gap-3">
-        <h1 className="text-2xl font-semibold">PhilAI</h1>
+        <h1 className="font-serif text-3xl italic">PhilAI</h1>
         <p className="text-sm opacity-70">
           Your email is only used to log in. Nobody else ever sees it: other people
           only see a random name.

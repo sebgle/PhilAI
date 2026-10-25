@@ -9,12 +9,34 @@ import { SafetyCard } from "@/components/SafetyCard";
 import { setPassageStatus, type Status as Feedback } from "../../library/actions";
 import { SharePanel } from "./SharePanel";
 
-// One color per highlighted line; the passage's echoing phrase uses the same one.
+// One highlighter per line; the passage's echoing phrase uses the same one.
+// Colors live in globals.css (--hl-1..3) so light and dark mode both work.
 const COLORS = [
-  { mark: "bg-amber-200/80 dark:bg-amber-400/30", ring: "ring-amber-500" },
-  { mark: "bg-sky-200/80 dark:bg-sky-400/30", ring: "ring-sky-500" },
-  { mark: "bg-rose-200/80 dark:bg-rose-400/30", ring: "ring-rose-500" },
+  { hl: "var(--hl-1)", ring: "ring-amber-500" },
+  { hl: "var(--hl-2)", ring: "ring-sky-500" },
+  { hl: "var(--hl-3)", ring: "ring-rose-500" },
 ];
+
+// Matching takes ~15 s; say what's actually happening rather than spin.
+const STAGES = [
+  "Reading your entry…",
+  "Finding the lines that carry the most feeling…",
+  "Searching 900 passages for ones that feel the same way…",
+  "Finding the words in each passage that echo yours…",
+];
+
+function Finding() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((n) => Math.min(n + 1, STAGES.length - 1)), 4000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <p className="text-sm text-muted animate-pulse" aria-live="polite">
+      {STAGES[i]}
+    </p>
+  );
+}
 
 const themeName = new Map(THEMES.map((t) => [t.slug, t.name]));
 
@@ -78,7 +100,7 @@ export function Matches({
     return (
       <div className="flex flex-col gap-4">
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
-        <p className="text-sm opacity-60 animate-pulse">Finding passages that feel the same way…</p>
+        <Finding />
       </div>
     );
   }
@@ -155,6 +177,8 @@ function EntryText({
 
   const parts: React.ReactNode[] = [];
   let cursor = 0;
+  // Strokes land one after another, in reading order.
+  let order = 0;
   for (const s of spans) {
     if (s.start < cursor) continue;
     parts.push(text.slice(cursor, s.start));
@@ -172,7 +196,8 @@ function EntryText({
             onSelect(s.i);
           }
         }}
-        className={`cursor-pointer rounded px-0.5 text-inherit ${c.mark} ${
+        style={{ "--hl": c.hl, "--delay": `${200 + order++ * 450}ms` } as React.CSSProperties}
+        className={`hl cursor-pointer rounded-sm bg-transparent px-0.5 text-inherit ${
           selected === s.i ? `ring-2 ${c.ring}` : ""
         }`}
       >
@@ -207,13 +232,16 @@ function PassageCard({
 
   return (
     <section
-      className={`rounded border border-foreground/15 p-5 ${feedback === "not_for_me" ? "opacity-50" : ""}`}
+      className={`letter rounded-sm border border-rule bg-card p-6 transition-opacity ${feedback === "not_for_me" ? "opacity-50" : ""}`}
     >
-      <blockquote className="font-serif text-lg leading-relaxed">
+      <blockquote className="font-serif text-lg leading-[1.7]">
         {hasPhrase ? (
           <>
             {passage.text.slice(0, ps!)}
-            <mark className={`rounded px-0.5 text-inherit ${color.mark}`}>
+            <mark
+              style={{ "--hl": color.hl, "--delay": "450ms" } as React.CSSProperties}
+              className="hl rounded-sm bg-transparent px-0.5 text-inherit"
+            >
               {passage.text.slice(ps!, pe!)}
             </mark>
             {passage.text.slice(pe!)}

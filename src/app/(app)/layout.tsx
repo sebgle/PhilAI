@@ -13,24 +13,27 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b border-foreground/10">
-        <nav className="mx-auto max-w-2xl px-4 py-3 flex items-center gap-5 text-sm">
-          <Link href="/" className="font-semibold">PhilAI</Link>
-          <Link href="/" className="opacity-70 hover:opacity-100">Write</Link>
-          <Link href="/entries" className="opacity-70 hover:opacity-100">Past entries</Link>
-          <Link href="/library" className="opacity-70 hover:opacity-100">Library</Link>
-          <Link href="/forums" className="opacity-70 hover:opacity-100">Forums</Link>
-          <Link href="/account" title="Your account" className="ml-auto opacity-60 hover:opacity-100">
-            {data?.handle}
-          </Link>
-          <form action={signOut}>
-            <button type="submit" className="underline opacity-60 hover:opacity-100">Log out</button>
-          </form>
+      <header className="border-b border-rule">
+        <nav className="mx-auto flex max-w-2xl flex-wrap items-baseline gap-x-5 gap-y-2 px-4 py-3 text-sm">
+          <Link href="/" className="font-serif text-lg italic">PhilAI</Link>
+          <Link href="/" className="text-muted hover:text-foreground">Write</Link>
+          <Link href="/entries" className="text-muted hover:text-foreground">Past entries</Link>
+          <Link href="/library" className="text-muted hover:text-foreground">Library</Link>
+          <Link href="/forums" className="text-muted hover:text-foreground">Forums</Link>
+          <span className="ml-auto flex items-baseline gap-4">
+            <Link href="/account" title="Your account" className="text-muted hover:text-foreground">
+              {data?.handle}
+            </Link>
+            <form action={signOut}>
+              <button type="submit" className="text-muted underline hover:text-foreground">Log out</button>
+            </form>
+          </span>
         </nav>
       </header>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">{children}</main>
-      <footer className="mx-auto max-w-2xl px-4 py-6 text-xs opacity-50">
-        A reflection and community space, not therapy or emergency help.
+      <footer className="mx-auto max-w-2xl px-4 py-6 text-xs text-muted">
+        A reflection and community space, not therapy or emergency help. If you&apos;re in crisis in the
+        US, call or text 988.
       </footer>
     </div>
   );
