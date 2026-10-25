@@ -47,27 +47,27 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
 
 ### Sebastian: app and community
 
-- [ ] **S1. Deploy.** Connect the repo to Vercel, add the env vars, and deploy. Change the Supabase Auth Site URL to the deployed URL.
+- [x] **S1. Deploy.** Connect the repo to Vercel, add the env vars, and deploy. Change the Supabase Auth Site URL to the deployed URL.
   *Done when:* Teammate can sign up on the deployed URL and see a handle.
-- [ ] **S2. Write screen.** A large text area and a prompt chip (rotating set in `src/lib/prompts.ts`, tap for a new one). Save inserts into `entries` with the browser client. Add a past entries page listing entries newest first, with date and themes.
+- [x] **S2. Write screen.** A large text area and a prompt chip (rotating set in `src/lib/prompts.ts`, tap for a new one). Save inserts into `entries` with the browser client. Add a past entries page listing entries newest first, with date and themes.
   *Done when:* an entry survives a page refresh.
-- [ ] **S3. Mic.** Hold-to-talk that posts to `/api/transcribe` (use `WavRecorder` from `src/lib/wav-recorder.ts`, not `MediaRecorder`: Muse only accepts 16 kHz mono WAV and Vercel has no ffmpeg) and puts the transcript in the text box for editing. Build it against a stub that returns `shared/mock_transcribe.json` until T10 lands.
-- [ ] **S4. Matches screen.** Built on `shared/mock_match.json`:
+- [x] **S3. Mic.** *(Built as tap to start / tap to stop, since holding a button for 30 s is awkward on a laptop. Auto-stops at 2 min, because WAV is ~32 KB/s and Vercel rejects bodies over 4.5 MB. The transcript is appended to any typed text.)* Hold-to-talk that posts to `/api/transcribe` (use `WavRecorder` from `src/lib/wav-recorder.ts`, not `MediaRecorder`: Muse only accepts 16 kHz mono WAV and Vercel has no ffmpeg) and puts the transcript in the text box for editing. Build it against a stub that returns `shared/mock_transcribe.json` until T10 lands.
+- [x] **S4. Matches screen.** Built on `shared/mock_match.json`:
   - Colored highlights on the entry from `line_start`/`line_end`.
   - Tapping a highlight opens its passage card, with the phrase highlighted in the same color from `phrase_start`/`phrase_end`, plus the reason.
   - Card buttons: save, not for me (sets `matches.feedback`), see more by this author, share this line.
   - Fallback state from `mock_match_fallback.json`, and risk state from `mock_match_risk.json`.
-- [ ] **S5. Library.** Tabs for passages, authors, books and quotes (`library_items`). Saving a passage also adds its author ("authors who found me"). Users can add books and quotes by hand.
-- [ ] **S6. Forum server routes.**
+- [x] **S5. Library.** Tabs for passages, authors, books and quotes (`library_items`). Saving a passage also adds its author ("authors who found me"). Users can add books and quotes by hand.
+- [x] **S6. Forum server routes.**
   - `POST /api/posts`: call moderate, give the user a fresh alias for the new thread in `thread_aliases`, then insert with the admin client.
   - `POST /api/replies`: reuse the user's alias in that thread, or create one.
   - `POST /api/reports`: hide the post or reply once it reaches the report threshold.
   - Never return `user_id` from any of them.
-- [ ] **S7. Forum pages.** `/forums` lists the 16 themes. `/forums/[theme]` shows posts newest first, with an author filter. Each post shows the line beside its passage ("marginalia"), with replies one level deep and a report button. Client queries list columns explicitly (no `select('*')`).
+- [x] **S7. Forum pages.** `/forums` lists the 16 themes. `/forums/[theme]` shows posts newest first, with an author filter. Each post shows the line beside its passage ("marginalia"), with replies one level deep and a report button. Client queries list columns explicitly (no `select('*')`).
 - [x] **S8. Author pages.** (done by Teammate under T13) `/authors/[name]` shows the author's passages and every visible post linked to them, across all themes.
-- [ ] **S9. Share flow.** "Share this line" opens a preview with the editable line, theme tag and linked passage. It calls `/api/scrub` and highlights any warnings, then posts via `/api/posts`. Build it against `mock_scrub.json` and `mock_moderate.json` first.
-- [ ] **S10. Safety UI.** When `risk_flag` is true, show a calm card offering 988 (call or text 988, or chat online), and hide or disable sharing for that entry. Add the "not therapy or emergency help" line to the footer and the sign-up screen, plus the age checkbox.
-- [ ] **S11. Delete account.** A route that calls `auth.admin.deleteUser` with the admin client. Everything the user owns cascades.
+- [x] **S9. Share flow.** "Share this line" opens a preview with the editable line, theme tag and linked passage. It calls `/api/scrub` and highlights any warnings, then posts via `/api/posts`. Build it against `mock_scrub.json` and `mock_moderate.json` first.
+- [x] **S10. Safety UI.** When `risk_flag` is true, show a calm card offering 988 (call or text 988, or chat online), and hide or disable sharing for that entry. Add the "not therapy or emergency help" line to the footer and the sign-up screen, plus the age checkbox. *(Risk entries keep their safe passages under the 988 card with no Share button; `/api/posts` also refuses them. Sign-up needs the 18+ box ticked.)*
+- [x] **S11. Delete account.** A route that calls `auth.admin.deleteUser` with the admin client. Everything the user owns cascades. *(`DELETE /api/account`; reached from the handle in the header → `/account`; you type "delete" to confirm.)*
 
 ---
 
@@ -75,14 +75,16 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
 
 Teammate notes (2026-10-24, late): all four routes are live locally and tested with a signed-in cookie (`scripts/dev-session.mts` prints one for curl). Library: 856 passages loaded from 56 works (quality >= 3). `/api/match` takes ~25 s today, 14 s of it the Muse analysis call; `/api/scrub` ~9 s; `/api/moderate` ~2 s; `/api/transcribe` ~2 s. Unauthenticated API calls get a 307 to /login from the middleware rather than a 401. Risk entries still return links (minus mortality) so the UI can show the 988 card next to them with sharing locked.
 
-- [ ] `/api/match`, `/api/scrub`, `/api/moderate` and `/api/transcribe` return the agreed shapes on the deployed URL.
-- [ ] Sebastian swaps each mock for the real call. Nothing else on those screens should need to change. If something does, fix the contract, not the screen.
+- [x] `/api/match`, `/api/scrub`, `/api/moderate` and `/api/transcribe` return the agreed shapes on the deployed URL.
+- [x] Sebastian swaps each mock for the real call. Nothing else on those screens should need to change. If something does, fix the contract, not the screen.
+
+Sync 1 notes (2026-10-24, late): `NEXT_PUBLIC_MATCH_MODE=live` is set in Vercel. On https://philai.vercel.app, `/api/match` returned 200 in 13.6 s with 3 verified links. It took two fixes: vendoring the q8 model, and tracing onnxruntime's linux/x64 binary into the function. Locally the scrub and moderate calls ran through the share flow, and transcribe ran end to end through the mic UI (2.8 s).
 
 ## Phase 2: tune and harden
 
 - [x] **T12. Tuning.** Run 10 test entries. Compare embedding the raw line vs the line plus summary. Adjust the weights using "not for me" results, and aim for under ~5 s until the first highlight appears.
 - [x] **T13. Spare capacity.** If ahead, take S8 (author pages) and the seed data in S12.
-- [ ] **S12. Polish.** Warm paper tones in light mode, ink tones in dark mode, serif type for passages. Lines light up one at a time, and the passage card slides in like a letter. Empty states everywhere. Seed 2 demo accounts and a few posts (`is_seeded = true`).
+- [x] **S12. Polish.** *(Laid-paper / fountain-pen-ink palette in `globals.css`, Literata for passages and Instrument Sans for the UI, highlighter strokes that sweep across each line in turn, a passage card that lands like a letter, matching-stage status text during the ~15 s wait, a header that wraps on phones, and animations off for reduced motion. Seed data by Teammate.)* Warm paper tones in light mode, ink tones in dark mode, serif type for passages. Lines light up one at a time, and the passage card slides in like a letter. Empty states everywhere. Seed 2 demo accounts and a few posts (`is_seeded = true`).
 - [ ] **S13. Spare capacity.** If ahead, help Teammate hand-check passage tags.
 
 **Seed data (T13):** `npx tsx --env-file=.env.local scripts/seed-demo.mts` creates two demo accounts (`demo-one@philai.app`, `demo-two@philai.app`, password `philai-demo-2026` unless `DEMO_PASSWORD` is set) and 7 seeded posts with replies across belonging, loneliness, home, ambition, identity, grief and meaning. Re-running replaces earlier seeded posts. The demo entry for step 2 is `shared/demo_entry.txt`; it returns Wilde, Brontë and Montgomery, and scrub flags "Westlake".
@@ -90,6 +92,13 @@ Teammate notes (2026-10-24, late): all four routes are live locally and tested w
 **Risk flag (tuned):** passive ideation ("would anyone notice if I stopped showing up") is now flagged; skipping class/practice is not. Spot-check with `scripts/test-risk.mts`.
 
 ## Sync 2: demo
+
+**Before the demo** (in this order):
+- [ ] Delete the dev test account `philai-s2-test@example.com` from its Account page. That also removes its two test forum posts, both linked to mock passages.
+- [ ] Remove the mock passages: `delete from passages where id like 'p_mock_%';`. This only works after the step above, because posts block the delete.
+- [ ] Re-run the seed script, so the forums hold only seeded posts plus whatever you post live.
+- [ ] Warm up production: save one entry on https://philai.vercel.app a few minutes before going on, so the demo doesn't hit a cold start.
+- [ ] Do the voice step in Chrome, and allow the microphone ahead of time.
 
 - [ ] Run the [demo script](#demo-script) end to end, twice in a row, with no fixes needed in between.
 - [ ] Record a screen capture of a full run as a backup.
