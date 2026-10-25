@@ -96,10 +96,6 @@ export default async function EntryPage({
         initialFeedback={initialFeedback}
         mockVariant={VARIANTS.includes(mock as MockVariant) ? (mock as MockVariant) : "match"}
       />
-      <div className="flex gap-4 text-sm">
-        <Link href="/" className="underline">Write another</Link>
-        <Link href="/entries" className="underline">All entries</Link>
-      </div>
     </article>
   );
 }
