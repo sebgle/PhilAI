@@ -31,6 +31,11 @@ export type MatchLink = {
   phrase_end: number | null;
   reason: string;
   score: number;
+  // The two runners-up for the same line, same shape, never nested further.
+  // Absent on whole-entry fallback links and on the mocks.
+  alternates?: MatchLink[];
+  // The reader said this one spoke to them (matches.resonated).
+  resonated?: boolean;
 };
 
 // POST /match  { entry_id }  ->  MatchResponse

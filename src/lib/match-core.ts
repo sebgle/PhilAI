@@ -74,11 +74,18 @@ function jaccard(a: string[], b: string[]) {
   return inter / (A.size + B.size - inter);
 }
 
-export function scoreCandidate(c: Candidate, entryEmotions: string[], lineThemes: string[], tasteAuthors: Set<string>) {
+// Taste is either a set of authors (each worth 1) or a map of author -> weight
+// in [0, 1], so a "spoke to me" can count for more than a library save.
+export type Taste = Set<string> | Map<string, number>;
+export function tasteOf(taste: Taste, author: string) {
+  return taste instanceof Map ? (taste.get(author) ?? 0) : taste.has(author) ? 1 : 0;
+}
+
+export function scoreCandidate(c: Candidate, entryEmotions: string[], lineThemes: string[], tasteAuthors: Taste) {
   const sim = Math.max(0, Math.min(1, c.similarity));
   const emo = jaccard(entryEmotions, c.emotions);
   const theme = jaccard(lineThemes, c.themes);
-  const taste = tasteAuthors.has(c.author) ? 1 : 0;
+  const taste = tasteOf(tasteAuthors, c.author);
   return WEIGHTS.sim * sim + WEIGHTS.emo * emo + WEIGHTS.theme * theme + WEIGHTS.taste * taste;
 }
 

@@ -55,6 +55,18 @@ export async function setPassageStatus(entryId: string, passageId: string, statu
   return { error: null };
 }
 
+// "Spoke to me" on a passage card. Not a bookmark: a ranking signal, kept on
+// the matches row so future entries lean toward what moved this reader.
+export async function setResonated(entryId: string, passageId: string, value: boolean) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("matches")
+    .update({ resonated: value })
+    .eq("entry_id", entryId)
+    .eq("passage_id", passageId);
+  return { error: error?.message ?? null };
+}
+
 // Hand-added favorite book or quote, from the library form.
 export async function addLibraryItem(formData: FormData) {
   const kind = formData.get("kind");
