@@ -1,6 +1,6 @@
 // Journaling prompts, written as the start of a thought so they can sit in the
 // empty text box as its placeholder. The Write screen shows one at a time and
-// offers another on hover.
+// offers another on click, or none at all.
 export const PROMPTS = [
   "Something you left unsaid today…",
   "Whatever you're carrying right now…",

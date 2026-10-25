@@ -9,8 +9,8 @@ import { MicButton } from "./MicButton";
 const join = (a: string, b: string) => (a.trim() && b ? `${a.trimEnd()} ${b}` : a.trim() ? a : b);
 
 // The Write page: an editable title ("New entry #N" until you name it), the
-// text box with the prompt as its placeholder (↻ appears on hover for another),
-// and at the bottom Save with the microphone beside it.
+// text box with the prompt as its placeholder (click it for another, × to
+// write without one), and at the bottom Save with the microphone beside it.
 export function WriteForm({ entryNumber }: { entryNumber: number }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -51,8 +51,9 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
       />
 
       {/* The prompt plays the placeholder: drawn over the empty box in the
-          placeholder style. Clicking the words swaps in another prompt;
-          clicking anywhere else in the box starts writing. */}
+          placeholder style. Clicking the words swaps in another prompt, the ×
+          beside them removes it for this entry, and clicking anywhere else in
+          the box starts writing. */}
       <div className="relative">
         <textarea
           value={live !== null ? join(text, live) : text}
@@ -64,15 +65,26 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
           className="block h-[48vh] w-full resize-none overflow-y-auto bg-transparent text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
         />
         {prompt && !text && live === null && (
-          <button
-            id="prompt"
-            type="button"
-            onClick={() => setPrompt(randomPrompt(prompt))}
-            title="Another prompt"
-            className="absolute left-0 top-0 text-left text-[17px] leading-[1.9] text-muted/60 transition-colors hover:text-muted"
-          >
-            {prompt}
-          </button>
+          <div className="absolute left-0 top-0 text-[17px] leading-[1.9] text-muted/60">
+            <button
+              id="prompt"
+              type="button"
+              onClick={() => setPrompt(randomPrompt(prompt))}
+              title="Another prompt"
+              className="text-left transition-colors hover:text-muted"
+            >
+              {prompt}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPrompt(null)}
+              aria-label="Remove prompt"
+              title="Remove prompt"
+              className="ml-2 px-1 transition-colors hover:text-muted"
+            >
+              ×
+            </button>
+          </div>
         )}
       </div>
 
