@@ -9,6 +9,7 @@ import { groupAlternates } from "@/lib/match-links";
 import { withQualityFeedback } from "@/lib/match-feedback";
 import { isCurrentMatch } from "@/lib/match-version";
 import { EntryTitle } from "./EntryTitle";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 const VARIANTS: MockVariant[] = ["match", "fallback", "risk"];
 
@@ -80,10 +81,7 @@ export default async function EntryPage({
   return (
     <article className="flex flex-col gap-4">
       <div>
-        <nav aria-label="Breadcrumb" className="text-sm text-muted">
-          <Link href="/entries" className="underline-offset-4 hover:text-foreground hover:underline">Entries</Link>
-          <span aria-hidden="true" className="ml-1.5 opacity-60">/</span>
-        </nav>
+        <Breadcrumb href="/entries" label="Entries" />
         <EntryTitle entryId={entry.id} initial={entry.title} fallback={`Entry #${entryNumber ?? ""}`} />
         <div className="mt-1 text-sm text-muted">
           <LocalDate iso={entry.created_at} withTime />

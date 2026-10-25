@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { THEMES } from "@/lib/contract";
 import { LocalDate } from "@/components/LocalDate";
 import { Marginalia } from "@/components/Marginalia";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 // S8: read-only author page. Every passage by the author in the library, and
 // every visible post linked to one of them, across all theme forums. A
@@ -49,8 +50,8 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <Link href="/forums" className="text-sm text-muted hover:text-foreground">← Community</Link>
-        <h1 className="mt-2 text-[2rem] font-semibold tracking-tight">{name}</h1>
+        <Breadcrumb href="/forums" label="Community" />
+        <h1 className="mt-1 text-[2rem] font-semibold tracking-tight">{name}</h1>
         <p className="mt-1 text-sm text-muted">
           {passages.length} passage{passages.length === 1 ? "" : "s"} from{" "}
           {works.map(([work, year], i) => (
