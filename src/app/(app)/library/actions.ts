@@ -69,18 +69,6 @@ export async function setResonated(entryId: string, passageId: string, value: bo
   return { error: error?.message ?? null };
 }
 
-// Hand-added favorite book or quote, from the library form.
-export async function addLibraryItem(formData: FormData) {
-  const kind = formData.get("kind");
-  const text = String(formData.get("text") ?? "").trim();
-  const ref = String(formData.get("ref") ?? "").trim() || null;
-  if ((kind !== "book" && kind !== "quote") || !text) return;
-
-  const supabase = await createClient();
-  await supabase.from("library_items").insert({ kind, text, ref });
-  revalidatePath("/library");
-}
-
 export async function removeLibraryItem(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
