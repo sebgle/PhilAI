@@ -8,8 +8,9 @@ import { usePathname } from "next/navigation";
 const TABS = [
   { href: "/", label: "Write", match: (p: string) => p === "/" },
   { href: "/entries", label: "Entries", match: (p: string) => p.startsWith("/entries") },
-  { href: "/library", label: "Saved", match: (p: string) => p.startsWith("/library") || p.startsWith("/authors") },
-  { href: "/forums", label: "Community", match: (p: string) => p.startsWith("/forums") },
+  { href: "/library", label: "Saved", match: (p: string) => p.startsWith("/library") },
+  // Author pages are browsing, not the reader's saved items, so they count as Community.
+  { href: "/forums", label: "Community", match: (p: string) => p.startsWith("/forums") || p.startsWith("/authors") },
 ];
 
 const tab =
