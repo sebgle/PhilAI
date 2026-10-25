@@ -6,7 +6,9 @@ import { embed } from "../src/lib/embed.ts";
 import { findSpan } from "../src/lib/exact-match.ts";
 import { analyzeEntry, verifyLines, scoreCandidate, pickPerLine, phraseAndReason, lineQuery, RISK_EXCLUDED_THEMES, withRetry, type Candidate } from "../src/lib/match-core.ts";
 
-import { shortlist, reviewPassages, assignInsights } from "../src/lib/insight-match.ts";
+import { reviewPassages, assignInsights } from "../src/lib/insight-match.ts";
+
+import { retrievalQueries, balancedShortlist, mapConcurrent } from "../src/lib/match-retrieval.ts";
 
 const args = process.argv.slice(2);
 const mode = (args.find((a) => a.startsWith("--mode="))?.split("=")[1] ?? "line+summary") as "line" | "line+summary";
@@ -21,7 +23,9 @@ console.log(`analysis ${tA - t0}ms  emotions=${analysis.emotions} themes=${analy
 const lines = verifyLines(text, analysis.key_lines);
 for (const l of analysis.key_lines) console.log(`  ${findSpan(text, l.text) ? "OK  " : "DROP"} [${l.theme}] ${l.text}`);
 const fallback = lines.length === 0;
-const queries = fallback ? [analysis.summary] : lines.map((l) => lineQuery(l.text, args.includes("--legacy") ? analysis.summary : l.interpretation ?? analysis.summary, mode));
+const plan = (fallback ? [null] : lines).map((line) => retrievalQueries(line, analysis.summary));
+const querySpecs = plan.flatMap((qs, lineIndex) => qs.map((q) => ({ ...q, lineIndex })));
+const queries = !args.includes("--legacy") ? querySpecs.map((q) => q.text) : fallback ? [analysis.summary] : lines.map((l) => lineQuery(l.text, args.includes("--legacy") ? analysis.summary : l.interpretation ?? analysis.summary, mode));
 const vectors = await embed(queries);
 const excluded = analysis.risk_flag ? RISK_EXCLUDED_THEMES : new Set<string>();
 const retrieved: Candidate[][] = await Promise.all(vectors.map((v) => withRetry(async () => {
@@ -33,7 +37,15 @@ const tR = Date.now();
 console.log(`retrieve ${tR - tA}ms (${retrieved.map((r) => r.length).join(",")} candidates)`);
 if (!args.includes("--legacy")) {
   const taste = new Set<string>();
-  const pools = retrieved.map((cs, i) => shortlist(cs, excluded, (c) => scoreCandidate(c, analysis.emotions, fallback ? analysis.themes : [lines[i].theme], taste)));
+  const profiles = await mapConcurrent(querySpecs, 6, async (q) => {
+    const { data, error } = await admin.rpc("search_passage_insights", { query_text: q.text, match_count: 12 });
+    if (error) throw error;
+    return (data ?? []) as Candidate[];
+  });
+  const pools = plan.map((_, i) => balancedShortlist(querySpecs.flatMap((q, j) => q.lineIndex === i ? [
+    { kind: q.kind, source: "semantic" as const, candidates: retrieved[j] },
+    { kind: q.kind, source: "profile" as const, candidates: profiles[j] },
+  ] : []), excluded, (c) => scoreCandidate(c, analysis.emotions, fallback ? analysis.themes : [lines[i].theme], taste)));
   const reviewed = await Promise.all(pools.map((candidates, i) => reviewPassages({ line: fallback ? null : lines[i].text,
     interpretation: fallback ? analysis.summary : lines[i].interpretation ?? analysis.summary, context: text, candidates, excluded, deadline: Date.now() + 45_000 })));
   const assigned = assignInsights(reviewed);

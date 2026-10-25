@@ -49,3 +49,6 @@ data/raw/
 data/candidates.jsonl
 data/candidate_vecs.json
 supabase/.temp/
+
+# Local evaluations and generated annotations (review before committing).
+/work/

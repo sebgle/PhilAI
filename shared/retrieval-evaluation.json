@@ -1,0 +1,211 @@
+[
+  {
+    "id": "empty-success",
+    "text": "I got the promotion and everyone applauded. The attention did not fill the emptiness I hoped it would.",
+    "situation": "Receiving recognition after a promotion",
+    "interpretation": "External success without expected fulfillment",
+    "perspective_query": "Distinguishing visible abundance from what actually nourishes a person",
+    "expected_passage_ids": [
+      "p_205_f6226ba4"
+    ]
+  },
+  {
+    "id": "understood",
+    "text": "I have people to spend time with, but I still wish someone understood how I see things.",
+    "situation": "Having company but feeling misunderstood",
+    "interpretation": "Company without shared understanding",
+    "perspective_query": "The difference between companionship and kinship",
+    "expected_passage_ids": [
+      "p_1260_59826312"
+    ]
+  },
+  {
+    "id": "welcome-solitude",
+    "text": "I spent the evening alone and felt more at ease than I do at most parties.",
+    "situation": "Enjoying time alone",
+    "interpretation": "Chosen solitude can feel companionable",
+    "perspective_query": "Being alone without being lonely",
+    "expected_passage_ids": [
+      "p_205_e612206b"
+    ]
+  },
+  {
+    "id": "one-mistake",
+    "text": "I made one selfish choice and now I keep thinking that must be the whole truth about who I am.",
+    "situation": "Judging oneself after a mistake",
+    "interpretation": "A single action becoming a total judgment of identity",
+    "perspective_query": "Distinguish a small deed from the whole person",
+    "expected_passage_ids": [
+      "p_58585_8012715b"
+    ]
+  },
+  {
+    "id": "approval",
+    "text": "I agreed with them so they would like me. I hated hearing myself say something I did not believe.",
+    "situation": "Saying something untrue to gain approval",
+    "interpretation": "Acceptance purchased at the cost of self-respect",
+    "perspective_query": "The inward cost of avoiding ridicule",
+    "expected_passage_ids": [
+      "p_23_7ce60994"
+    ]
+  },
+  {
+    "id": "ordinary-contentment",
+    "text": "I read by the open window and watched the moon. Nothing impressive happened and I felt completely happy.",
+    "situation": "Enjoying a quiet evening with simple pleasures",
+    "interpretation": "Contentment without achievement or company",
+    "perspective_query": "Freedom and small ordinary pleasures can be enough",
+    "expected_passage_ids": [
+      "p_921_b1618d93"
+    ]
+  },
+  {
+    "id": "changed-grief",
+    "text": "I still miss her. But the person doing the missing feels different from who I was last year.",
+    "situation": "Missing someone over time",
+    "interpretation": "Grief persists while the self changes",
+    "perspective_query": "Healing through becoming different rather than forgetting",
+    "expected_passage_ids": [
+      "p_18269_06ccb609"
+    ]
+  },
+  {
+    "id": "joy-and-grief",
+    "text": "I laughed at dinner and felt guilty afterward, as if happiness meant I had stopped loving the person I lost.",
+    "situation": "Laughing while grieving someone",
+    "interpretation": "Joy seems disloyal to grief",
+    "perspective_query": "Laughter and tears can come from the same emotional source",
+    "expected_passage_ids": [
+      "p_58585_6cc5a163"
+    ]
+  },
+  {
+    "id": "shared-world",
+    "text": "The walk is the same but every little thing hurts because he is not beside me to notice it.",
+    "situation": "Walking a familiar route after a loss",
+    "interpretation": "Familiar places lose their shared meaning",
+    "perspective_query": "Missing the shared way of seeing ordinary things",
+    "expected_passage_ids": [
+      "p_110_4b17f04e"
+    ]
+  },
+  {
+    "id": "making-identity",
+    "text": "I keep waiting to discover who I really am. Maybe I need to do things before I can know.",
+    "situation": "Uncertainty about identity before new experiences",
+    "interpretation": "Waiting to find a self instead of forming one",
+    "perspective_query": "Identity made through experience and creation",
+    "expected_passage_ids": [
+      "p_4217_c462f560"
+    ]
+  },
+  {
+    "id": "outsiders",
+    "text": "Neither of us is popular. Somehow admitting that made me feel like I finally belonged somewhere.",
+    "situation": "Two outsiders finding companionship",
+    "interpretation": "Lack of public recognition becomes a point of connection",
+    "perspective_query": "Belonging through being nobody together rather than becoming important",
+    "expected_passage_ids": [
+      "p_12242_0c6a7207"
+    ]
+  },
+  {
+    "id": "distant-success",
+    "text": "I think winning would solve everything. I wonder if I only see it that way because I have never won.",
+    "situation": "Imagining the value of an achievement not yet attained",
+    "interpretation": "Longing may shape how success is valued",
+    "perspective_query": "The difference between wanting success and knowing it from experience",
+    "expected_passage_ids": [
+      "p_12242_079e3015"
+    ]
+  },
+  {
+    "id": "independent-risk",
+    "text": "I want to make my own choice, but I keep waiting for a guarantee that nobody will reject me or that I will not be wrong.",
+    "situation": "Preparing to make an independent decision",
+    "interpretation": "Wanting freedom without the risk of rejection or error",
+    "perspective_query": "Independence can require willingness to be alone and make mistakes",
+    "expected_passage_ids": [
+      "p_4217_b18f45af"
+    ]
+  },
+  {
+    "id": "busy-life",
+    "text": "Every day is packed. I am starting to wonder whether being busy is the same as actually living.",
+    "situation": "A busy routine without a sense of living fully",
+    "interpretation": "Activity substituting for a deliberate life",
+    "perspective_query": "Confront what is essential rather than simply passing through life",
+    "expected_passage_ids": [
+      "p_205_c64bb865"
+    ]
+  },
+  {
+    "id": "doubt-and-love",
+    "text": "I cannot explain the point of the universe. I still love the first leaves of spring and the people who make me laugh.",
+    "situation": "Enjoying life despite philosophical uncertainty",
+    "interpretation": "Doubt about existence alongside affection for concrete things",
+    "perspective_query": "Love of ordinary life can persist without a complete explanation",
+    "expected_passage_ids": [
+      "p_28054_ad1b0177"
+    ]
+  },
+  {
+    "id": "uncertain-love",
+    "text": "I want to ask whether we can try again. I feel terrified and hopeful at exactly the same time.",
+    "situation": "Considering asking for another chance in love",
+    "interpretation": "Hope and anguish coexist before an uncertain answer",
+    "perspective_query": "Mixed hope and pain while fearing it is too late",
+    "expected_passage_ids": [
+      "p_105_1dc3f305"
+    ]
+  },
+  {
+    "id": "guest",
+    "text": "They welcome me into their homes, but everyone has a place in the family and I still feel like an extra person.",
+    "situation": "Being a guest among close families",
+    "interpretation": "Physical inclusion without a recognized place",
+    "perspective_query": "Proximity to a family differs from belonging within it",
+    "expected_passage_ids": [
+      "p_135_4be02f59"
+    ]
+  },
+  {
+    "id": "remember-and-live",
+    "text": "I want to honor what I lost. I am afraid that spending every day inside those memories is making it hard to keep living my life.",
+    "situation": "Remembering loss while trying to continue daily life",
+    "interpretation": "Honoring sad memories without constant brooding",
+    "perspective_query": "Continuing life without denying that the past was sad",
+    "expected_passage_ids": [
+      "p_2814_bdf7679a"
+    ]
+  },
+  {
+    "id": "own-dream",
+    "text": "I do not know where this path will end. For the first time it feels like a life I imagined for myself.",
+    "situation": "Starting to pursue a personally imagined future",
+    "interpretation": "Moving toward a dream without knowing the eventual outcome",
+    "perspective_query": "Unexpected success through living in the direction of a personal dream",
+    "expected_passage_ids": [
+      "p_205_9abed0cd"
+    ]
+  },
+  {
+    "id": "enough",
+    "text": "I keep measuring success by how much I have and how much influence I get. I never feel rich enough.",
+    "situation": "Measuring success through possessions and power",
+    "interpretation": "External wealth without contentment",
+    "perspective_query": "Self-knowledge and being satisfied as alternative measures of strength and wealth",
+    "expected_passage_ids": [
+      "p_216_b02f58de"
+    ]
+  },
+  {
+    "id": "no-fit",
+    "text": "I only want a precise technical explanation of why this memory allocator changes latency.",
+    "situation": "Debugging memory allocation latency",
+    "interpretation": "Seeking a concrete technical explanation, not an emotional analogy",
+    "perspective_query": "Memory allocator performance and latency",
+    "expected_passage_ids": [],
+    "expected_behavior": "Reject mood-only literary matches; requires model or human evaluation, not a retrieval recall score."
+  }
+]

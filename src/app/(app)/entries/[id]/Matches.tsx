@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { THEMES, type MatchLink, type MatchResponse } from "@/lib/contract";
 import { requestMatch, type MockVariant } from "@/lib/matching";
 import { SafetyCard } from "@/components/SafetyCard";
-import { setPassageStatus, setResonated, type Status as Feedback } from "../../library/actions";
+import { QUALITY_OPTIONS, type QualityRating } from "@/lib/match-feedback";
+import { setPassageStatus, setResonated, setMatchQuality, type Status as Feedback } from "../../library/actions";
 import { SharePanel } from "./SharePanel";
 
 // One highlighter per line; the passage's echoing phrase uses the same one.
@@ -61,6 +62,9 @@ export function Matches({
   const [feedback, setFeedback] = useState<Record<string, Feedback>>(initialFeedback);
   // "Spoke to me" per passage, seeded from the stored rows.
   const [resonated, setResonated_] = useState<Set<string>>(() => resonatedIn(initial));
+  const [quality, setQuality] = useState<Record<string, QualityRating | null>>(() => qualityIn(initial));
+  const [qualityBusy, setQualityBusy] = useState<Set<string>>(new Set());
+  const qualityLocks = useRef(new Set<string>());
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Muse has stretches of refusing requests that outlast one server call's
@@ -76,6 +80,7 @@ export function Matches({
         const result = await requestMatch(entryId, text, mockVariant);
         setMatch(result);
         setResonated_(resonatedIn(result));
+        setQuality(qualityIn(result));
         setRetrying(0);
         return;
       } catch (e) {
@@ -105,6 +110,26 @@ export function Matches({
     const { error } = await setResonated(entryId, passageId, !was);
     setActionError(error);
     if (error) setResonated_((r) => { const n = new Set(r); if (was) n.add(passageId); else n.delete(passageId); return n; });
+  }
+
+  async function updateQuality(passageId: string, value: QualityRating) {
+    if (qualityLocks.current.has(passageId)) return;
+    qualityLocks.current.add(passageId);
+    setQualityBusy((old) => new Set(old).add(passageId));
+    const previous = quality[passageId] ?? null;
+    const next = previous === value ? null : value;
+    setQuality((old) => ({ ...old, [passageId]: next }));
+    setActionError(null);
+    try {
+      const { error } = await setMatchQuality(entryId, passageId, next);
+      if (error) throw new Error(error);
+    } catch {
+      setQuality((old) => ({ ...old, [passageId]: previous }));
+      setActionError("Could not save your response. Please try again.");
+    } finally {
+      qualityLocks.current.delete(passageId);
+      setQualityBusy((old) => { const result = new Set(old); result.delete(passageId); return result; });
+    }
   }
 
   // Optimistic: flip the card now, roll back if the server refuses.
@@ -159,6 +184,9 @@ export function Matches({
     onFeedback: (v: Feedback) => setLinkFeedback(link.passage.id, v),
     resonated: resonated.has(link.passage.id),
     onResonate: () => toggleResonated(link.passage.id),
+    quality: quality[link.passage.id] ?? null,
+    qualityBusy: qualityBusy.has(link.passage.id),
+    onQuality: (value: QualityRating) => updateQuality(link.passage.id, value),
     canShare: !locked,
   });
 
@@ -214,6 +242,11 @@ export function Matches({
       )}
     </div>
   );
+}
+
+function qualityIn(match: MatchResponse | null): Record<string, QualityRating | null> {
+  return Object.fromEntries((match?.links ?? []).flatMap((link) => [link, ...(link.alternates ?? [])])
+    .map((link) => [link.passage.id, link.quality_feedback ?? null]));
 }
 
 function resonatedIn(m: MatchResponse | null) {
@@ -290,6 +323,7 @@ function PassageCard({
   resonated,
   onResonate,
   canShare,
+  quality, qualityBusy, onQuality,
 }: {
   entryId: string;
   link: MatchLink;
@@ -299,6 +333,9 @@ function PassageCard({
   resonated: boolean;
   onResonate: () => void;
   canShare: boolean;
+  quality: QualityRating | null;
+  qualityBusy: boolean;
+  onQuality: (value: QualityRating) => void;
 }) {
   const [sharing, setSharing] = useState(false);
   const { passage, phrase_start: ps, phrase_end: pe } = link;
@@ -334,7 +371,25 @@ function PassageCard({
           {themeName.get(link.theme) ?? link.theme}
         </span>
       </p>
+      {link.connection_kind && (
+        <p className="mt-3 text-xs font-medium text-muted">
+          {{ recognition: "A shared experience", distinction: "A useful distinction", reframe: "Another angle" }[link.connection_kind]}
+        </p>
+      )}
       <p className="mt-3 text-sm italic opacity-80">{link.reason}</p>
+      <fieldset className="mt-4" disabled={qualityBusy}>
+        <legend className="text-sm text-muted">How did this connection land?</legend>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {QUALITY_OPTIONS.map((option) => (
+            <button key={option.value} type="button" onClick={() => onQuality(option.value)}
+              aria-pressed={quality === option.value}
+              className="rounded border border-rule px-3 py-1 text-xs hover:bg-hover aria-pressed:bg-hover disabled:opacity-50">
+              {option.label}
+            </button>
+          ))}
+        </div>
+        {quality && <p className="mt-2 text-xs text-muted" role="status">Thanks. This helps us choose passages for similar situations.</p>}
+      </fieldset>
 
       <div className="mt-4 flex flex-wrap gap-2 text-sm">
         <button

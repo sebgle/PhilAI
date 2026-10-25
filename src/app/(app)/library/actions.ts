@@ -1,5 +1,6 @@
 "use server";
 
+import { isQualityRating, type QualityRating } from "@/lib/match-feedback";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -87,4 +88,29 @@ export async function removeLibraryItem(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("library_items").delete().eq("id", id);
   revalidatePath("/library");
+}
+
+// Quality feedback is separate from bookmarks and author affinity.
+export async function setMatchQuality(entryId: string, passageId: string, rating: QualityRating | null) {
+  if (rating !== null && !isQualityRating(rating)) return { error: "Choose a valid response." };
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Please sign in again." };
+  const { data: entry } = await supabase.from("entries").select("match_generation, summary").eq("id", entryId).single();
+  if (!entry?.match_generation) return { error: "This entry has no current matches." };
+  const { data: match } = await supabase.from("matches").select("line_text")
+    .eq("entry_id", entryId).eq("generation", entry.match_generation).eq("passage_id", passageId).maybeSingle();
+  if (!match) return { error: "This passage is no longer in the current matches." };
+  if (rating === null) {
+    const { error } = await supabase.from("match_quality_feedback").delete()
+      .eq("user_id", user.id).eq("entry_id", entryId).eq("passage_id", passageId);
+    return { error: error?.message ?? null };
+  }
+  const context = (match.line_text || entry.summary || "").slice(0, 2000);
+  if (!context.trim()) return { error: "Could not identify the context for this passage." };
+  const { error } = await supabase.from("match_quality_feedback").upsert({
+    user_id: user.id, entry_id: entryId, passage_id: passageId, rating,
+    context_text: context, updated_at: new Date().toISOString(),
+  }, { onConflict: "user_id,entry_id,passage_id" });
+  return { error: error?.message ?? null };
 }

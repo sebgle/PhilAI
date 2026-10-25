@@ -116,6 +116,10 @@ for (const [name, data] of [
   ["mock_match_fallback.json", fallback],
   ["mock_match_risk.json", risk],
 ]) {
+  for (const link of data.links) {
+    link.connection_kind = "recognition";
+    link.quality_feedback = null;
+  }
   writeFileSync(new URL(name, root), JSON.stringify(data, null, 2) + "\n");
   console.log(`wrote shared/${name}`);
 }
