@@ -11,7 +11,7 @@ function sparkKey() {
   return k;
 }
 
-export async function museText(system: string, user: string, opts: { temperature?: number; json?: boolean } = {}) {
+export async function museText(system: string, user: string, opts: { temperature?: number; json?: boolean; timeoutMs?: number } = {}) {
   const body: Record<string, unknown> = {
     model: MUSE_MODEL,
     messages: [
@@ -20,14 +20,30 @@ export async function museText(system: string, user: string, opts: { temperature
     ],
     temperature: opts.temperature ?? 0.2,
   };
+  const timeoutMs = opts.timeoutMs ?? Number(process.env.MUSE_TIMEOUT_MS ?? 40_000);
   const post = (b: Record<string, unknown>) =>
     fetch(MUSE_URL, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${sparkKey()}` },
       body: JSON.stringify(b),
+      signal: AbortSignal.timeout(timeoutMs),
     });
-  let res = await post(opts.json === false ? body : { ...body, response_format: { type: "json_object" } });
-  if (res.status === 400 && opts.json !== false) res = await post(body);
+  // One retry on timeout, 429 or 5xx; Muse occasionally stalls.
+  const attempt = async (): Promise<Response> => {
+    let res = await post(opts.json === false ? body : { ...body, response_format: { type: "json_object" } });
+    if (res.status === 400 && opts.json !== false) res = await post(body);
+    return res;
+  };
+  let res: Response;
+  try {
+    res = await attempt();
+    if (res.status === 429 || res.status >= 500) { await new Promise((r) => setTimeout(r, 1500)); res = await attempt(); }
+  } catch (e) {
+    // Timeout, abort, or a network-level "fetch failed": retry once.
+    console.warn(`[muse] ${(e as Error).name}: ${(e as Error).message.slice(0, 80)}, retrying once`);
+    await new Promise((r) => setTimeout(r, 1000));
+    res = await attempt();
+  }
   if (!res.ok) throw new Error(`muse ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const content = data.choices?.[0]?.message?.content;
