@@ -8,6 +8,7 @@ import { Matches } from "./Matches";
 import { groupAlternates } from "@/lib/match-links";
 import { isCurrentMatch } from "@/lib/match-version";
 import { EntryTitle } from "./EntryTitle";
+import { Backdrop } from "@/components/Backdrop";
 
 const VARIANTS: MockVariant[] = ["match", "fallback", "risk"];
 
@@ -75,6 +76,7 @@ export default async function EntryPage({
 
   return (
     <article className="flex flex-col gap-4">
+      <Backdrop variant="matches" />
       <div>
         <EntryTitle entryId={entry.id} initial={entry.title} fallback={`Entry #${entryNumber ?? ""}`} />
         <div className="mt-1 text-sm text-muted">

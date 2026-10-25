@@ -44,6 +44,8 @@ export function startLiveSpeech(onText: (text: string) => void): (() => string) 
   rec.interimResults = true;
   rec.lang = navigator.language || "en-US";
   rec.onresult = (e) => {
+    // Chrome delivers final results after stop(); they must not revive the preview.
+    if (stopped) return;
     interim = "";
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const r = e.results[i];
@@ -69,7 +71,10 @@ export function startLiveSpeech(onText: (text: string) => void): (() => string) 
 
   return () => {
     stopped = true;
-    rec.stop();
-    return current();
+    const text = current();
+    rec.onresult = null;
+    rec.onend = null;
+    try { rec.stop(); } catch { /* already stopped */ }
+    return text;
   };
 }

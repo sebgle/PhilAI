@@ -2,7 +2,7 @@
 // private and sharing is turned off for it.
 export function SafetyCard() {
   return (
-    <aside className="rounded border border-sky-300/60 bg-sky-50 p-5 text-sky-950 dark:border-sky-400/30 dark:bg-sky-950/40 dark:text-sky-100">
+    <aside className="rounded-lg border border-sage/60 bg-sage/15 p-5">
       <h2 className="font-semibold">You don&apos;t have to hold this alone</h2>
       <p className="mt-2 text-sm leading-relaxed">
         It sounds like things might be really heavy right now. If you&apos;re thinking about

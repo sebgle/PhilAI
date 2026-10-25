@@ -4,14 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { randomPrompt } from "@/lib/prompts";
-import { Doodle } from "@/components/Doodle";
 import { MicButton } from "./MicButton";
 
 const join = (a: string, b: string) => (a.trim() && b ? `${a.trimEnd()} ${b}` : a.trim() ? a : b);
 
 // The Write page: an editable title ("New entry #N" until you name it), the
-// prompt on a line above the text (↻ for another), and the text itself on
-// plain white, Notion-style.
+// text box with the prompt as its placeholder (↻ appears on hover for another),
+// and at the bottom Save with the microphone beside it.
 export function WriteForm({ entryNumber }: { entryNumber: number }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -41,80 +40,60 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
   }
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-4">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={120}
-          placeholder={`New entry #${entryNumber}`}
-          aria-label="Entry title"
-          className="-mx-1 w-full min-w-0 rounded-md bg-transparent px-1 text-3xl font-bold tracking-tight placeholder:text-foreground hover:bg-hover focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
-        />
-        <Doodle name="leaf" className="mt-1 h-10 w-10 shrink-0 text-foreground/15" />
-      </div>
+    <section className="flex flex-col gap-6">
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        maxLength={120}
+        placeholder={`New entry #${entryNumber}`}
+        aria-label="Entry title"
+        className="-mx-1 w-full rounded-md bg-transparent px-1 text-[2rem] font-semibold tracking-tight placeholder:text-foreground hover:bg-hover/60 focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
+      />
 
-      <div className="flex items-center gap-2 border-b border-rule pb-3 text-[15px]">
-        {prompt ? (
-          <>
-            <span className="italic text-muted">{prompt}</span>
-            <button
-              type="button"
-              onClick={() => setPrompt(randomPrompt(prompt))}
-              aria-label="Another prompt"
-              title="Another prompt"
-              className="rounded p-1 text-muted hover:bg-hover hover:text-foreground"
-            >
-              <RefreshIcon />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPrompt(null)}
-              aria-label="No prompt"
-              title="No prompt"
-              className="ml-auto rounded px-1.5 text-muted hover:bg-hover hover:text-foreground"
-            >
-              ×
-            </button>
-          </>
-        ) : (
-          <button type="button" onClick={() => setPrompt(randomPrompt())} className="text-muted hover:text-foreground">
-            Need a prompt?
+      {/* The prompt plays the placeholder: drawn over the empty box in the
+          placeholder style. Clicking the words swaps in another prompt;
+          clicking anywhere else in the box starts writing. */}
+      <div className="relative">
+        <textarea
+          value={live !== null ? join(text, live) : text}
+          onChange={(e) => setText(e.target.value)}
+          readOnly={live !== null}
+          placeholder={prompt ? undefined : "Write what you need to get off your chest…"}
+          aria-label="Journal entry"
+          aria-describedby={prompt && !text ? "prompt" : undefined}
+          className="block h-[48vh] w-full resize-none overflow-y-auto bg-transparent text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
+        />
+        {prompt && !text && live === null && (
+          <button
+            id="prompt"
+            type="button"
+            onClick={() => setPrompt(randomPrompt(prompt))}
+            title="Another prompt"
+            className="absolute left-0 top-0 text-left text-[17px] leading-[1.9] text-muted/60 transition-colors hover:text-muted"
+          >
+            {prompt}
           </button>
         )}
       </div>
 
-      <textarea
-        value={live !== null ? join(text, live) : text}
-        onChange={(e) => setText(e.target.value)}
-        readOnly={live !== null}
-        placeholder="Write what you need to get off your chest…"
-        aria-label="Journal entry"
-        className="block min-h-[50vh] w-full resize-y bg-transparent py-2 text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
-      />
-
-      <div className="flex flex-wrap items-center gap-3 border-t border-rule pt-4">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={save}
           disabled={saving || !text.trim() || live !== null}
-          className="rounded-md bg-[#2383e2] px-4 py-2 text-sm font-medium text-white hover:bg-[#0077d4] disabled:opacity-40"
+          className="shrink-0 rounded-full bg-terracotta px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-terracotta-deep disabled:opacity-40"
         >
-          {saving ? "Saving…" : "Save entry"}
+          {saving ? "Saving…" : "Save"}
         </button>
-        <MicButton onLive={setLive} onTranscript={(t) => setText((prev) => join(prev, t))} />
-        <span className="text-sm text-muted">Private. Only you can see your entries.</span>
-        {error && <span className="text-sm text-red-600">{error}</span>}
+        <MicButton
+          onLive={setLive}
+          onTranscript={(t) => setText((prev) => join(prev, t))}
+          // Muse's transcript replaces the live chunk if it is still there untouched; if the
+          // writer already edited it, their version wins.
+          onReplace={(from, to) => setText((prev) => (prev.includes(from) ? prev.replace(from, to) : prev))}
+        />
+        {error && <span className="truncate text-sm text-red-600">{error}</span>}
       </div>
     </section>
-  );
-}
-
-function RefreshIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
-      <path d="M21 3v5h-5" />
-    </svg>
   );
 }

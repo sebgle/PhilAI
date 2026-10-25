@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { addLibraryItem, removeLibraryItem } from "./actions";
-import { PageTitle } from "@/components/Doodle";
+import { PageTitle } from "@/components/PageTitle";
+import { Backdrop } from "@/components/Backdrop";
 
 const TABS = [
   { id: "passages", label: "Passages" },
@@ -43,7 +44,8 @@ export default async function LibraryPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle title="Saved" doodle="maple" />
+      <Backdrop variant="saved" />
+      <PageTitle title="Saved" />
       <nav className="flex gap-1 border-b border-rule text-sm">
         {TABS.map((t) => (
           <Link
@@ -97,7 +99,7 @@ function Passages({ items }: { items: Item[] }) {
         const hasPhrase =
           m?.phrase_start != null && m.phrase_end != null && m.phrase_start < m.phrase_end && m.phrase_end <= p.text.length;
         return (
-          <li key={item.id} className="rounded border border-rule p-5">
+          <li key={item.id} className="rounded-lg border border-rule bg-card/70 p-5">
             <blockquote className="font-serif text-lg leading-relaxed">
               {hasPhrase ? (
                 <>
@@ -194,7 +196,7 @@ function HandAdded({
           aria-label={refLabel}
           className="rounded border border-rule bg-transparent px-3 py-2 sm:w-48"
         />
-        <button type="submit" className="rounded bg-[#2383e2] px-4 py-2 text-white">
+        <button type="submit" className="rounded-full bg-terracotta px-4 py-2 text-white hover:bg-terracotta-deep">
           Add
         </button>
       </form>

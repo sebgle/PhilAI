@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { THEMES } from "@/lib/contract";
-import { PageTitle } from "@/components/Doodle";
+import { PageTitle } from "@/components/PageTitle";
+import { Backdrop } from "@/components/Backdrop";
 
 export default async function ForumsPage() {
   const supabase = await createClient();
@@ -12,10 +13,10 @@ export default async function ForumsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Backdrop variant="community" />
       <PageTitle
-        title="Forums"
+        title="Community"
         subtitle="One room per feeling. Everyone here is anonymous: you get a fresh name in every thread."
-        doodle="mug"
       />
       <ul className="grid gap-3 sm:grid-cols-2">
         {THEMES.map((t) => {
@@ -24,7 +25,7 @@ export default async function ForumsPage() {
             <li key={t.slug}>
               <Link
                 href={`/forums/${t.slug}`}
-                className="block h-full rounded border border-rule p-4 hover:bg-hover"
+                className="block h-full rounded-lg border border-rule bg-card/70 p-4 transition-colors hover:bg-hover/70"
               >
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="font-medium">{t.name}</span>

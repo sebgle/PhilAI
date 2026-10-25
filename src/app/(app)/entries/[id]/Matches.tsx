@@ -306,7 +306,7 @@ function PassageCard({
 
   return (
     <section
-      className={`letter rounded-sm border border-rule bg-card p-6 transition-opacity ${feedback === "not_for_me" ? "opacity-50" : ""}`}
+      className={`letter rounded-lg border border-rule bg-card/70 p-6 transition-opacity ${feedback === "not_for_me" ? "opacity-50" : ""}`}
     >
       <blockquote className="font-serif text-lg leading-[1.7]">
         {hasPhrase ? (
@@ -342,7 +342,7 @@ function PassageCard({
           onClick={onResonate}
           aria-pressed={resonated}
           title="Not a bookmark: it tells the matcher what moves you."
-          className="rounded border border-rule px-3 py-1 hover:bg-hover aria-pressed:border-foreground aria-pressed:bg-hover"
+          className="rounded-full border border-rule px-3 py-1 hover:bg-hover aria-pressed:border-foreground aria-pressed:bg-hover"
         >
           {resonated ? "♥ Spoke to me" : "♡ Spoke to me"}
         </button>
@@ -350,7 +350,7 @@ function PassageCard({
           type="button"
           onClick={() => onFeedback("saved")}
           aria-pressed={feedback === "saved"}
-          className="rounded border border-rule px-3 py-1 hover:bg-hover aria-pressed:bg-[#2383e2] aria-pressed:text-white"
+          className="rounded-full border border-rule px-3 py-1 hover:bg-hover aria-pressed:border-terracotta aria-pressed:bg-terracotta aria-pressed:text-white"
         >
           {feedback === "saved" ? "Saved" : "Save"}
         </button>
@@ -358,13 +358,13 @@ function PassageCard({
           type="button"
           onClick={() => onFeedback("not_for_me")}
           aria-pressed={feedback === "not_for_me"}
-          className="rounded border border-rule px-3 py-1 hover:bg-hover aria-pressed:bg-hover"
+          className="rounded-full border border-rule px-3 py-1 hover:bg-hover aria-pressed:bg-hover"
         >
           Not for me
         </button>
         <Link
           href={`/authors/${encodeURIComponent(passage.author)}`}
-          className="rounded border border-rule px-3 py-1 hover:bg-hover"
+          className="rounded-full border border-rule px-3 py-1 hover:bg-hover"
         >
           More by {passage.author}
         </Link>
@@ -373,7 +373,7 @@ function PassageCard({
             type="button"
             onClick={() => setSharing(!sharing)}
             aria-expanded={sharing}
-            className="rounded border border-rule px-3 py-1 hover:bg-hover"
+            className="rounded-full border border-rule px-3 py-1 hover:bg-hover"
           >
             Share this line
           </button>

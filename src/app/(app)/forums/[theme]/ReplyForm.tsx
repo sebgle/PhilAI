@@ -74,7 +74,7 @@ export function ReplyForm({
         <button
           type="submit"
           disabled={busy || !text.trim()}
-          className="rounded bg-[#2383e2] px-3 py-1 text-white disabled:opacity-40"
+          className="rounded-full bg-terracotta px-3 py-1 text-white hover:bg-terracotta-deep disabled:opacity-40"
         >
           {busy ? "Checking…" : "Post reply"}
         </button>
