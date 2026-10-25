@@ -7,12 +7,15 @@ const nextConfig: NextConfig = {
   // (bin/napi-v6/${platform}/${arch}/...), which output tracing can't follow,
   // so Vercel shipped /api/match without it. Include it explicitly — only the
   // linux/x64 binary Vercel runs on; all platforms together exceed 250 MB.
+  // models/ holds the vendored embedding model so nothing is downloaded or
+  // cached at runtime.
   outputFileTracingIncludes: {
     "/api/match": [
       "./node_modules/onnxruntime-node/package.json",
       "./node_modules/onnxruntime-node/dist/**",
       "./node_modules/onnxruntime-node/bin/napi-v6/linux/x64/**",
       "./node_modules/onnxruntime-common/**",
+      "./models/**",
     ],
   },
   webpack(config, { dev }) {

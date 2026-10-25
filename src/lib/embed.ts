@@ -1,17 +1,25 @@
 // all-MiniLM-L6-v2 via transformers.js, 384-d, normalized. Same model for passages and entries.
-// Loaded once per process; first call downloads ~23 MB to the HF cache.
+// The quantized model (23 MB) is vendored in models/Xenova/all-MiniLM-L6-v2 and
+// read from disk, so nothing is downloaded or written at runtime. This matters
+// on Vercel, where node_modules is read-only and every cold start would
+// otherwise fetch ~97 MB. next.config.ts includes models/ and the Linux
+// onnxruntime binaries in the /api/match bundle.
+import path from "node:path";
 import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
 
-// The default cache lives inside node_modules, which is read-only on Vercel;
-// /tmp is the only writable path there (kept warm between invocations).
+env.localModelPath = path.join(process.cwd(), "models");
+env.allowLocalModels = true;
+env.allowRemoteModels = false;
+// Belt and braces: if anything still tries to cache, use the one writable path.
 if (process.env.VERCEL) env.cacheDir = "/tmp/transformers-cache";
 
 export const EMBED_MODEL = "Xenova/all-MiniLM-L6-v2";
+export const EMBED_DTYPE = "q8" as const; // models/.../onnx/model_quantized.onnx
 export const EMBED_DIM = 384;
 
 let extractorPromise: Promise<FeatureExtractionPipeline> | null = null;
 function extractor() {
-  extractorPromise ??= pipeline("feature-extraction", EMBED_MODEL, { dtype: "fp32" }) as Promise<FeatureExtractionPipeline>;
+  extractorPromise ??= pipeline("feature-extraction", EMBED_MODEL, { dtype: EMBED_DTYPE }) as Promise<FeatureExtractionPipeline>;
   return extractorPromise;
 }
 
