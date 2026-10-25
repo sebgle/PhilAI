@@ -91,6 +91,8 @@ Sync 1 notes (2026-10-24, late): `NEXT_PUBLIC_MATCH_MODE=live` is set in Vercel.
 
 **Muse outages (2026-10-25 ~01:00):** all three Spark ids returned 404 model_not_found for 30+ min at once, so prod match/moderate/scrub failed for the whole window. Muse is also far flakier from Vercel than from a laptop (match 500s there while the same code passes locally). So (a) the chain now ends with OpenAI (`gpt-4.1-mini`, only when `OPENAI_API_KEY` is set in Vercel Production, only after all Spark ids fail; Wonder was tried first and dropped as too slow and still Muse), (b) `/api/match` never 500s on Muse: if analysis fails it embeds the whole entry and returns the 3 closest passages as `fallback: true` with plain reasons, and (c) match/moderate error responses carry a `detail` field with the real upstream error so it can be read with curl. Route limits: match 90 s, moderate and scrub 60 s.
 
+**Threaded replies + likes (2026-10-25 ~02:00, Teammate):** `supabase/migrations/20261025030000_threaded_replies_likes.sql` adds `replies.parent_id` and a server-only `likes` table. Apply it in the SQL editor BEFORE merging the code: the forum page selects `parent_id`. Replies to replies nest (indent capped at 3 levels; children of a hidden reply surface at the top level). `POST /api/likes { post_id | reply_id }` toggles and returns `{ liked, count }`; hearts sit in the post meta line and on each reply. The bell now also shows replies under your replies. Seed script likes every seeded post from the other demo account and the first reply from the poster.
+
 **Risk flag (tuned):** passive ideation ("would anyone notice if I stopped showing up") is now flagged; skipping class/practice is not. Spot-check with `scripts/test-risk.mts`.
 
 ## Sync 2: demo

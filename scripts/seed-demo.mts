@@ -1,4 +1,4 @@
-// S12 seed data: two demo accounts plus a handful of seeded posts and replies
+// S12 seed data: two demo accounts plus a handful of seeded posts, replies and likes
 // so the forums are not empty on stage. Posts are marked is_seeded = true.
 // Idempotent: re-running removes earlier seeded posts first.
 // Run: npx tsx --env-file=.env.local scripts/seed-demo.mts
@@ -41,6 +41,14 @@ console.log("demo accounts", ACCOUNTS.map((a, i) => `${a.email} (${users[i].slic
 const { error: delErr } = await admin.from("posts").delete().eq("is_seeded", true);
 if (delErr) throw delErr;
 
+// Likes need the threaded_replies_likes migration; warn once and carry on without them if it is missing.
+let likesOk = true;
+async function like(row: { post_id?: string; reply_id?: string; user_id: string }) {
+  if (!likesOk) return;
+  const { error } = await admin.from("likes").insert(row);
+  if (error) { likesOk = false; console.warn(`likes skipped: ${error.message}`); }
+}
+
 let made = 0;
 for (const [i, seed] of SEEDS.entries()) {
   const { data: cands } = await admin.from("passages").select("id, text").eq("author", seed.author);
@@ -61,10 +69,16 @@ for (const [i, seed] of SEEDS.entries()) {
     await admin.from("thread_aliases").insert({ post_id: post.id, user_id: other, alias: replyAlias });
     for (const [j, text] of seed.replies.entries()) {
       const at = new Date(new Date(created).getTime() + (j + 1) * 1800_000).toISOString();
-      const { error: rErr } = await admin.from("replies").insert({ post_id: post.id, user_id: other, alias: replyAlias, text, created_at: at });
+      const { data: reply, error: rErr } = await admin.from("replies")
+        .insert({ post_id: post.id, user_id: other, alias: replyAlias, text, created_at: at })
+        .select("id").single();
       if (rErr) throw rErr;
+      // The poster likes the first reply they got.
+      if (j === 0) await like({ reply_id: reply.id, user_id: poster });
     }
   }
+  // The other account likes every seeded post, so the forums open with hearts on them.
+  await like({ post_id: post.id, user_id: other });
   made++;
   console.log(`seeded [${seed.forum}] ${seed.author}: "${seed.line.slice(0, 50)}..." (${seed.replies?.length ?? 0} replies)`);
 }
