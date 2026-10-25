@@ -93,6 +93,8 @@ Sync 1 notes (2026-10-24, late): `NEXT_PUBLIC_MATCH_MODE=live` is set in Vercel.
 
 **Threaded replies + likes (2026-10-25 ~02:00, Teammate):** `supabase/migrations/20261025030000_threaded_replies_likes.sql` adds `replies.parent_id` and a server-only `likes` table. Apply it in the SQL editor BEFORE merging the code: the forum page selects `parent_id`. Replies to replies nest (indent capped at 3 levels; children of a hidden reply surface at the top level). `POST /api/likes { post_id | reply_id }` toggles and returns `{ liked, count }`; hearts sit in the post meta line and on each reply. The bell now also shows replies under your replies. Seed script likes every seeded post from the other demo account and the first reply from the poster.
 
+**Stored results (2026-10-25 ~04:00, Teammate):** `/api/match` returns the stored analysis and `matches` rows for an entry that was already matched (response header `x-philai-match: stored|fresh|degraded`); send `{ "force": true }` to re-run. A Muse-down (degraded) result is returned but not stored, so the next visit re-runs for real. Scrub identifiers and moderation verdicts are cached by text hash in `llm_cache` (migration `20261025040000_llm_cache.sql`, server-only; apply any time, the code tolerates its absence), so the share preview and the post that follows cost one model call.
+
 **Risk flag (tuned):** passive ideation ("would anyone notice if I stopped showing up") is now flagged; skipping class/practice is not. Spot-check with `scripts/test-risk.mts`.
 
 ## Sync 2: demo

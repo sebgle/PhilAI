@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { museJson } from "@/lib/muse";
+import { cached } from "@/lib/llm-cache";
 import { findSpan } from "@/lib/exact-match";
 import { createClient } from "@/lib/supabase/server";
 import type { ScrubResponse, ScrubSpan } from "@/lib/contract";
@@ -52,12 +53,19 @@ export async function POST(req: Request) {
   for (const m of text.matchAll(EMAIL)) spans.push({ start: m.index!, end: m.index! + m[0].length, type: "email", value: m[0] });
   for (const m of text.matchAll(PHONE)) spans.push({ start: m.index!, end: m.index! + m[0].length, type: "phone", value: m[0] });
 
-  try {
-    const { identifiers } = await museJson({ system: SYSTEM, user: text, schema: Schema, temperature: 0 });
-    for (const id of identifiers) spans.push(...allSpans(text, id.value, id.type));
-  } catch (e) {
-    console.error("[scrub] muse failed, returning regex spans only:", (e as Error).message);
-  }
+  // Muse's identifiers are cached by text: the preview and any re-check of
+  // the same line cost one call. A failed call is not cached.
+  type Ids = z.infer<typeof Schema>["identifiers"];
+  const identifiers = await cached<Ids | null>("scrub", text, async () => {
+    try {
+      const r = await museJson({ system: SYSTEM, user: text, schema: Schema, temperature: 0 });
+      return { value: r.identifiers, keep: true };
+    } catch (e) {
+      console.error("[scrub] muse failed, returning regex spans only:", (e as Error).message);
+      return { value: null, keep: false };
+    }
+  });
+  for (const id of identifiers ?? []) spans.push(...allSpans(text, id.value, id.type));
 
   // Drop overlaps (keep the earliest/longest) and sort.
   spans.sort((a, b) => a.start - b.start || b.end - a.end);
