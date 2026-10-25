@@ -32,6 +32,7 @@ export function MicButton({
   const [error, setError] = useState<string | null>(null);
   const recorder = useRef<WavRecorder | null>(null);
   const stopLive = useRef<(() => string) | null>(null);
+  const liveSession = useRef(0);
 
   async function start() {
     setError(null);
@@ -44,7 +45,9 @@ export function MicButton({
     } catch {
       return setError("Microphone access was blocked. Allow it in your browser, or type instead.");
     }
-    stopLive.current = startLiveSpeech((t) => onLive(t));
+    // Only pass live words along while this recording is still running.
+    const session = ++liveSession.current;
+    stopLive.current = startLiveSpeech((t) => { if (liveSession.current === session && recorder.current) onLive(t); });
     onLive("");
     setSeconds(0);
     setState("recording");
