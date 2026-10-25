@@ -22,9 +22,9 @@ export function TopNav({ handle, unread }: { handle: string; unread: number }) {
   return (
     <header>
       <nav className="mx-auto grid max-w-5xl grid-cols-[1fr_auto_1fr] items-center px-5 py-3 text-sm sm:px-8">
-        {/* "Phil" in the book face (Literata, upright, as the passages are set), "AI" in the UI sans: old and new in one word. */}
+        {/* "Phil" in the book face (Literata, semibold italic), "AI" in the UI sans: old and new in one word. */}
         <Link href="/" className="justify-self-start text-[19px] leading-none tracking-tight">
-          <span className="font-serif">Phil</span>
+          <span className="font-serif font-semibold italic">Phil</span>
           <span className="font-semibold">AI</span>
         </Link>
         <div className="no-scrollbar flex items-center gap-1 overflow-x-auto">

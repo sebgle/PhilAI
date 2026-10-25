@@ -36,7 +36,7 @@ export default function Login() {
       <form onSubmit={submit} className="w-full max-w-sm flex flex-col gap-3">
         <div className="flex items-end justify-between">
           <h1 className="text-3xl tracking-tight">
-            <span className="font-serif">Phil</span>
+            <span className="font-serif font-semibold italic">Phil</span>
             <span className="font-semibold">AI</span>
           </h1>
           <Doodle name="maple" className="h-9 w-9 text-foreground/15" />

@@ -9,8 +9,8 @@ import { MicButton } from "./MicButton";
 const join = (a: string, b: string) => (a.trim() && b ? `${a.trimEnd()} ${b}` : a.trim() ? a : b);
 
 // The Write page: an editable title ("New entry #N" until you name it), the
-// prompt under it with ↻ for another, the text on the cream surface, and at
-// the bottom Save with the microphone beside it.
+// text box with the prompt as its placeholder (↻ appears on hover for another),
+// and at the bottom Save with the microphone beside it.
 export function WriteForm({ entryNumber }: { entryNumber: number }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -41,45 +41,38 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
 
   return (
     <section className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={120}
-          placeholder={`New entry #${entryNumber}`}
-          aria-label="Entry title"
-          className="-mx-1 w-full rounded-md bg-transparent px-1 text-[2rem] font-semibold tracking-tight placeholder:text-foreground hover:bg-hover/60 focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
-        />
-        <div className="flex items-center gap-2 text-[15px] text-muted">
-          {prompt ? (
-            <>
-              <span className="italic">{prompt}</span>
-              <button
-                type="button"
-                onClick={() => setPrompt(randomPrompt(prompt))}
-                aria-label="Another prompt"
-                title="Another prompt"
-                className="rounded-md p-1 transition-colors hover:bg-hover hover:text-foreground"
-              >
-                <RefreshIcon />
-              </button>
-            </>
-          ) : (
-            <button type="button" onClick={() => setPrompt(randomPrompt())} className="italic hover:text-foreground">
-              Need a prompt?
-            </button>
-          )}
-        </div>
-      </div>
-
-      <textarea
-        value={live !== null ? join(text, live) : text}
-        onChange={(e) => setText(e.target.value)}
-        readOnly={live !== null}
-        placeholder="Write what you need to get off your chest…"
-        aria-label="Journal entry"
-        className="block h-[48vh] w-full resize-none overflow-y-auto bg-transparent text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        maxLength={120}
+        placeholder={`New entry #${entryNumber}`}
+        aria-label="Entry title"
+        className="-mx-1 w-full rounded-md bg-transparent px-1 text-[2rem] font-semibold tracking-tight placeholder:text-foreground hover:bg-hover/60 focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
       />
+
+      {/* The prompt is the placeholder. While the box is empty, hovering it
+          shows ↻ in the corner for another prompt. */}
+      <div className="group relative">
+        <textarea
+          value={live !== null ? join(text, live) : text}
+          onChange={(e) => setText(e.target.value)}
+          readOnly={live !== null}
+          placeholder={prompt ?? "Write what you need to get off your chest…"}
+          aria-label="Journal entry"
+          className="block h-[48vh] w-full resize-none overflow-y-auto bg-transparent text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
+        />
+        {!text && live === null && (
+          <button
+            type="button"
+            onClick={() => setPrompt(randomPrompt(prompt))}
+            aria-label="Another prompt"
+            title="Another prompt"
+            className="absolute right-0 top-1 rounded-md p-1.5 text-muted opacity-0 transition-opacity hover:bg-hover hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+          >
+            <RefreshIcon />
+          </button>
+        )}
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <button
