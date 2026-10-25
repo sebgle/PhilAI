@@ -110,7 +110,7 @@ export function MicButton({
   // rather than wraps.
   const status =
     state === "recording"
-      ? `${clock}. Listening. Audio isn't stored.`
+      ? `${clock} · Listening. Audio isn't stored.`
       : state === "transcribing"
         ? "Finishing transcript…"
         : error ?? note;
