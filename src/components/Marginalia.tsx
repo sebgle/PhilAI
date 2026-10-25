@@ -24,7 +24,7 @@ export function Marginalia({
           {hasPhrase ? (
             <>
               {passage.text.slice(0, ps!)}
-              <mark className="rounded bg-amber-200/80 px-0.5 text-inherit dark:bg-amber-400/30">
+              <mark className="rounded-sm bg-[var(--hl-1)] px-0.5 text-inherit">
                 {passage.text.slice(ps!, pe!)}
               </mark>
               {passage.text.slice(pe!)}
@@ -41,8 +41,8 @@ export function Marginalia({
           </span>
         </p>
       </div>
-      <aside className="border-l-2 border-amber-400/60 pl-4 sm:self-start">
-        <p className="break-words italic leading-snug">&ldquo;{line}&rdquo;</p>
+      <aside className="border-l-2 border-rule pl-4 sm:self-start">
+        <p className="break-words font-serif italic leading-snug">&ldquo;{line}&rdquo;</p>
         <p className="mt-2 text-xs opacity-60">{meta}</p>
       </aside>
     </div>

@@ -9,6 +9,7 @@ export default function Login() {
   const [mode, setMode] = useState<"signin" | "signup">("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [adult, setAdult] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -32,7 +33,7 @@ export default function Login() {
   return (
     <main className="min-h-screen flex items-center justify-center p-8">
       <form onSubmit={submit} className="w-full max-w-sm flex flex-col gap-3">
-        <h1 className="text-2xl font-semibold">PhilAI</h1>
+        <h1 className="font-serif text-3xl italic">PhilAI</h1>
         <p className="text-sm opacity-70">
           Your email is only used to log in. Nobody else ever sees it: other people
           only see a random name.
@@ -56,9 +57,21 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
           className="border rounded px-3 py-2 bg-transparent"
         />
+        {mode === "signup" && (
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              required
+              checked={adult}
+              onChange={(e) => setAdult(e.target.checked)}
+              className="mt-1"
+            />
+            <span>I&apos;m 18 or older, and I understand PhilAI is a reflection space, not therapy or emergency help.</span>
+          </label>
+        )}
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || (mode === "signup" && !adult)}
           className="rounded px-3 py-2 bg-foreground text-background disabled:opacity-50"
         >
           {mode === "signup" ? "Create account" : "Log in"}

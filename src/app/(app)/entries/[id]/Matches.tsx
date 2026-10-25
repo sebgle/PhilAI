@@ -9,12 +9,34 @@ import { SafetyCard } from "@/components/SafetyCard";
 import { setPassageStatus, type Status as Feedback } from "../../library/actions";
 import { SharePanel } from "./SharePanel";
 
-// One color per highlighted line; the passage's echoing phrase uses the same one.
+// One highlighter per line; the passage's echoing phrase uses the same one.
+// Colors live in globals.css (--hl-1..3) so light and dark mode both work.
 const COLORS = [
-  { mark: "bg-amber-200/80 dark:bg-amber-400/30", ring: "ring-amber-500" },
-  { mark: "bg-sky-200/80 dark:bg-sky-400/30", ring: "ring-sky-500" },
-  { mark: "bg-rose-200/80 dark:bg-rose-400/30", ring: "ring-rose-500" },
+  { hl: "var(--hl-1)", ring: "ring-amber-500" },
+  { hl: "var(--hl-2)", ring: "ring-sky-500" },
+  { hl: "var(--hl-3)", ring: "ring-rose-500" },
 ];
+
+// Matching takes ~15 s; say what's actually happening rather than spin.
+const STAGES = [
+  "Reading your entry…",
+  "Finding the lines that carry the most feeling…",
+  "Searching 900 passages for ones that feel the same way…",
+  "Finding the words in each passage that echo yours…",
+];
+
+function Finding() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((n) => Math.min(n + 1, STAGES.length - 1)), 4000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <p className="text-sm text-muted animate-pulse" aria-live="polite">
+      {STAGES[i]}
+    </p>
+  );
+}
 
 const themeName = new Map(THEMES.map((t) => [t.slug, t.name]));
 
@@ -78,19 +100,15 @@ export function Matches({
     return (
       <div className="flex flex-col gap-4">
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
-        <p className="text-sm opacity-60 animate-pulse">Finding passages that feel the same way…</p>
+        <Finding />
       </div>
     );
   }
 
-  if (match.risk_flag) {
-    return (
-      <div className="flex flex-col gap-6">
-        <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
-        <SafetyCard />
-      </div>
-    );
-  }
+  // Risk-flagged entries still show their passages (the matcher already
+  // skipped any that could romanticize death), under the 988 card, with
+  // sharing turned off. The server refuses those shares too.
+  const locked = match.risk_flag;
 
   const cardProps = (link: MatchLink, i: number) => ({
     entryId,
@@ -98,15 +116,19 @@ export function Matches({
     color: COLORS[i % COLORS.length],
     feedback: feedback[link.passage.id] ?? null,
     onFeedback: (v: Feedback) => setLinkFeedback(link.passage.id, v),
+    canShare: !locked,
   });
 
-  if (match.fallback) {
+  if (match.fallback || (locked && !match.links.length)) {
     return (
       <div className="flex flex-col gap-6">
+        {locked && <SafetyCard />}
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
-        <p className="text-sm opacity-70">
-          We couldn&apos;t pin this one to specific lines, but these passages share its feeling.
-        </p>
+        {match.links.length > 0 && (
+          <p className="text-sm opacity-70">
+            We couldn&apos;t pin this one to specific lines, but these passages share its feeling.
+          </p>
+        )}
         {actionError && <p className="text-sm text-red-600">{actionError}</p>}
         {match.links.map((link, i) => (
           <PassageCard key={link.passage.id} {...cardProps(link, i)} />
@@ -117,6 +139,7 @@ export function Matches({
 
   return (
     <div className="flex flex-col gap-6">
+      {locked && <SafetyCard />}
       <EntryText text={text} links={match.links} selected={selected} onSelect={setSelected} />
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
       {selected === null ? (
@@ -154,6 +177,8 @@ function EntryText({
 
   const parts: React.ReactNode[] = [];
   let cursor = 0;
+  // Strokes land one after another, in reading order.
+  let order = 0;
   for (const s of spans) {
     if (s.start < cursor) continue;
     parts.push(text.slice(cursor, s.start));
@@ -171,7 +196,8 @@ function EntryText({
             onSelect(s.i);
           }
         }}
-        className={`cursor-pointer rounded px-0.5 text-inherit ${c.mark} ${
+        style={{ "--hl": c.hl, "--delay": `${200 + order++ * 450}ms` } as React.CSSProperties}
+        className={`hl cursor-pointer rounded-sm bg-transparent px-0.5 text-inherit ${
           selected === s.i ? `ring-2 ${c.ring}` : ""
         }`}
       >
@@ -191,12 +217,14 @@ function PassageCard({
   color,
   feedback,
   onFeedback,
+  canShare,
 }: {
   entryId: string;
   link: MatchLink;
   color: (typeof COLORS)[number];
   feedback: Feedback;
   onFeedback: (v: Feedback) => void;
+  canShare: boolean;
 }) {
   const [sharing, setSharing] = useState(false);
   const { passage, phrase_start: ps, phrase_end: pe } = link;
@@ -204,13 +232,16 @@ function PassageCard({
 
   return (
     <section
-      className={`rounded border border-foreground/15 p-5 ${feedback === "not_for_me" ? "opacity-50" : ""}`}
+      className={`letter rounded-sm border border-rule bg-card p-6 transition-opacity ${feedback === "not_for_me" ? "opacity-50" : ""}`}
     >
-      <blockquote className="font-serif text-lg leading-relaxed">
+      <blockquote className="font-serif text-lg leading-[1.7]">
         {hasPhrase ? (
           <>
             {passage.text.slice(0, ps!)}
-            <mark className={`rounded px-0.5 text-inherit ${color.mark}`}>
+            <mark
+              style={{ "--hl": color.hl, "--delay": "450ms" } as React.CSSProperties}
+              className="hl rounded-sm bg-transparent px-0.5 text-inherit"
+            >
               {passage.text.slice(ps!, pe!)}
             </mark>
             {passage.text.slice(pe!)}
@@ -254,7 +285,7 @@ function PassageCard({
         >
           More by {passage.author}
         </Link>
-        {link.line_text && (
+        {link.line_text && canShare && (
           <button
             type="button"
             onClick={() => setSharing(!sharing)}

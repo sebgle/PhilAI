@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
+/* Paper and ink. The three highlighter colors are the only accents: each
+   highlighted line of an entry gets one, and its passage's echoing phrase
+   reuses it. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f1ece2; /* laid paper */
+  --foreground: #24211d; /* ink */
+  --card: #f9f6ef;       /* a fresh sheet: passage letters */
+  --muted: #6e675c;      /* faded ink */
+  --rule: #d9d0bf;
+  --hl-1: rgb(250 204 21 / 0.42);  /* amber */
+  --hl-2: rgb(56 189 248 / 0.30);  /* sky */
+  --hl-3: rgb(251 113 133 / 0.30); /* rose */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #14171d; /* fountain-pen ink */
+    --foreground: #e4dccd; /* night paper */
+    --card: #1b1f27;
+    --muted: #9b9384;
+    --rule: #2c313b;
+    --hl-1: rgb(250 204 21 / 0.26);
+    --hl-2: rgb(56 189 248 / 0.24);
+    --hl-3: rgb(251 113 133 / 0.24);
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
+  --font-sans: var(--font-ui);
+  --font-serif: var(--font-book);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui), system-ui, sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* A highlighter stroke: the color sweeps left to right. Set --hl to the
+   color and --delay to stagger strokes. */
+.hl {
+  background-image: linear-gradient(var(--hl), var(--hl));
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: hl-sweep 700ms cubic-bezier(0.3, 0.7, 0.4, 1) var(--delay, 0ms) both;
+}
+
+@keyframes hl-sweep {
+  from { background-size: 0% 100%; }
+  to { background-size: 100% 100%; }
+}
+
+/* The passage arrives like a letter set down on the desk. */
+.letter {
+  animation: letter-in 520ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  box-shadow: 0 1px 0 var(--rule), 0 12px 24px -18px rgb(36 33 29 / 0.45);
+}
+
+@keyframes letter-in {
+  from { opacity: 0; transform: translateY(14px) rotate(-0.8deg); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hl, .letter { animation: none; }
 }
