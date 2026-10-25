@@ -20,10 +20,10 @@ stable
 set search_path = ''
 as $$
   select p.id, p.author, p.work, p.year, p.text, p.emotions, p.themes, p.summary,
-         1 - (p.embedding <=> query_embedding) as similarity
+         1 - (p.embedding operator(extensions.<=>) query_embedding) as similarity
   from public.passages p
   where p.embedding is not null
-  order by p.embedding <=> query_embedding
+  order by p.embedding operator(extensions.<=>) query_embedding
   limit match_count;
 $$;
 
