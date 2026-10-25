@@ -18,7 +18,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen flex-col">
       <TopNav handle={data?.handle ?? ""} unread={unread} />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 sm:px-8">{children}</main>
+      {/* The reading column sits a little left of center on wide screens, leaving the right margin to the art. */}
+      <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-10 sm:px-8">
+        <div className="max-w-2xl lg:ml-[6%]">{children}</div>
+      </main>
       <footer className="mx-auto max-w-2xl px-4 py-6 text-center text-xs text-muted">
         A reflection and community space, not therapy or emergency help. If you&apos;re in crisis in the
         US, call or text 988.

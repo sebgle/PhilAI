@@ -1,32 +1,38 @@
 @import "tailwindcss";
 
-/* Notion-plain: white, near-black text, grey rules, one blue. Decoration is a
-   few faded line icons (components/Doodle.tsx). Highlight colors are Notion's
-   own highlight palette: each highlighted line of an entry gets one, and its
-   passage's echoing phrase reuses it. */
+/* Japandi palette: soft cream surface, warm near-black text, sand rules,
+   terracotta for the one accent, sage for the botanical art. */
 :root {
-  --background: #ffffff;
-  --foreground: #37352f;
-  --card: #ffffff;
-  --hover: #f7f7f5;   /* Notion's sidebar/hover grey; also the active nav cell */
-  --muted: #787774;
-  --rule: #e9e9e7;
-  --hl-1: #fbecdd;    /* yellow-orange */
-  --hl-2: #e7f3f8;    /* blue */
-  --hl-3: #fdebec;    /* red */
+  --background: #f4eee4;
+  --foreground: #3a342d;
+  --card: #faf6ee;
+  --hover: #ebe3d6;
+  --muted: #8b7f72;
+  --rule: #ddd2c2;
+  --terracotta: #c2684a;
+  --terracotta-deep: #a8553a;
+  --sage: #8d9b7d;
+  --sand: #d9c5a7;
+  --hl-1: #ecd8bb;    /* sand */
+  --hl-2: #d9e0cd;    /* sage */
+  --hl-3: #efcfc1;    /* terracotta */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #191919;
-    --foreground: #e3e2e0;
-    --card: #202020;
-    --hover: #252525;
-    --muted: #9b9a97;
-    --rule: #2f2f2f;
-    --hl-1: #5c3b23;
-    --hl-2: #143a4e;
-    --hl-3: #522e2a;
+    --background: #1f1c18;
+    --foreground: #e6dfd3;
+    --card: #26221d;
+    --hover: #2e2923;
+    --muted: #a0958a;
+    --rule: #3a342d;
+    --terracotta: #cf7a5c;
+    --terracotta-deep: #b8664a;
+    --sage: #7f8c71;
+    --sand: #a08c6c;
+    --hl-1: #5a4a33;
+    --hl-2: #3d4a35;
+    --hl-3: #5c3a2e;
   }
 }
 
@@ -37,6 +43,10 @@
   --color-hover: var(--hover);
   --color-muted: var(--muted);
   --color-rule: var(--rule);
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-deep: var(--terracotta-deep);
+  --color-sage: var(--sage);
+  --color-sand: var(--sand);
   --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-serif: var(--font-book);
 }
@@ -51,7 +61,7 @@ body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
 :focus-visible {
-  outline: 2px solid #2383e2; /* Notion blue */
+  outline: 2px solid var(--terracotta);
   outline-offset: 2px;
 }
 

@@ -4,14 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { randomPrompt } from "@/lib/prompts";
-import { Doodle } from "@/components/Doodle";
 import { MicButton } from "./MicButton";
 
 const join = (a: string, b: string) => (a.trim() && b ? `${a.trimEnd()} ${b}` : a.trim() ? a : b);
 
 // The Write page: an editable title ("New entry #N" until you name it), the
-// prompt on a line above the text (↻ for another), and the text itself on
-// plain white, Notion-style.
+// prompt under it with ↻ for another, the text on the cream surface, and at
+// the bottom Save with the microphone beside it.
 export function WriteForm({ entryNumber }: { entryNumber: number }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -41,47 +40,36 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
   }
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-4">
+    <section className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={120}
           placeholder={`New entry #${entryNumber}`}
           aria-label="Entry title"
-          className="-mx-1 w-full min-w-0 rounded-md bg-transparent px-1 text-3xl font-bold tracking-tight placeholder:text-foreground hover:bg-hover focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
+          className="-mx-1 w-full rounded-md bg-transparent px-1 text-[2rem] font-semibold tracking-tight placeholder:text-foreground hover:bg-hover/60 focus:bg-transparent focus:outline-none focus:placeholder:text-muted/50"
         />
-        <Doodle name="leaf" className="mt-1 h-10 w-10 shrink-0 text-foreground/15" />
-      </div>
-
-      <div className="flex items-center gap-2 border-b border-rule pb-3 text-[15px]">
-        {prompt ? (
-          <>
-            <span className="italic text-muted">{prompt}</span>
-            <button
-              type="button"
-              onClick={() => setPrompt(randomPrompt(prompt))}
-              aria-label="Another prompt"
-              title="Another prompt"
-              className="rounded p-1 text-muted hover:bg-hover hover:text-foreground"
-            >
-              <RefreshIcon />
+        <div className="flex items-center gap-2 text-[15px] text-muted">
+          {prompt ? (
+            <>
+              <span className="italic">{prompt}</span>
+              <button
+                type="button"
+                onClick={() => setPrompt(randomPrompt(prompt))}
+                aria-label="Another prompt"
+                title="Another prompt"
+                className="rounded-md p-1 transition-colors hover:bg-hover hover:text-foreground"
+              >
+                <RefreshIcon />
+              </button>
+            </>
+          ) : (
+            <button type="button" onClick={() => setPrompt(randomPrompt())} className="italic hover:text-foreground">
+              Need a prompt?
             </button>
-            <button
-              type="button"
-              onClick={() => setPrompt(null)}
-              aria-label="No prompt"
-              title="No prompt"
-              className="ml-auto rounded px-1.5 text-muted hover:bg-hover hover:text-foreground"
-            >
-              ×
-            </button>
-          </>
-        ) : (
-          <button type="button" onClick={() => setPrompt(randomPrompt())} className="text-muted hover:text-foreground">
-            Need a prompt?
-          </button>
-        )}
+          )}
+        </div>
       </div>
 
       <textarea
@@ -90,20 +78,19 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
         readOnly={live !== null}
         placeholder="Write what you need to get off your chest…"
         aria-label="Journal entry"
-        className="block min-h-[50vh] w-full resize-y bg-transparent py-2 text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
+        className="block min-h-[48vh] w-full resize-y bg-transparent text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
       />
 
-      <div className="flex flex-wrap items-center gap-3 border-t border-rule pt-4">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={save}
           disabled={saving || !text.trim() || live !== null}
-          className="rounded-md bg-[#2383e2] px-4 py-2 text-sm font-medium text-white hover:bg-[#0077d4] disabled:opacity-40"
+          className="rounded-full bg-terracotta px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-terracotta-deep disabled:opacity-40"
         >
-          {saving ? "Saving…" : "Save entry"}
+          {saving ? "Saving…" : "Save"}
         </button>
         <MicButton onLive={setLive} onTranscript={(t) => setText((prev) => join(prev, t))} />
-        <span className="text-sm text-muted">Private. Only you can see your entries.</span>
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </section>

@@ -98,6 +98,8 @@ export function MicButton({
   const left = MAX_SECONDS - seconds;
   const clock = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
 
+  const label =
+    state === "idle" ? "Speak instead" : state === "recording" ? `Stop recording, ${clock} left` : "Finishing transcript";
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <button
@@ -105,29 +107,42 @@ export function MicButton({
         onClick={state === "recording" ? stop : start}
         disabled={state === "transcribing"}
         aria-pressed={state === "recording"}
-        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 disabled:opacity-50 ${
+        aria-label={label}
+        title={label}
+        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors disabled:opacity-50 ${
           state === "recording"
-            ? "border-red-500 text-red-600 dark:text-red-400"
-            : "border-rule hover:bg-hover"
+            ? "animate-pulse border-terracotta bg-terracotta/10 text-terracotta"
+            : "border-rule text-muted hover:bg-hover hover:text-foreground"
         }`}
       >
-        <span
-          aria-hidden
-          className={`h-2.5 w-2.5 rounded-full ${state === "recording" ? "animate-pulse bg-red-500" : "bg-muted"}`}
-        />
-        {state === "idle" && "Speak instead"}
-        {state === "recording" && `Stop · ${clock} left`}
-        {state === "transcribing" && "Finishing transcript…"}
+        {state === "recording" ? <StopIcon /> : <MicIcon />}
       </button>
+      {state === "recording" && <span className="tabular-nums text-muted">{clock}</span>}
+      {state === "transcribing" && <span className="text-muted">Finishing transcript…</span>}
       {state === "recording" && (
         <span className="text-muted">
-          {liveSpeechSupported()
-            ? "Live preview by your browser; the final transcript comes from Muse. Audio isn't stored."
-            : "Listening. Your words appear when you stop. Audio isn't stored."}
+          {liveSpeechSupported() ? "Live preview by your browser; the final transcript comes from Muse. Audio isn't stored." : "Listening. Audio isn't stored."}
         </span>
       )}
       {note && <span className="text-muted">{note}</span>}
       {error && <span className="text-red-600">{error}</span>}
     </div>
+  );
+}
+
+function MicIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" />
+    </svg>
+  );
+}
+
+function StopIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="5" y="5" width="14" height="14" rx="2" />
+    </svg>
   );
 }
