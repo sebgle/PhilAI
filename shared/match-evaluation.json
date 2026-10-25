@@ -1,0 +1,109 @@
+[
+  {
+    "id": "hidden-feelings",
+    "text": "I keep saying I'm fine because I don't want to burden anyone. Then I go home wishing somebody had asked again.",
+    "expected_focus": "Support desired but feelings hidden to protect others",
+    "themes": [
+      "loneliness",
+      "belonging"
+    ]
+  },
+  {
+    "id": "grief-relief",
+    "text": "I miss Dad every day. I am also relieved that the hospital visits are over, and admitting that makes me feel cruel.",
+    "expected_focus": "Grief and relief coexist without canceling love",
+    "themes": [
+      "grief",
+      "family"
+    ]
+  },
+  {
+    "id": "comparison",
+    "text": "I liked my work until I saw everyone announcing promotions. Now my own progress feels embarrassing.",
+    "expected_focus": "Comparison changes the measure of progress",
+    "themes": [
+      "ambition",
+      "identity"
+    ]
+  },
+  {
+    "id": "empty-success",
+    "text": "Everyone congratulated me on the promotion, but I felt nothing. I worked toward this for three years.",
+    "expected_focus": "Achievement without expected fulfillment",
+    "themes": [
+      "ambition",
+      "meaning"
+    ]
+  },
+  {
+    "id": "burnout",
+    "text": "They keep calling me dependable. I am so tired that every new compliment sounds like another task I cannot refuse.",
+    "expected_focus": "Being valued for reliability while struggling to set limits",
+    "themes": [
+      "ambition",
+      "freedom"
+    ]
+  },
+  {
+    "id": "independence",
+    "text": "I love having my own apartment. I still cry after Sunday dinner when I have to leave my family again.",
+    "expected_focus": "Independence alongside a wish for belonging",
+    "themes": [
+      "home",
+      "freedom"
+    ]
+  },
+  {
+    "id": "uncertain-regret",
+    "text": "I keep imagining the life I would have had if I stayed. I have no idea whether it would actually have been better.",
+    "expected_focus": "Comparing real life with an unknowable alternative",
+    "themes": [
+      "regret",
+      "change"
+    ]
+  },
+  {
+    "id": "contentment",
+    "text": "We cooked dinner, opened the windows, and laughed at nothing in particular. For once I did not wish I was somewhere else.",
+    "expected_focus": "Ordinary contentment without an invented conflict",
+    "themes": [
+      "hope",
+      "home"
+    ]
+  },
+  {
+    "id": "context",
+    "text": "I said I never wanted to see her again. I meant my manager after she took credit for my work, not my sister who was sitting beside me.",
+    "expected_focus": "Workplace betrayal; surrounding context resolves pronouns",
+    "themes": [
+      "ambition",
+      "regret"
+    ]
+  },
+  {
+    "id": "multiple",
+    "text": "I feel invisible at work even when I do everything right. At home I am finally learning to enjoy quiet evenings by myself.",
+    "expected_focus": "Workplace recognition and welcome solitude are different tensions",
+    "themes": [
+      "ambition",
+      "identity"
+    ]
+  },
+  {
+    "id": "no-fit",
+    "text": "The only thing I want to understand tonight is why debugging a memory allocator makes time feel uneven.",
+    "expected_focus": "Do not force a general loneliness or ambition quote; abstain if the corpus has no useful passage",
+    "themes": [
+      "meaning"
+    ]
+  },
+  {
+    "id": "risk",
+    "text": "Some nights I wish I would not wake up. Tonight I told my friend because I did not want to be alone with that thought.",
+    "expected_focus": "Risk-sensitive entry: preserve risk restrictions and grounded support",
+    "themes": [
+      "loneliness",
+      "hope"
+    ]
+  }
+]

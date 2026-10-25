@@ -21,8 +21,8 @@ const COLORS = [
 const STAGES = [
   "Reading your entry…",
   "Finding the lines that carry the most feeling…",
-  "Searching 900 passages for ones that feel the same way…",
-  "Finding the words in each passage that echo yours…",
+  "Searching for passages that speak to your situation…",
+  "Comparing passages for a useful perspective…",
 ];
 
 function Finding() {
@@ -45,11 +45,13 @@ export function Matches({
   text,
   initial,
   initialFeedback,
+  initialRiskFlag = false,
   mockVariant,
 }: {
   entryId: string;
   text: string;
   initial: MatchResponse | null;
+  initialRiskFlag?: boolean;
   initialFeedback: Record<string, Feedback>;
   mockVariant: MockVariant;
 }) {
@@ -71,7 +73,9 @@ export function Matches({
     for (let attempt = 0; attempt <= AUTO_RETRIES; attempt++) {
       setRetrying(attempt);
       try {
-        setMatch(await requestMatch(entryId, text, mockVariant));
+        const result = await requestMatch(entryId, text, mockVariant);
+        setMatch(result);
+        setResonated_(resonatedIn(result));
         setRetrying(0);
         return;
       } catch (e) {
@@ -116,9 +120,10 @@ export function Matches({
   if (error) {
     return (
       <div className="flex flex-col gap-4">
+        {initialRiskFlag && <SafetyCard />}
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
         <p className="text-sm text-red-600">
-          Muse, the model that finds your passages, isn&apos;t responding right now. Your entry is saved.{" "}
+          Matching is unavailable right now. Your entry is saved.{" "}
           <button type="button" onClick={run} className="underline">Try again</button>
         </p>
       </div>
@@ -128,6 +133,7 @@ export function Matches({
   if (!match) {
     return (
       <div className="flex flex-col gap-4">
+        {initialRiskFlag && <SafetyCard />}
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
         {retrying > 0 ? (
           <p className="animate-pulse text-sm text-muted" aria-live="polite">
@@ -156,14 +162,22 @@ export function Matches({
     canShare: !locked,
   });
 
-  if (match.fallback || (locked && !match.links.length)) {
+  if (match.links.length === 0) {
+    return <div className="flex flex-col gap-4">
+      {locked && <SafetyCard />}
+      <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
+      <p className="text-sm text-muted" role="status">We couldn&apos;t find a passage that adds enough to this line.</p>
+    </div>;
+  }
+
+  if (match.fallback) {
     return (
       <div className="flex flex-col gap-6">
         {locked && <SafetyCard />}
         <EntryText text={text} links={[]} selected={null} onSelect={() => {}} />
         {match.links.length > 0 && (
           <p className="text-sm text-muted">
-            We couldn&apos;t pin this one to specific lines, but these passages share its feeling.
+            We couldn&apos;t pin this one to specific lines, but these passages offer a perspective on your entry.
           </p>
         )}
         {actionError && <p className="text-sm text-red-600">{actionError}</p>}
@@ -183,14 +197,14 @@ export function Matches({
         <p className="text-sm text-muted">
           {match.links.length
             ? "Tap a highlighted line to see the passage it found."
-            : "No passages found for this entry yet."}
+            : "We couldn’t find a passage that adds enough to this line."}
         </p>
       ) : (
         <div key={selected} className="flex flex-col gap-4">
           <PassageCard {...cardProps(match.links[selected], selected)} />
           {(match.links[selected].alternates?.length ?? 0) > 0 && (
             <>
-              <p className="text-sm text-muted">Two more that came close. Tell us which ones spoke to you.</p>
+              <p className="text-sm text-muted">Other perspectives worth considering.</p>
               {match.links[selected].alternates!.map((alt) => (
                 <PassageCard key={alt.passage.id} {...cardProps(alt, selected)} />
               ))}

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:matching": "tsx --test scripts/test-insight-match.mts && tsx scripts/test-exact-match.mts && node scripts/test-insight-storage.mjs",
+    "evaluate:matching": "tsx scripts/evaluate-matches.mts"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.3.1",
@@ -18,6 +20,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.11",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

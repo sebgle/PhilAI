@@ -6,12 +6,13 @@ import type { MatchLink, MatchResponse } from "@/lib/contract";
 import type { MockVariant } from "@/lib/matching";
 import { Matches } from "./Matches";
 import { groupAlternates } from "@/lib/match-links";
+import { isCurrentMatch } from "@/lib/match-version";
 import { EntryTitle } from "./EntryTitle";
 
 const VARIANTS: MockVariant[] = ["match", "fallback", "risk"];
 
 // The Matches screen. Saved matches are read from the database; an entry the
-// matcher hasn't analyzed yet (summary still null) is matched on first view.
+// matcher has not processed at the current version is matched on first view.
 export default async function EntryPage({
   params,
   searchParams,
@@ -26,7 +27,7 @@ export default async function EntryPage({
   // RLS limits both queries to the signed-in user's own rows.
   const { data: entry } = await supabase
     .from("entries")
-    .select("id, title, text, prompt, created_at, emotions, themes, summary, risk_flag")
+    .select("id, title, text, prompt, created_at, emotions, themes, summary, risk_flag, match_version, match_generation, match_fallback")
     .eq("id", id)
     .maybeSingle();
   if (!entry) notFound();
@@ -37,24 +38,26 @@ export default async function EntryPage({
     .select("id", { count: "exact", head: true })
     .lte("created_at", entry.created_at);
 
-  const { data: rows } = await supabase
+  const { data: rows, error: matchesError } = await supabase
     .from("matches")
     .select(
       "line_text, line_start, line_end, theme, phrase_start, phrase_end, score, reason, feedback, rank, resonated, passage:passages(id, author, work, year, text)",
     )
     .eq("entry_id", id)
+    .eq("generation", entry.match_generation ?? "00000000-0000-0000-0000-000000000000")
     .order("line_start", { ascending: true, nullsFirst: false })
     .order("rank", { ascending: true });
 
+  if (matchesError) throw new Error("Could not load saved matches");
   const links = groupAlternates((rows ?? []) as unknown as (MatchLink & { rank: number })[]);
-  const analyzed = entry.summary !== null || entry.risk_flag || links.length > 0;
+  const analyzed = isCurrentMatch(entry);
   const initial: MatchResponse | null = analyzed
     ? {
         entry_id: entry.id,
         emotions: entry.emotions,
         themes: entry.themes,
         risk_flag: entry.risk_flag,
-        fallback: links.length > 0 && links[0].line_text === null,
+        fallback: entry.match_fallback,
         links,
       }
     : null;
@@ -65,9 +68,9 @@ export default async function EntryPage({
     .select("passage_id")
     .eq("kind", "passage");
   const initialFeedback: Record<string, "saved" | "not_for_me" | null> = {};
-  for (const r of rows ?? []) {
-    if (r.feedback === "not_for_me") initialFeedback[(r.passage as unknown as { id: string }).id] = "not_for_me";
-  }
+  const { data: historicalFeedback } = await supabase.from("matches")
+    .select("passage_id, feedback").eq("entry_id", id).eq("feedback", "not_for_me");
+  for (const r of historicalFeedback ?? []) initialFeedback[r.passage_id] = "not_for_me";
   for (const s of saved ?? []) initialFeedback[s.passage_id] = "saved";
 
   return (
@@ -83,6 +86,7 @@ export default async function EntryPage({
         entryId={entry.id}
         text={entry.text}
         initial={initial}
+        initialRiskFlag={entry.risk_flag}
         initialFeedback={initialFeedback}
         mockVariant={VARIANTS.includes(mock as MockVariant) ? (mock as MockVariant) : "match"}
       />

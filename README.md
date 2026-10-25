@@ -36,7 +36,7 @@ Production is Vercel, built from `main`. Every PR gets a preview deploy.
 | Frontend | Next.js 15 (App Router), TypeScript, Tailwind |
 | Backend | Supabase: Postgres, pgvector, Auth (email + password), RLS |
 | Anonymity | Anonymous **to other users**, not to the server. The email is used only for login and is never shown or returned by any API. Other users see only a handle or alias |
-| Text AI | **Muse Spark** for entry analysis, passage tagging, echoing phrase, "why this fits", scrub and moderate; OpenAI only as the last resort when every Spark id is down |
+| Text AI | **Muse Spark** for entry analysis, passage tagging, passage comparison and explanations, scrub and moderate; OpenAI only as the last resort when every Spark id is down |
 | Voice | **Muse voice transcription**. Audio is transcribed, then discarded |
 | Forums | One per theme, 16 themes (below). Authors are a tag plus an author page |
 | Identity | Random handle per account (owner-only). **Fresh alias per thread** in forums |
@@ -96,7 +96,7 @@ npx tsx --env-file=.env.local scripts/test-match.mts        # T7: run the pipeli
 
 Apply `supabase/migrations/20261024001000_match_passages.sql` in the SQL editor before running load or match: it adds the `match_passages` RPC that `/api/match` calls.
 
-Embeddings run in-process with transformers.js (`src/lib/embed.ts`, all-MiniLM-L6-v2, quantized). The model is vendored in `models/Xenova/all-MiniLM-L6-v2` and read from disk, so nothing is downloaded or cached at runtime; `next.config.ts` adds `models/` and the Linux onnxruntime binaries to the `/api/match` bundle because the native binding path is built at runtime and the file tracer misses it. If the model or dtype ever changes, re-run `scripts/library/load.mts` so passages and entries share one embedding space. Passages are embedded by their plain-English summary; entry lines are embedded as line + entry summary (`lineQuery` in `src/lib/match-core.ts`). Every quoted line and phrase passes `findSpan` in `src/lib/exact-match.ts` before it is returned.
+Embeddings run in-process with transformers.js (`src/lib/embed.ts`, all-MiniLM-L6-v2, quantized). The model is vendored in `models/Xenova/all-MiniLM-L6-v2` and read from disk, so nothing is downloaded or cached at runtime; `next.config.ts` adds `models/` and the Linux onnxruntime binaries to the `/api/match` bundle because the native binding path is built at runtime and the file tracer misses it. If the model or dtype ever changes, re-run `scripts/library/load.mts` so passages and entries share one embedding space. Passages are embedded by their plain-English summary; entry lines are embedded as line + line-specific interpretation (`lineQuery` in `src/lib/match-core.ts`). Every quoted line and phrase passes `findSpan` in `src/lib/exact-match.ts` before it is returned.
 
 Voice: `/api/transcribe` forwards mono 16-bit PCM WAV (16 or 24 kHz) to Muse. Record in the browser with `WavRecorder` from `src/lib/wav-recorder.ts`; MediaRecorder's webm/opus only works locally where ffmpeg is installed.
 
@@ -117,3 +117,7 @@ Migration: [supabase/migrations/20261024000000_init.sql](supabase/migrations/202
 | `reports` | Server only |
 
 Querying `posts`/`replies` from the client means listing columns explicitly. `select('*')` fails because `user_id` isn't granted. Posts store no link to their source entry. Deleting the auth user cascades to everything they own.
+
+### Insight-based matching
+
+The current matcher compares actual candidate passages for specific fit and useful perspective before selecting cards. It can return no match when the connection is weak. Apply `supabase/migrations/20261025060000_insight_matches.sql` before deploying this version. See [implementation, checks, and evaluation limits](docs/insight-matching.md). Run `npm run test:matching` for the offline matching and storage tests.

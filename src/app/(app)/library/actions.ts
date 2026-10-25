@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+// Passage feedback updates all generations, preserving consistency with saved historical cards.
 // All of these run as the signed-in user, so RLS keeps them owner-only.
 // The library_items unique indexes make saves idempotent: a duplicate insert
 // fails with 23505, which we treat as "already there".
