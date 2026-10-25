@@ -12,7 +12,9 @@ import {
 import type { MatchResponse, MatchLink, ThemeSlug } from "@/lib/contract";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// 90 s: Muse analysis + 3 phrase calls, with headroom for the model fallback
+// chain (Wonder can take 20 s a call under load). Vercel Fluid allows 300.
+export const maxDuration = 90;
 
 const RETRIEVE = 30;
 

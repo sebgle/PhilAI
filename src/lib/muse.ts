@@ -5,8 +5,13 @@ import { z } from "zod";
 const MUSE_URL = process.env.MUSE_API_URL ?? "https://api.meta.ai/v1/chat/completions";
 // Standard-mode ids only (no "-contributor": our content must not train Meta
 // models). On a 404 model_not_found, which Muse returns intermittently for one
-// id while the others stay healthy, the client moves down this list.
-const MODEL_CHAIN = [...new Set([process.env.MUSE_MODEL ?? "muse-spark-1.3", "muse-spark-1.2", "muse-spark-1.1"])];
+// id and sometimes for every Spark id at once (2026-10-25 01:00: all three
+// Spark ids 404 for 30+ min while Wonder answered), the client moves down
+// this list. Muse Wonder is last: it is a reasoning model, so it costs more
+// and thinks for ~20 s per call at default effort. With reasoning_effort
+// "minimal" it answers our JSON prompts in ~4 s with the same quality.
+const MODEL_CHAIN = [...new Set([process.env.MUSE_MODEL ?? "muse-spark-1.3", "muse-spark-1.2", "muse-spark-1.1", "muse-wonder-1.0"])];
+const WONDER_EFFORT = process.env.MUSE_WONDER_EFFORT ?? "minimal";
 
 function sparkKey() {
   const k = process.env.MUSE_SPARK_API_KEY ?? process.env.MUSE_API_KEY;
@@ -40,7 +45,8 @@ export async function museText(system: string, user: string, opts: { temperature
   // RETRY_BUDGET_MS has passed, so
   // the calling route keeps time for its other steps.
   const attempt = async (model: string): Promise<Response> => {
-    const b = { ...body, model };
+    const b: Record<string, unknown> = { ...body, model };
+    if (model.startsWith("muse-wonder")) b.reasoning_effort = WONDER_EFFORT;
     let res = await post(opts.json === false ? b : { ...b, response_format: { type: "json_object" } });
     if (res.status === 400 && opts.json !== false) res = await post(b);
     return res;
