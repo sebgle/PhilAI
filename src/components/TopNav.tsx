@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // Three parts: the name on the left, the worded tabs in the middle, the bell
-// and the account on the right. No border; the cream surface is enough.
+// and the account on the right. No bar behind them: they sit on the surface.
 const TABS = [
   { href: "/", label: "Write", match: (p: string) => p === "/" },
   { href: "/entries", label: "Entries", match: (p: string) => p.startsWith("/entries") },
   { href: "/library", label: "Saved", match: (p: string) => p.startsWith("/library") || p.startsWith("/authors") },
-  { href: "/forums", label: "Forums", match: (p: string) => p.startsWith("/forums") },
+  { href: "/forums", label: "Community", match: (p: string) => p.startsWith("/forums") },
 ];
 
 const tab =
@@ -20,7 +20,7 @@ export function TopNav({ handle, unread }: { handle: string; unread: number }) {
   const path = usePathname();
 
   return (
-    <header className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm">
+    <header>
       <nav className="mx-auto grid max-w-5xl grid-cols-[1fr_auto_1fr] items-center px-5 py-3 text-sm sm:px-8">
         <Link href="/" className="justify-self-start text-[17px] font-semibold tracking-tight">
           PhilAI

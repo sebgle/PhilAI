@@ -13,7 +13,7 @@ export default async function ForumsPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageTitle
-        title="Forums"
+        title="Community"
         subtitle="One room per feeling. Everyone here is anonymous: you get a fresh name in every thread."
         doodle="mug"
       />

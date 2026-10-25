@@ -78,7 +78,7 @@ export function WriteForm({ entryNumber }: { entryNumber: number }) {
         readOnly={live !== null}
         placeholder="Write what you need to get off your chest…"
         aria-label="Journal entry"
-        className="block min-h-[48vh] w-full resize-y bg-transparent text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
+        className="block h-[48vh] w-full resize-none overflow-y-auto bg-transparent text-[17px] leading-[1.9] placeholder:text-muted/60 focus:outline-none"
       />
 
       <div className="flex flex-wrap items-center gap-3">

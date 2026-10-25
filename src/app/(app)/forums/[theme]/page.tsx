@@ -69,7 +69,7 @@ export default async function ThemeForumPage({
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <Link href="/forums" className="text-sm text-muted hover:text-foreground">← All forums</Link>
+          <Link href="/forums" className="text-sm text-muted hover:text-foreground">← Community</Link>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">{theme.name}</h1>
           <p className="mt-1 text-sm text-muted">{theme.description}</p>
         </div>

@@ -65,6 +65,19 @@ body {
   outline-offset: 2px;
 }
 
+/* Text fields sit on the surface with nothing drawn around them, focused or
+   not; the caret is the only sign. Buttons and links always show the hand. */
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+button:not(:disabled),
+[role="button"],
+a {
+  cursor: pointer;
+}
+
 /* A highlighter stroke: the color sweeps left to right. Set --hl to the
    color and --delay to stagger strokes. */
 .hl {
