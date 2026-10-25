@@ -40,7 +40,7 @@ export default async function PastEntries() {
                   className="block rounded-lg border border-rule bg-card/70 px-5 py-4 transition-colors hover:bg-hover/70"
                 >
                   <div className="flex items-baseline justify-between gap-3 text-sm text-muted">
-                    <span className="font-medium text-foreground">{e.title || `Entry #${entries.length - i}`}</span>
+                    <span className="text-[17px] font-medium text-foreground">{e.title || `Entry #${entries.length - i}`}</span>
                     <LocalDate iso={e.created_at} />
                   </div>
                   {e.prompt && <p className="mt-1 text-sm italic text-muted">{e.prompt}</p>}
