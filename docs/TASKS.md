@@ -22,13 +22,13 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
 
 ### Teammate: library and matching
 
-- [ ] **T1. Muse smoke test.** Make one Muse Spark call that returns JSON, and one Muse transcription call, from a script using the keys in `.env.local`. Note latency and rate limits.
-- [ ] **T2. Pick sources.** Choose 20–40 works published in 1930 or earlier from Project Gutenberg, favoring readable prose and poetry. List them in `data/sources.json` (author, work, year, Gutenberg id).
+- [x] **T1. Muse smoke test.** Make one Muse Spark call that returns JSON, and one Muse transcription call, from a script using the keys in `.env.local`. Note latency and rate limits.
+- [x] **T2. Pick sources.** Choose 20–40 works published in 1930 or earlier from Project Gutenberg, favoring readable prose and poetry. List them in `data/sources.json` (author, work, year, Gutenberg id).
 - [ ] **T3. Cut passages.** Hand-pick 300–1,000 passages of 1–4 sentences, with Gutenberg headers and license text stripped. Save as `data/passages.jsonl` with `{ id, author, work, year, text }`. Ids must be stable (e.g. `p_0412`). Also check the 3 mock passages in `scripts/build-mocks.mjs` against the Gutenberg text; they were quoted from memory.
 - [ ] **T4. Tag passages.** Write `scripts/library/tag`: one Muse Spark call per passage returns `{ emotions, themes, summary }`. Reject any label not in `shared/emotions.json` or `shared/themes.json`. Spot-check 30 by hand.
 - [ ] **T5. Embed and load.** Embed each passage's summary and upsert it into `passages` with the secret key. Add a migration with an RPC like `match_passages(query_embedding vector(384), match_count int)` that returns passages by cosine similarity.
   *Done when:* a few hundred tagged passages are queryable.
-- [ ] **T6. Exact-match helper.** In `src/lib/exact-match.ts`, write `findSpan(haystack, needle) → { start, end } | null`: first occurrence, end exclusive. Add an optional retry that normalizes curly quotes and whitespace. Use it for both lines and phrases.
+- [x] **T6. Exact-match helper.** In `src/lib/exact-match.ts`, write `findSpan(haystack, needle) → { start, end } | null`: first occurrence, end exclusive. Add an optional retry that normalizes curly quotes and whitespace. Use it for both lines and phrases.
 - [ ] **T7. `/api/match`.** `POST { entry_id }`. The route reads the entry as the signed-in user, then:
   1. Makes the Muse analysis call: emotions, themes, summary, risk flag, and 2–3 key lines copied word for word, each with its own theme.
   2. Verifies each line with `findSpan` and drops the ones that fail.
@@ -43,7 +43,7 @@ Tick boxes as you go. To change a contract (anything in [src/lib/contract.ts](..
 - [ ] **T8. `/api/scrub`.** `POST { text }`. A regex pass for emails and phone numbers, then Muse for names, places and schools. Returns a `ScrubResponse` with verified spans.
 - [ ] **T9. `/api/moderate`.** `POST { text }`. Returns a `ModerateResponse`.
 - [ ] **T10. `/api/transcribe`.** Takes audio, calls Muse transcription and returns `{ text }`. Never write the audio to disk or storage.
-- [ ] **T11. Data retention.** Find out how long Meta keeps the data the app sends to Muse Spark and Muse transcription. Write one accurate sentence for the pitch and add it to the README.
+- [x] **T11. Data retention.** Find out how long Meta keeps the data the app sends to Muse Spark and Muse transcription. Write one accurate sentence for the pitch and add it to the README.
 
 ### Sebastian: app and community
 

@@ -1,0 +1,129 @@
+// T7 server core: analysis, retrieval, re-ranking, phrase picking. (src/lib/matching.ts
+// is the client entry point that calls /api/match.) Pure functions plus
+// Muse prompts, shared by /api/match and the tuning script.
+import { z } from "zod";
+import { museJson } from "@/lib/muse";
+import { findSpan } from "@/lib/exact-match";
+import { EMOTIONS, THEMES, type Emotion, type ThemeSlug } from "@/lib/contract";
+
+const EMO_SET = new Set<string>(EMOTIONS);
+const THEME_SET = new Set<string>(THEMES.map((t) => t.slug));
+
+export type Analysis = {
+  emotions: Emotion[];
+  themes: ThemeSlug[];
+  summary: string;
+  risk_flag: boolean;
+  key_lines: { text: string; theme: ThemeSlug }[];
+};
+
+const AnalysisSchema = z.object({
+  emotions: z.array(z.string()).min(1).max(4),
+  themes: z.array(z.string()).min(1).max(3),
+  summary: z.string().min(10),
+  risk_flag: z.boolean(),
+  key_lines: z.array(z.object({ text: z.string().min(8), theme: z.string() })).min(1).max(4),
+});
+
+const ANALYSIS_SYSTEM = `You read one private journal entry and return structured analysis.
+- emotions: 1-3 labels from exactly this list: ${EMOTIONS.join(", ")}.
+- themes: 1-2 labels from exactly this list: ${THEMES.map((t) => t.slug).join(", ")}.
+- summary: one neutral, plain sentence (12-25 words) describing the feeling and situation, no names.
+- risk_flag: true only if the entry expresses intent or desire to harm themselves or others, or suicidal thoughts. Ordinary sadness, stress or anger is false.
+- key_lines: the 2-3 sentences or clauses (6-30 words each) that carry the most feeling or the central idea. Each "text" MUST be copied character for character from the entry: same words, same punctuation, no paraphrase, no ellipsis, no fixes. Each gets a "theme" from the themes list. Prefer lines that would stand alone if shown to a stranger. Do not pick the same line twice.
+Return {"emotions":[...],"themes":[...],"summary":"...","risk_flag":false,"key_lines":[{"text":"...","theme":"..."}]}.`;
+
+export async function analyzeEntry(text: string): Promise<Analysis> {
+  const r = await museJson({ system: ANALYSIS_SYSTEM, user: text, schema: AnalysisSchema, temperature: 0.1 });
+  const emotions = [...new Set(r.emotions.map((e) => e.toLowerCase().trim()).filter((e) => EMO_SET.has(e)))] as Emotion[];
+  const themes = [...new Set(r.themes.map((t) => t.toLowerCase().trim()).filter((t) => THEME_SET.has(t)))] as ThemeSlug[];
+  const key_lines = r.key_lines.map((l) => ({
+    text: l.text.trim(),
+    theme: (THEME_SET.has(l.theme.toLowerCase().trim()) ? l.theme.toLowerCase().trim() : themes[0] ?? "meaning") as ThemeSlug,
+  }));
+  return { emotions: emotions.length ? emotions : ["neutral"], themes: themes.length ? themes : ["meaning"], summary: r.summary.trim(), risk_flag: r.risk_flag, key_lines };
+}
+
+export type VerifiedLine = { text: string; start: number; end: number; theme: ThemeSlug };
+
+// Exact-match check: keep lines that really appear, drop overlaps, cap at 3.
+export function verifyLines(entry: string, lines: Analysis["key_lines"]): VerifiedLine[] {
+  const out: VerifiedLine[] = [];
+  for (const l of lines) {
+    const span = findSpan(entry, l.text);
+    if (!span) continue;
+    if (out.some((o) => span.start < o.end && o.start < span.end)) continue;
+    out.push({ text: entry.slice(span.start, span.end), start: span.start, end: span.end, theme: l.theme });
+    if (out.length === 3) break;
+  }
+  return out.sort((a, b) => a.start - b.start);
+}
+
+export type Candidate = {
+  id: string; author: string; work: string; year: number | null; text: string;
+  emotions: string[]; themes: string[]; summary: string | null; similarity: number;
+};
+
+export const WEIGHTS = { sim: 0.5, emo: 0.2, theme: 0.2, taste: 0.1 };
+
+function jaccard(a: string[], b: string[]) {
+  const A = new Set(a), B = new Set(b);
+  if (!A.size && !B.size) return 0;
+  let inter = 0;
+  for (const x of A) if (B.has(x)) inter++;
+  return inter / (A.size + B.size - inter);
+}
+
+export function scoreCandidate(c: Candidate, entryEmotions: string[], lineThemes: string[], tasteAuthors: Set<string>) {
+  const sim = Math.max(0, Math.min(1, c.similarity));
+  const emo = jaccard(entryEmotions, c.emotions);
+  const theme = jaccard(lineThemes, c.themes);
+  const taste = tasteAuthors.has(c.author) ? 1 : 0;
+  return WEIGHTS.sim * sim + WEIGHTS.emo * emo + WEIGHTS.theme * theme + WEIGHTS.taste * taste;
+}
+
+// Pick the best candidate for each line, never repeating an author. Lines are
+// processed in order of their best available score so a strong match is not
+// stolen by an earlier weaker line.
+export function pickPerLine<L>(lines: L[], candidates: Candidate[][], score: (c: Candidate, lineIdx: number) => number, excludeThemes: Set<string> = new Set()) {
+  const used = new Set<string>();
+  const result: ({ cand: Candidate; score: number } | null)[] = lines.map(() => null);
+  const remaining = new Set(lines.map((_, i) => i));
+  while (remaining.size) {
+    let bestI = -1, best: { cand: Candidate; score: number } | null = null;
+    for (const i of remaining) {
+      for (const c of candidates[i]) {
+        if (used.has(c.author) || c.themes.some((t) => excludeThemes.has(t))) continue;
+        const s = score(c, i);
+        if (!best || s > best.score) { best = { cand: c, score: s }; bestI = i; }
+        break; // candidates[i] is pre-sorted by score, first allowed is best
+      }
+    }
+    if (bestI === -1) break;
+    result[bestI] = best;
+    used.add(best!.cand.author);
+    remaining.delete(bestI);
+  }
+  return result;
+}
+
+const PhraseSchema = z.object({ phrase: z.string(), reason: z.string().min(10) });
+const PHRASE_SYSTEM = `A person wrote a line in their journal. It has been linked to a passage from literature. Return:
+- phrase: the 3-15 word stretch of the PASSAGE that most closely echoes the person's line, copied character for character from the passage (same spelling, punctuation and capitalization). Never quote the journal line, never paraphrase, never join separate parts.
+- reason: one warm, plain sentence (12-25 words), addressed to the writer as "you", on why the two connect. Mention the shared feeling, not the author's biography. No quotation marks.
+Return {"phrase":"...","reason":"..."}.`;
+
+export async function phraseAndReason(line: string | null, entrySummary: string, passage: Candidate) {
+  const user = `${line ? `Journal line: ${line}` : `Journal summary: ${entrySummary}`}\n\nPassage (${passage.author}, ${passage.work}):\n${passage.text}`;
+  const r = await museJson({ system: PHRASE_SYSTEM, user, schema: PhraseSchema, temperature: 0.2 });
+  const span = findSpan(passage.text, r.phrase);
+  return { phrase_start: span?.start ?? null, phrase_end: span?.end ?? null, reason: r.reason.trim() };
+}
+
+// Themes we never surface when the risk flag is set.
+export const RISK_EXCLUDED_THEMES = new Set(["mortality"]);
+
+// Text we embed for a line: the line plus the entry summary as context.
+export function lineQuery(line: string, summary: string, mode: "line+summary" | "line" = "line+summary") {
+  return mode === "line" ? line : `${line} ${summary}`;
+}

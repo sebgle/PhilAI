@@ -43,3 +43,9 @@ next-env.d.ts
 
 # browser automation logs
 .playwright-mcp/
+
+# Gutenberg downloads and library intermediates (regenerate with scripts/library/*)
+data/raw/
+data/candidates.jsonl
+data/candidate_vecs.json
+supabase/.temp/

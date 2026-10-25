@@ -76,6 +76,28 @@ Offsets are character indexes, end exclusive, first occurrence. `entry_text.slic
 - `POST /moderate { text }` returns `{ status: "ok" | "flagged", reason }`
 - `POST /transcribe` (multipart, field `audio`) returns `{ text }`. Audio is never stored
 
+## Muse data use (T11)
+
+PhilAI calls Meta's Model API in **Standard mode** (`muse-spark-1.3` and `muse-voice-transcribe-1.0`, never the `-contributor` ids). Meta's model docs state: "In Standard mode, your content is not used to train Meta models." Meta does not publish how long it retains Standard-mode request data, so the pitch says exactly that: entries and audio are sent to Meta for analysis, are not used for training, and we store no audio ourselves. Source: dev.meta.ai/docs/models.
+
+## Library and matching (teammate track)
+
+```bash
+npx tsx --env-file=.env.local scripts/smoke-muse.mts        # T1: one Spark JSON call
+npx tsx scripts/library/download.mts                        # T2: Gutenberg texts -> data/raw/ (gitignored)
+npx tsx scripts/library/cut.mts                             # T3: candidate passages -> data/candidates.jsonl
+npx tsx scripts/library/select.mts                          # T3: ~30 per work by theme anchors -> data/passages.jsonl
+npx tsx --env-file=.env.local scripts/library/tag.mts       # T4: emotions/themes/summary/quality -> data/passages.tagged.jsonl
+npx tsx --env-file=.env.local scripts/library/load.mts      # T5: embed summaries, upsert into passages (quality >= 4)
+npx tsx --env-file=.env.local scripts/test-match.mts        # T7: run the pipeline on shared/mock_entry.txt
+```
+
+Apply `supabase/migrations/20261024001000_match_passages.sql` in the SQL editor before running load or match: it adds the `match_passages` RPC that `/api/match` calls.
+
+Embeddings run in-process with transformers.js (`src/lib/embed.ts`, all-MiniLM-L6-v2). Passages are embedded by their plain-English summary; entry lines are embedded as line + entry summary (`lineQuery` in `src/lib/match-core.ts`). Every quoted line and phrase passes `findSpan` in `src/lib/exact-match.ts` before it is returned.
+
+Voice: `/api/transcribe` forwards mono 16-bit PCM WAV (16 or 24 kHz) to Muse. Record in the browser with `WavRecorder` from `src/lib/wav-recorder.ts`; MediaRecorder's webm/opus only works locally where ffmpeg is installed.
+
 ## Data model
 
 Migration: [supabase/migrations/20261024000000_init.sql](supabase/migrations/20261024000000_init.sql)
