@@ -127,3 +127,17 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   .hl, .letter, .page-in { animation: none; }
 }
+
+/* The post popup over Explore fades in with its card rising slightly. */
+.modal-in {
+  animation: modal-fade 160ms ease-out both;
+}
+.modal-in > div {
+  animation: page-in 200ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes modal-fade {
+  from { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal-in, .modal-in > div { animation: none; }
+}

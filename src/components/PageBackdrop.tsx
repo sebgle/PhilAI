@@ -7,7 +7,7 @@ function variantFor(path: string): BackdropVariant {
   if (path === "/entries") return "entries";
   if (path.startsWith("/entries/")) return "matches";
   if (path.startsWith("/library")) return "saved";
-  if (path.startsWith("/forums") || path.startsWith("/authors")) return "community";
+  if (path === "/" || path.startsWith("/posts") || path.startsWith("/forums") || path.startsWith("/authors")) return "community";
   if (path.startsWith("/account") || path.startsWith("/notifications")) return "quiet";
   return "write";
 }
